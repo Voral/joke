@@ -1,20 +1,27 @@
 {
-    "name": "voral/joke",
-    "type": "library",
-    "license": "MIT",
-    "version": "0.0.1",
-    "autoload": {
-        "psr-4": {
-            "Vasoft\\Joke\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Alexander Vorobyev",
-            "email": "voral.adm@gmail.com"
-        }
-    ],
+  "name": "voral/joke",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.0.1",
+  "autoload": {
+    "psr-4": {
+      "Vasoft\\Joke\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Vasoft\\Joke\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Alexander Vorobyev",
+      "email": "voral.adm@gmail.com"
+    }
+  ],
   "scripts": {
+    "dev": "php -S localhost:8000 -t public/",
+    "test": "php vendor/bin/phpunit --display-warnings" ,
     "vi:major": "php ./vendor/bin/vs-version-increment major",
     "vi:minor": "php ./vendor/bin/vs-version-increment minor",
     "vi:patch": "php ./vendor/bin/vs-version-increment patch",
@@ -23,6 +30,8 @@
     "vi:debug:auto": "php ./vendor/bin/vs-version-increment --debug"
   },
   "scripts-descriptions": {
+    "dev": "Start development server on http://localhost:8000",
+    "test": "Run PHPUnit tests",
     "vi:major": "Increment major version and update CHANGELOG.md",
     "vi:minor": "Increment minor version and update CHANGELOG.md",
     "vi:patch": "Increment patch version and update CHANGELOG.md",
@@ -30,8 +39,11 @@
     "vi:list": "Display registered commit types and scopes",
     "vi:debug:auto": "Preview auto-detected changes without applying them"
   },
+  "require": {
+    "php": "^8.4"
+  },
   "require-dev": {
-        "voral/version-increment": "^3.2",
-        "phpunit/phpunit": "^12.5"
-    }
+    "voral/version-increment": "^3.2",
+    "phpunit/phpunit": "^12.5"
+  }
 }
