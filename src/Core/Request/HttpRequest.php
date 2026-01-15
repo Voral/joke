@@ -5,7 +5,7 @@ namespace Vasoft\Joke\Core\Request;
 use Vasoft\Joke\Core\Collections\PropsCollection;
 use Vasoft\Joke\Core\Request\Exceptions\WrongRequestMethodException;
 
-class HttpRequest
+class HttpRequest extends Request
 {
     public PropsCollection $get {
         get {

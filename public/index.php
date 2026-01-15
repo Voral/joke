@@ -1,10 +1,41 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-
+use Vasoft\Joke\Core\Application;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Routing\Router;
+use Vasoft\Joke\Core\ServiceContainer;
 
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+
+class A
+{
+    public function __construct()
+    {
+        echo 'A created';
+    }
+}
+
+class B
+{
+    public function __construct(A $a)
+    {
+        echo 'B created';
+    }
+}
+
+try {
+    /** @var Application $app */
+    $serviceContainer = new ServiceContainer();
+//    $serviceContainer->registerSingleton(\A::class, A::class);
+//    $serviceContainer->registerSingleton(\B::class, B::class);
+
+    $serviceContainer->getParameterResolver();
+} catch (Throwable $e) {
+    echo $e->getMessage();
+    die();
+}
+
+die();
 $request = HttpRequest::fromGlobals();
 $router = new Router();
 $examples = [];
@@ -29,5 +60,6 @@ $result = $router->dispatch($request);
 echo '<pre>';
 print_r($result);
 echo '</pre>';
+
 
 
