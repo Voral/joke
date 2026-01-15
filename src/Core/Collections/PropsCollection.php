@@ -18,4 +18,9 @@ class PropsCollection
     {
         return $this->props;
     }
+
+    public function reset(array $props): void
+    {
+        $this->props = $props;
+    }
 }

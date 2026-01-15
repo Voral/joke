@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Tests\Core\Request;
 
+use Vasoft\Joke\Core\Collections\PropsCollection;
 use Vasoft\Joke\Core\Request\Exceptions\WrongRequestMethodException;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
@@ -61,5 +62,25 @@ class HttpRequestTest extends TestCase
         } catch (WrongRequestMethodException $e) {
             self::assertEquals(ResponseStatus::METHOD_NOT_ALLOWED, $e->getResponseStatus());
         }
+    }
+
+    public function testResetProps(): void
+    {
+        $request = new HttpRequest();
+        $this->assertEmpty($request->props->getAll());
+        $newData = ['string' => 'someTest', 'int' => 2];
+        $request->setProps($newData);;
+        $this->assertEquals($newData, $request->props->getAll());
+    }
+
+    public function testGetUri(): void
+    {
+        $request = new HttpRequest(server: ['REQUEST_URI' => 'some/uri']);
+        $this->assertEquals('some/uri', $request->getPath());
+    }
+    public function testGetUriDefault(): void
+    {
+        $request = new HttpRequest();
+        $this->assertEquals('/', $request->getPath());
     }
 }

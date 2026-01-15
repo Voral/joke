@@ -22,12 +22,13 @@ class PropsCollectionTest extends TestCase
         parent::setUpBeforeClass();
     }
 
-    public function testDefaultValue()
+    public function testDefaultValue(): void
     {
         $this->assertSame(null, self::$collection->get('notExists'));
         $this->assertSame('default Value', self::$collection->get('notExists', 'default Value'));
     }
-    public function testGetTypes()
+
+    public function testGetTypes(): void
     {
         $this->assertSame(self::$data['string'], self::$collection->get('string'));
         $this->assertSame(self::$data['int'], self::$collection->get('int'));
@@ -36,8 +37,21 @@ class PropsCollectionTest extends TestCase
         $this->assertSame(self::$data['array'], self::$collection->get('array'));
     }
 
-    public function testGetAll()
+    public function testGetAll(): void
     {
         $this->assertEquals(self::$data, self::$collection->getAll());
+    }
+
+    public function testReset(): void
+    {
+        $data = [
+            'string' => 'string',
+            'int' => 1,
+        ];
+        $collection = new PropsCollection($data);
+        $this->assertEquals($data, $collection->getAll());
+        $newData = ['string' => 'someTest', 'int' => 2];
+        $collection->reset($newData);
+        $this->assertEquals($newData, $collection->getAll());
     }
 }

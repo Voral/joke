@@ -1,0 +1,124 @@
+<?php
+
+namespace Vasoft\Joke\Tests\Core\Routing;
+
+use Vasoft\Joke\Core\Request\HttpMethod;
+use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
+use Vasoft\Joke\Core\Routing\Router;
+use PHPUnit\Framework\TestCase;
+
+class RouterTest extends TestCase
+{
+    public function testRouterTypes()
+    {
+        $router = new Router();
+        $routeGet = $router->get('/get', fn() => 'get', 'route-get');
+        $routePost = $router->post('/post', fn() => 'post', 'route-post');
+        $routePut = $router->put('/put', fn() => 'put', 'route-put');
+        $routeDelete = $router->delete('/delete', fn() => 'delete', 'route-delete');
+        $routePatch = $router->patch('/patch', fn() => 'patch', 'route-patch');
+        $routeHead = $router->head('/head', fn() => 'head', 'route-head');
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/get']);
+        self::assertEquals(spl_object_id($routeGet), spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::GET, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/post']);
+        self::assertEquals(spl_object_id($routePost), spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::POST, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'PUT', 'REQUEST_URI' => '/put']);
+        self::assertEquals(spl_object_id($routePut), spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::PUT, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'DELETE', 'REQUEST_URI' => '/delete']);
+        self::assertEquals(spl_object_id($routeDelete), spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::DELETE, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'PATCH', 'REQUEST_URI' => '/patch']);
+        self::assertEquals(spl_object_id($routePatch), spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::PATCH, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'HEAD', 'REQUEST_URI' => '/head']);
+        self::assertEquals(spl_object_id($routeHead), spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::HEAD, $router->findRoute($request)->method);
+    }
+
+    public function testRouterAny()
+    {
+        $router = new Router();
+        $route = $router->any('/get', fn() => 'get', 'route-get');
+        $routeId = spl_object_id($route);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/get']);
+        self::assertEquals($routeId, spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::GET, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/get']);
+        self::assertNotEquals($routeId, spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::POST, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'PUT', 'REQUEST_URI' => '/get']);
+        self::assertNotEquals($routeId, spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::PUT, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'DELETE', 'REQUEST_URI' => '/get']);
+        self::assertNotEquals($routeId, spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::DELETE, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'PATCH', 'REQUEST_URI' => '/get']);
+        self::assertNotEquals($routeId, spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::PATCH, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'HEAD', 'REQUEST_URI' => '/get']);
+        self::assertNotEquals($routeId, spl_object_id($router->findRoute($request)));
+        self::assertEquals(HttpMethod::HEAD, $router->findRoute($request)->method);
+    }
+
+    public function testRouterNotImplementedMethod(): void
+    {
+        $router = new Router();
+        $router->get('/get', fn() => 'get', 'route-get');
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/get']);
+        self::assertNull($router->findRoute($request));
+    }
+
+    public function testRouterNotImplementedRout(): void
+    {
+        $router = new Router();
+        $router->get('/get', fn() => 'get', 'route-get');
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/unknown']);
+        self::assertNull($router->findRoute($request));
+    }
+
+    public function testByName(): void
+    {
+        $router = new Router();
+        $named = $router->get('/get', fn() => 'get', 'route-get');
+        $autoNamed = $router->match([HttpMethod::GET, HttpMethod::POST], '/get', fn() => 'get');
+
+        self::assertSame($named, $router->route('route-get'));
+        self::assertSame($autoNamed, $router->route('get#post|/get'));
+    }
+
+    public function testDispatchSuccess(): void
+    {
+        $router = new Router();
+        $router->get('/get', fn() => 'get response', 'route-get');
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/get']);
+
+        self::assertSame('get response', $router->dispatch($request));
+    }
+
+    public function testDispatchFail(): void
+    {
+        $router = new Router();
+        $router->get('/get', fn() => 'get response', 'route-get');
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/unknown']);
+        self::expectException(NotFoundException::class);
+        self::expectExceptionMessage('Route not found');
+
+        $router->dispatch($request);
+    }
+}
