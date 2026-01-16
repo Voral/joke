@@ -45,6 +45,7 @@
   },
   "require-dev": {
     "voral/version-increment": "^3.2",
-    "phpunit/phpunit": "^12.5"
+    "phpunit/phpunit": "^12.5",
+    "php-mock/php-mock-phpunit": "^2.14"
   }
 }
