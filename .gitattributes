@@ -1,0 +1,7 @@
+/tests export-ignore
+/phpunit.xml export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/composer.lock export-ignore
+/bootstrap export-ignore
+/public export-ignore
