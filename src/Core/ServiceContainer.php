@@ -4,6 +4,7 @@ namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
+use Vasoft\Joke\Core\Routing\Router;
 
 class ServiceContainer
 {
@@ -31,6 +32,7 @@ class ServiceContainer
     protected function initDefault(): void
     {
         $this->registerSingleton(ParameterResolver::class, ParameterResolver::class);
+        $this->registerSingleton(Router::class, Router::class);
     }
 
     public function getParameterResolver(): ParameterResolver

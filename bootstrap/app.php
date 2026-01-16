@@ -1,7 +1,7 @@
 <?php
+
 require __DIR__ . '/../vendor/autoload.php';
 
 use Vasoft\Joke\Core\Application;
-
-$app = new Application(__DIR__, __DIR__ . '/config/routes.php');
-//$app->run();
+use Vasoft\Joke\Core\ServiceContainer;
+return new Application(dirname(__DIR__), '/routes/web.php', new ServiceContainer());
