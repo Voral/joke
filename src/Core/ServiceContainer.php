@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Core;
 
+use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 
 class ServiceContainer
@@ -55,7 +56,7 @@ class ServiceContainer
 
     public function register(string $name, callable|string|object $service): void
     {
-        if (is_object($service)) {
+        if (is_object($service) && !is_callable($service)) {
             $this->registerSingleton($name, $service);
         } else {
             $this->serviceRegistry[$name] = $service;
@@ -65,7 +66,8 @@ class ServiceContainer
     /**
      * @param string $name
      * @return ?object
-     * @throws Routing\Exceptions\AutowiredException
+     * @throws AutowiredException
+     * @throws \ReflectionException
      */
     public function get(string $name): ?object
     {
@@ -79,7 +81,8 @@ class ServiceContainer
     /**
      * @param string $name
      * @return ?object
-     * @throws Routing\Exceptions\AutowiredException
+     * @throws AutowiredException
+     * @throws \ReflectionException
      */
     private function getService(string $name): ?object
     {
@@ -87,7 +90,11 @@ class ServiceContainer
             return null;
         }
         $resolver = $this->getParameterResolver();
-        $args = $resolver->resolveForConstructor($this->serviceRegistry[$name]);
+        if (is_callable($this->serviceRegistry[$name])) {
+            $args = $resolver->resolveForCallable($this->serviceRegistry[$name]);
+        } else {
+            $args = $resolver->resolveForConstructor($this->serviceRegistry[$name]);
+        }
         if (is_callable($this->serviceRegistry[$name])) {
             return $this->serviceRegistry[$name](...$args);
         }
@@ -97,7 +104,8 @@ class ServiceContainer
     /**
      * @param string $name
      * @return ?object
-     * @throws Routing\Exceptions\AutowiredException
+     * @throws AutowiredException
+     * @throws \ReflectionException
      */
     private function getSingleton(string $name): ?object
     {
@@ -111,22 +119,16 @@ class ServiceContainer
         $args = [];
         if (!$this->lockResolver) {
             $resolver = $this->getParameterResolver();
-            if (is_string($definition)) {
-                $args = $resolver->resolveForConstructor($definition);
-            } elseif (is_callable($definition)) {
+            if (is_callable($definition)) {
                 $args = $resolver->resolveForCallable($definition);
             } else {
-                throw new \LogicException("Unsupported definition type for '$name'");
+                $args = $resolver->resolveForConstructor($definition);
             }
         }
-        if (is_object($definition)) {
-            $this->singletons[$name] = $definition;
-        } elseif (is_callable($this->singletonsRegistry[$name])) {
+
+        if (is_callable($this->singletonsRegistry[$name])) {
             $this->singletons[$name] = $definition(...$args);
         } else {
-            if (!class_exists($definition)) {
-                throw new \RuntimeException("Class $definition does not exist");
-            }
             $this->singletons[$name] = new $definition(...$args);
         }
         return $this->singletons[$name];
