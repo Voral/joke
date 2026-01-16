@@ -5,11 +5,14 @@ namespace Vasoft\Joke\Core\Routing;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
+use Vasoft\Joke\Core\ServiceContainer;
 
 class Router
 {
     protected array $routes = [];
     protected array $namedRoutes = [];
+
+    public function __construct(protected readonly ServiceContainer $serviceContainer) { }
 
     public function post(string $path, callable $callback, string $name = ''): Route
     {
@@ -60,7 +63,7 @@ class Router
         if ($name === '') {
             $name = $this->getRouteIndex($methods, $path);
         }
-        $this->namedRoutes[$name] = new Route($path, $methods[0], $callback);
+        $this->namedRoutes[$name] = new Route($this->serviceContainer, $path, $methods[0], $callback);
         foreach ($methods as $method) {
             $this->routes[$method->value][] = &$this->namedRoutes[$name];
         }

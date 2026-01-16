@@ -5,15 +5,22 @@ namespace Vasoft\Joke\Core\Routing;
 use Closure;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
-use Vasoft\Joke\Core\Collections\PropsCollection;
-use Vasoft\Joke\Core\Exceptions\InvalidArgumentException;
+use ReflectionParameter;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
+/**
+ * @todo Кеширование
+ */
 class ParameterResolver
 {
     public function __construct(private readonly ServiceContainer $serviceContainer) { }
 
+    /**
+     * @param callable|string|array $callable
+     * @return ReflectionFunctionAbstract
+     * @throws \ReflectionException
+     */
     private function getCallableReflection(callable|string|array $callable): ReflectionFunctionAbstract
     {
         if ($callable instanceof Closure) {
@@ -35,42 +42,30 @@ class ParameterResolver
     }
 
     /**
-     * @param PropsCollection $parameters
-     * @param $callback
+     * @param array<ReflectionParameter> $parameters
+     * @param array<string,mixed> $context
      * @return array
      * @throws AutowiredException
      */
-    public function resolve(PropsCollection $parameters, $callback): array
+    protected function resolveProps(array $parameters, array $context = []): array
     {
         $args = [];
-        $reflection = $this->getCallableReflection($callback);
-        foreach ($reflection->getParameters() as $param) {
+        foreach ($parameters as $param) {
             $name = $param->getName();
             $type = $param->getType()?->getName();
 
-            $value = $parameters->get($name);
-            if ($type && class_exists($type)) {
-                if (method_exists($type, 'tryFrom')) {
-                    $args[] = $type::tryFrom($value);
+            if (isset($context[$name])) {
+                if ($type && class_exists($type)) {
+                    if (method_exists($type, 'tryFrom')) {
+                        $args[] = $type::tryFrom($context[$name]);
+                    } else {
+                        throw new AutowiredException($name, $type);
+                    }
                 } else {
-                    throw new AutowiredException($name, $type);
+                    $args[] = $context[$name];
                 }
-            } else {
-                $args[] = $value;
+                continue;
             }
-        }
-        return $args;
-    }
-
-    public function resolveForCallable(callable|string|array $callable, array $context = []): array
-    {
-        $reflection = $this->getCallableReflection($callable);
-        $args = [];
-
-        foreach ($reflection->getParameters() as $param) {
-            $name = $param->getName();
-            $type = $param->getType()?->getName();
-
             if ($type && class_exists($type)) {
                 $service = $this->serviceContainer->get($type);
                 if ($service === null) {
@@ -81,44 +76,37 @@ class ParameterResolver
                 throw new AutowiredException($name, $type ?: 'scalar');
             }
         }
-
         return $args;
     }
 
     /**
+     * @param callable|string|array $callable
+     * @param array $context
      * @return array
      * @throws AutowiredException
+     * @throws \ReflectionException
      */
-    public function resolveForService(string|object $serviceDefinition): array
+    public function resolveForCallable(callable|string|array $callable, array $context = []): array
     {
-        if (is_object($serviceDefinition)) {
-            $className = $serviceDefinition::class;
-        } elseif (is_string($serviceDefinition)) {
-            if (!class_exists($serviceDefinition)) {
-//                throw new AutowiredException("Service definition is not a valid class: $serviceDefinition");
-                throw new AutowiredException('todo', 'fixit');
-            }
-            $className = $serviceDefinition;
-        } else {
-//            throw new AutowiredException("Invalid service definition type");
-            throw new AutowiredException('todo', 'fixit');
-        }
+        $reflection = $this->getCallableReflection($callable);
+        return $this->resolveProps($reflection->getParameters(), $context);
+    }
+
+    /**
+     * @param string $className
+     * @param array $context
+     * @return array
+     * @throws AutowiredException
+     * @throws \ReflectionException
+     */
+    public function resolveForConstructor(string $className, array $context = []): array
+    {
         $reflection = new \ReflectionClass($className);
         $constructor = $reflection->getConstructor();
 
         if ($constructor === null) {
-            return []; // Нет конструктора — нет зависимостей
+            return [];
         }
-        $args = [];
-        foreach ($constructor->getParameters() as $param) {
-            $name = $param->getName();
-            $type = $param->getType()?->getName();
-            $service = $this->serviceContainer->get($type);
-            if ($service === null) {
-                throw new AutowiredException($name, $type);
-            }
-            $args[] = $service;
-        }
-        return $args;
+        return $this->resolveProps($constructor->getParameters(), $context);
     }
 }

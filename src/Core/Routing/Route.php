@@ -4,6 +4,7 @@ namespace Vasoft\Joke\Core\Routing;
 
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Core\ServiceContainer;
 
 class Route
 {
@@ -44,6 +45,7 @@ class Route
     }
 
     public function __construct(
+        private readonly ServiceContainer $serviceContainer,
         public readonly string $path,
         public readonly HttpMethod $method,
         public $handler,
@@ -51,10 +53,9 @@ class Route
     ) {
     }
 
-    public function withMethod(
-        HttpMethod $method
-    ): static {
-        return new static($this->path, $method, $this->handler, $this->name);
+    public function withMethod(HttpMethod $method): static
+    {
+        return new static($this->serviceContainer, $this->path, $method, $this->handler, $this->name);
     }
 
     public function matches(HttpRequest $request): bool
@@ -71,7 +72,8 @@ class Route
 
     public function run(HttpRequest $request): mixed
     {
-        $args = new ParameterResolver()->resolve($request->props, $this->handler);
+        $args = new ParameterResolver($this->serviceContainer)
+            ->resolveForCallable($this->handler, $request->props->getAll());
 
         if ($this->handler instanceof \Closure) {
             return ($this->handler)(...$args);

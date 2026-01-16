@@ -87,7 +87,7 @@ class ServiceContainer
             return null;
         }
         $resolver = $this->getParameterResolver();
-        $args = $resolver->resolveForService($this->serviceRegistry[$name]);
+        $args = $resolver->resolveForConstructor($this->serviceRegistry[$name]);
         if (is_callable($this->serviceRegistry[$name])) {
             return $this->serviceRegistry[$name](...$args);
         }
@@ -112,7 +112,7 @@ class ServiceContainer
         if (!$this->lockResolver) {
             $resolver = $this->getParameterResolver();
             if (is_string($definition)) {
-                $args = $resolver->resolveForService($definition);
+                $args = $resolver->resolveForConstructor($definition);
             } elseif (is_callable($definition)) {
                 $args = $resolver->resolveForCallable($definition);
             } else {

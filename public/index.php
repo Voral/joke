@@ -26,10 +26,10 @@ class B
 try {
     /** @var Application $app */
     $serviceContainer = new ServiceContainer();
-//    $serviceContainer->registerSingleton(\A::class, A::class);
-//    $serviceContainer->registerSingleton(\B::class, B::class);
+    $serviceContainer->registerSingleton(\A::class, A::class);
+    $serviceContainer->registerSingleton(\B::class, B::class);
 
-    $serviceContainer->getParameterResolver();
+    $serviceContainer->get(B::class);
 } catch (Throwable $e) {
     echo $e->getMessage();
     die();
