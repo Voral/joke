@@ -44,6 +44,7 @@ compsoer dev
 - [ ] **Создание фреймворка**
     - [x] Реализация маршрутизации
     - [x] Реализация сервисный контейнер
+    - [ ] Консольная система команд
     - [ ] Авторизация
     - [ ] Валидация данных
     - [ ] Обработка ошибок
@@ -109,6 +110,7 @@ composer dev
 - [ ] **Framework Core**
     - [x] Implement routing
     - [x] Implement service container
+    - [ ] Console command system
     - [ ] Authentication
     - [ ] Data validation
     - [ ] Error handling
