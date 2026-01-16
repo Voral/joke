@@ -24,22 +24,22 @@ class PropsCollectionTest extends TestCase
 
     public function testDefaultValue(): void
     {
-        $this->assertSame(null, self::$collection->get('notExists'));
-        $this->assertSame('default Value', self::$collection->get('notExists', 'default Value'));
+        self::assertSame(null, self::$collection->get('notExists'));
+        self::assertSame('default Value', self::$collection->get('notExists', 'default Value'));
     }
 
     public function testGetTypes(): void
     {
-        $this->assertSame(self::$data['string'], self::$collection->get('string'));
-        $this->assertSame(self::$data['int'], self::$collection->get('int'));
-        $this->assertSame(self::$data['float'], self::$collection->get('float'));
-        $this->assertSame(self::$data['bool'], self::$collection->get('bool'));
-        $this->assertSame(self::$data['array'], self::$collection->get('array'));
+        self::assertSame(self::$data['string'], self::$collection->get('string'));
+        self::assertSame(self::$data['int'], self::$collection->get('int'));
+        self::assertSame(self::$data['float'], self::$collection->get('float'));
+        self::assertSame(self::$data['bool'], self::$collection->get('bool'));
+        self::assertSame(self::$data['array'], self::$collection->get('array'));
     }
 
     public function testGetAll(): void
     {
-        $this->assertEquals(self::$data, self::$collection->getAll());
+        self::assertEquals(self::$data, self::$collection->getAll());
     }
 
     public function testReset(): void
@@ -49,9 +49,17 @@ class PropsCollectionTest extends TestCase
             'int' => 1,
         ];
         $collection = new PropsCollection($data);
-        $this->assertEquals($data, $collection->getAll());
+        self::assertEquals($data, $collection->getAll());
         $newData = ['string' => 'someTest', 'int' => 2];
         $collection->reset($newData);
-        $this->assertEquals($newData, $collection->getAll());
+        self::assertEquals($newData, $collection->getAll());
+    }
+
+    public function testSetProperty(): void
+    {
+        $collection = new PropsCollection([]);
+        self::assertNull($collection->get('example'));
+        $collection->set('example', 456);
+        self::assertSame(456, $collection->get('example'));
     }
 }

@@ -14,6 +14,12 @@ class PropsCollection
         return $this->props[$key] ?? $default;
     }
 
+    public function set(string $key, mixed $value): static
+    {
+        $this->props[$key] = $value;
+        return $this;
+    }
+
     public function getAll(): array
     {
         return $this->props;
