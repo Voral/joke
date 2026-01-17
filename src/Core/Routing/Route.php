@@ -2,12 +2,19 @@
 
 namespace Vasoft\Joke\Core\Routing;
 
+use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\ServiceContainer;
 
-class Route
+class Route implements RouteInterface
 {
+    /**
+     * Массив доступных правил обработки параметров
+     *
+     * Добавляется через двоеточие после параметра в URI например /catalog/{code:slug}. Используется для построения регулярного выражения
+     * @var array<string,string>
+     */
     protected array $rules = [
         'default' => '[^/]+',
         'slug' => '[a-z0-9\-_]+',
@@ -17,6 +24,22 @@ class Route
 
     public ?string $compiledPattern = null {
         get => $this->compiledPattern ??= $this->compilePattern();
+    }
+    public HttpMethod $method {
+        get => $this->method;
+    }
+    private array|object|string $handler;
+
+
+    public function __construct(
+        private readonly ServiceContainer $serviceContainer,
+        private readonly string $path,
+        HttpMethod $method,
+        callable $handler,
+        private readonly string $name = ''
+    ) {
+        $this->handler = $handler;
+        $this->method = $method;
     }
 
     protected function compilePattern(): string
@@ -44,14 +67,6 @@ class Route
         return '#^' . $regex . '$#i';
     }
 
-    public function __construct(
-        private readonly ServiceContainer $serviceContainer,
-        public readonly string $path,
-        public readonly HttpMethod $method,
-        public $handler,
-        public readonly string $name = ''
-    ) {
-    }
 
     public function withMethod(HttpMethod $method): static
     {

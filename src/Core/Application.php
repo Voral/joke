@@ -2,11 +2,11 @@
 
 namespace Vasoft\Joke\Core;
 
+use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Request\Request;
 use Vasoft\Joke\Core\Response\HtmlResponse;
 use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;
-use Vasoft\Joke\Core\Routing\Router;
 
 readonly class Application
 {
@@ -39,10 +39,10 @@ readonly class Application
         $response->send();
     }
 
-    private function loadRoutes(): Router
+    private function loadRoutes(): RouterInterface
     {
-        /** @var Router $router */
-        $router = $this->serviceContainer->get(Router::class);
+        /** @var RouterInterface $router */
+        $router = $this->serviceContainer->get(RouterInterface::class);
         $file = $this->getFullPath($this->routeConfigWeb);
         if (file_exists($file)) {
             require $file;

@@ -2,16 +2,41 @@
 
 namespace Vasoft\Joke\Core\Routing;
 
+use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Core\ServiceContainer;
 
-class Router
+/**
+ *  Управляет HTTP-маршрутами и направляет входящие запросы соответствующим обработчикам.
+ *
+ *  Класс должен поддерживать именованные маршруты, несколько HTTP-методов для одного маршрута
+ *  и использует ServiceContainer для разрешения и вызова коллбэков контроллеров.
+ *  Маршруты хранятся с индексацией по методу и имени для эффективного сопоставления
+ *  и генерации URL.
+ *
+ * @todo Продумать вопрос аналога маршрутов для консоли. Возможно стоит отойти от HttpMethod на string для универсальности
+ */
+class Router implements RouterInterface
 {
+    /**
+     * Хранилище роутов сгруппированных по HTTP методу (например, 'GET', 'POST').
+     *
+     * Структура: ['GET' => [Route, Route, ...], 'POST' => [...], ...]
+     * @var array<string, list<Route>>
+     */
     protected array $routes = [];
+    /**
+     * Хранилище именованных роутов для легкого доступа по имени
+     *
+     * @var array<string, Route>
+     */
     protected array $namedRoutes = [];
 
+    /**
+     * @param ServiceContainer $serviceContainer DI-контейнер, используемый для разрешения зависимостей маршрутов.
+     */
     public function __construct(protected readonly ServiceContainer $serviceContainer) { }
 
     public function post(string $path, callable $callback, string $name = ''): Route
@@ -51,13 +76,6 @@ class Router
         return $this->match(HttpMethod::cases(), $path, $callback, $name);
     }
 
-    /**
-     * @param array<HttpMethod> $methods
-     * @param string $path
-     * @param callable $callback
-     * @param string $name
-     * @return Route
-     */
     public function match(array $methods, string $path, callable $callback, string $name = ''): Route
     {
         if ($name === '') {
@@ -71,9 +89,13 @@ class Router
     }
 
     /**
-     * @param array<HttpMethod> $methods
-     * @param string $path
-     * @return string
+     * Генерация имени для безымянного маршрута
+     *
+     * Формат: "method1#method2|/path"
+     *
+     * @param list<HttpMethod> $methods Список метод обрабатываемых маршрутом
+     * @param string $path Паттерн URI (например, '/users').
+     * @return string Имя маршрута
      */
     private function getRouteIndex(array $methods, string $path): string
     {
@@ -81,6 +103,9 @@ class Router
         return implode('#', $parts) . '|' . $path;
     }
 
+    /**
+     * @inherit
+     */
     public function dispatch(HttpRequest $request): mixed
     {
         $route = $this->findRoute($request);
