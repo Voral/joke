@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Tests\Core;
 
+use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 use Vasoft\Joke\Core\ServiceContainer;
 use PHPUnit\Framework\TestCase;
@@ -13,7 +14,7 @@ class ServiceContainerTest extends TestCase
     public function testDefaults()
     {
         $container = new ServiceContainer();
-        $resolver = $container->get(ParameterResolver::class);
+        $resolver = $container->get(ResolverInterface::class);
         self::assertInstanceOf(ParameterResolver::class, $resolver);
         $container = $container->get(ServiceContainer::class);
         self::assertInstanceOf(ServiceContainer::class, $container);
@@ -23,7 +24,7 @@ class ServiceContainerTest extends TestCase
     {
         TestableParameterResolver::$constructorCallCount = 0;
         $container = new ServiceContainer();
-        $container->registerSingleton(ParameterResolver::class, TestableParameterResolver::class);
+        $container->registerSingleton(ResolverInterface::class, TestableParameterResolver::class);
         $container->getParameterResolver();
         $container->getParameterResolver();
         self::assertSame(1, TestableParameterResolver::$constructorCallCount);
@@ -35,7 +36,7 @@ class ServiceContainerTest extends TestCase
         $resolver = new TestableParameterResolver($container);
         TestableParameterResolver::$constructorCallCount = 0;
 
-        $container->registerSingleton(ParameterResolver::class, $resolver);
+        $container->registerSingleton(ResolverInterface::class, $resolver);
         $container->getParameterResolver();
         $container->getParameterResolver();
         self::assertSame(0, TestableParameterResolver::$constructorCallCount);

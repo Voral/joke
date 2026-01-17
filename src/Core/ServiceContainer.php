@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Core;
 
+use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 use Vasoft\Joke\Core\Routing\Router;
@@ -31,20 +32,20 @@ class ServiceContainer
 
     protected function initDefault(): void
     {
-        $this->registerSingleton(ParameterResolver::class, ParameterResolver::class);
+        $this->registerSingleton(ResolverInterface::class, ParameterResolver::class);
         $this->registerSingleton(Router::class, Router::class);
     }
 
-    public function getParameterResolver(): ParameterResolver
+    public function getParameterResolver(): ResolverInterface
     {
-        if (isset($this->singletons[ParameterResolver::class])) {
-            /** @var ParameterResolver $resolver */
-            $resolver = $this->singletons[ParameterResolver::class];
+        if (isset($this->singletons[ResolverInterface::class])) {
+            /** @var ResolverInterface $resolver */
+            $resolver = $this->singletons[ResolverInterface::class];
             return $resolver;
         }
-        $definition = $this->singletonsRegistry[ParameterResolver::class] ?? ParameterResolver::class;
-        $this->singletons[ParameterResolver::class] = new $definition($this);
-        return $this->singletons[ParameterResolver::class];
+        $definition = $this->singletonsRegistry[ResolverInterface::class] ?? ResolverInterface::class;
+        $this->singletons[ResolverInterface::class] = new $definition($this);
+        return $this->singletons[ResolverInterface::class];
     }
 
 

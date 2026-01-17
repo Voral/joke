@@ -6,13 +6,21 @@ use Closure;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
+use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
 /**
- * @todo Кеширование
+ * Реализация связывания параметров
+ *
+ * Кроме передаваемых переменных контекста анализируется и контейнер внедрения зависимостей
+ * При связывании в первую очередь поиск значений происходит в контексте, далее, если ожидается объект,
+ * проверяется наличие необходимой реализации в DI контейнере
+ * @todo Кеширование рефлексии
+ * @todo Учет параметров по умолчанию и вероятность ситуации, где один параметр со значением по умолчанию пропущен, а следующий есть в контексте
  */
 class ParameterResolver
+    implements ResolverInterface
 {
     public function __construct(private readonly ServiceContainer $serviceContainer) { }
 
@@ -80,11 +88,9 @@ class ParameterResolver
     }
 
     /**
-     * @param callable|string|array $callable
-     * @param array $context
-     * @return array
-     * @throws AutowiredException
+     * @inherit
      * @throws \ReflectionException
+     * @todo Привести исключения рефлексии к исключению авто-связывания
      */
     public function resolveForCallable(callable|string|array $callable, array $context = []): array
     {
@@ -93,11 +99,9 @@ class ParameterResolver
     }
 
     /**
-     * @param string $className
-     * @param array $context
-     * @return array
-     * @throws AutowiredException
+     * @inherit
      * @throws \ReflectionException
+     * @todo Привести исключения рефлексии к исключению авто-связывания
      */
     public function resolveForConstructor(string $className, array $context = []): array
     {

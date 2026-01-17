@@ -72,7 +72,7 @@ class Route
 
     public function run(HttpRequest $request): mixed
     {
-        $args = new ParameterResolver($this->serviceContainer)
+        $args = $this->serviceContainer->getParameterResolver()
             ->resolveForCallable($this->handler, $request->props->getAll());
 
         if ($this->handler instanceof \Closure) {
