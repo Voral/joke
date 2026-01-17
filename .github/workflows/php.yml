@@ -27,5 +27,9 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Configure PHP for testing
+        run: |
+          echo 'opcache.enable=0' >> $PHP_INI_DIR/conf.d/99-test.ini
+          echo 'opcache.enable_cli=0' >> $PHP_INI_DIR/conf.d/99-test.ini
       - name: Run tests
         run: composer test
