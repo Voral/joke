@@ -3,6 +3,7 @@
 namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
+use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Request\Request;
 use Vasoft\Joke\Core\Response\HtmlResponse;
 use Vasoft\Joke\Core\Response\JsonResponse;
@@ -28,6 +29,7 @@ readonly class Application
 
     public function handle(Request $request): void
     {
+        $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
         $response = $this->loadRoutes()->dispatch($request);
         if (!($response instanceof Response)) {
             if (is_array($response)) {

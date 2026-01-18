@@ -11,15 +11,18 @@ class ApplicationTest extends TestCase
 {
     public function testExecuteDefaultHtml(): void
     {
+        $di = new ServiceContainer();
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            $di
         );
         ob_start();
-        $app->handle(new HttpRequest(server:['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/']));
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/']);
+        $app->handle($request);
         $output = ob_get_clean();
-        self::assertSame('Hi', $output);
+        self::assertStringContainsString('<li><a href="/name/Alex">Hi Alex</a>', $output);
+        self::assertSame($request, $di->get(HttpRequest::class));
     }
 
     public function testExecuteDefaultJson(): void
@@ -30,7 +33,7 @@ class ApplicationTest extends TestCase
             new ServiceContainer()
         );
         ob_start();
-        $app->handle(new HttpRequest(server:['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/json/Alex']));
+        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/json/Alex']));
         $output = ob_get_clean();
         self::assertSame('{"fio":"Alex"}', $output);
     }
