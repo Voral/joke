@@ -8,10 +8,6 @@ abstract class Response
 {
     public ResponseStatus $status {
         get => $this->status ??= ResponseStatus::OK;
-
-        set(ResponseStatus $status) {
-            $this->status = $status;
-        }
     }
     public ?HeadersCollection $headers = null {
         get {
@@ -42,5 +38,11 @@ abstract class Response
         foreach ($headers as $name => $value) {
             header(sprintf('%s: %s', $name, $value));
         }
+    }
+
+    public function setStatus(ResponseStatus $status): static
+    {
+        $this->status = $status;
+        return $this;
     }
 }

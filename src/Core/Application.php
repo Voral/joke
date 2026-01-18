@@ -2,20 +2,37 @@
 
 namespace Vasoft\Joke\Core;
 
+use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
+use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
+use Vasoft\Joke\Core\Middlewares\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Request\Request;
 use Vasoft\Joke\Core\Response\HtmlResponse;
 use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;
+use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 
-readonly class Application
+class Application
 {
+    /**
+     * @var array<MiddlewareInterface|string> Массив глобальных middleware
+     */
+    protected array $middlewares = [
+        ExceptionMiddleware::class,
+    ];
+
     public function __construct(
-        public string $basePath,
-        public string $routeConfigWeb,
-        public ServiceContainer $serviceContainer,
+        public readonly string $basePath,
+        public readonly string $routeConfigWeb,
+        public readonly ServiceContainer $serviceContainer,
     ) {
+    }
+
+    public function addMiddleware(MiddlewareInterface|string $middleware): static
+    {
+        $this->middlewares[] = $middleware;
+        return $this;
     }
 
     private function getFullPath(string $relativePath): string
@@ -27,10 +44,23 @@ readonly class Application
         );
     }
 
+    /**
+     * @param Request $request Входящий запрос
+     * @return void
+     * @throws NotFoundException Выбрасывается если маршрут не найден
+     * @throws WrongMiddlewareException Выбрасывается при некорректном классе middleware
+     */
     public function handle(Request $request): void
     {
-        $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
-        $response = $this->loadRoutes()->dispatch($request);
+        $next = function () use ($request) {
+            return $this->handleRoute($request);
+        };
+        $response = $this->processMiddlewares($request, $this->middlewares, $next);
+        $this->sendResponse($response);
+    }
+
+    private function sendResponse(mixed $response): void
+    {
         if (!($response instanceof Response)) {
             if (is_array($response)) {
                 $response = new JsonResponse()->setBody($response);
@@ -39,6 +69,50 @@ readonly class Application
             }
         }
         $response->send();
+    }
+
+    private function handleRoute(Request $request): mixed
+    {
+        $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
+        $route = $this->loadRoutes()->findRoute($request);
+        if ($route === null) {
+            throw new NotFoundException('Route not found');
+        }
+        // @todo Миддлвары групп и отдельных маршрутов
+        $middlewares = [];
+        $next = static function () use ($request, $route) {
+            return $route->run($request);
+        };
+
+        return $this->processMiddlewares($request, $middlewares, $next);
+    }
+
+    private function processMiddlewares(HttpRequest $request, array $middlewares, callable $next): mixed
+    {
+        $middlewares = array_reverse($middlewares);
+        foreach ($middlewares as $middleware) {
+            $next = function () use ($middleware, $next, $request) {
+                $instance = ($middleware instanceof MiddlewareInterface)
+                    ? $middleware
+                    : $this->resolveMiddleware($middleware);
+                if ($instance === null) {
+                    throw new WrongMiddlewareException($middleware);
+                }
+                return $instance->handle(
+                    $request,
+                    $next
+                );
+            };
+        }
+        return $next();
+    }
+
+    private function resolveMiddleware(string $middleware): ?MiddlewareInterface
+    {
+        $resolver = $this->serviceContainer->getParameterResolver();
+        $args = $resolver->resolveForConstructor($middleware);
+        $instance = new $middleware(...$args);
+        return $instance instanceof MiddlewareInterface ? $instance : null;
     }
 
     private function loadRoutes(): RouterInterface

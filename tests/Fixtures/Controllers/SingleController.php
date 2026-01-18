@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Tests\Fixtures\Controllers;
 
+use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
 class SingleController
@@ -22,6 +23,7 @@ class SingleController
 
     public static function info(): array
     {
+        throw new AutowiredException('test','todo');
         return ['shopVersion' => '1.0.0'];
     }
 
