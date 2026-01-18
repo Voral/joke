@@ -4,7 +4,7 @@ namespace Vasoft\Joke\Tests\Core\Routing;
 
 class FakeExample
 {
-    public function __construct(public int $value) { }
+    public function __construct(public int $num) { }
 
     public static function tryFrom(int $value): ?self
     {

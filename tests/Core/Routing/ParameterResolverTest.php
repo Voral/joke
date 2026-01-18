@@ -54,7 +54,7 @@ class ParameterResolverTest extends TestCase
     public function testResolveObject(): void
     {
         $callback = function (int $page, FakeExample $num) {
-            return $page + $num->value;
+            return $page + $num->num;
         };
         $resolver = new ParameterResolver(self::$serviceContainer);
         $args = $resolver->resolveForCallable($callback, ['page' => 1, 'num' => 2]);
@@ -127,7 +127,7 @@ class ParameterResolverTest extends TestCase
     public function testResolveForConstructor(): void
     {
         $resolver = new ParameterResolver(self::$serviceContainer);
-        $args = $resolver->resolveForConstructor(FakeExample::class, ['value' => 12, 'z' => 14]);
+        $args = $resolver->resolveForConstructor(FakeExample::class, ['num' => 12, 'z' => 14]);
         self::assertCount(1, $args);
         self::assertEquals(12, $args[0]);
     }

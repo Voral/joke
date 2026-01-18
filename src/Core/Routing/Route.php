@@ -102,17 +102,18 @@ class Route implements RouteInterface
         $args = $this->serviceContainer->getParameterResolver()
             ->resolveForCallable($this->handler, $request->props->getAll());
 
-
         if ($this->handler instanceof \Closure) {
             return ($this->handler)(...$args);
         }
         if (is_array($this->handler)) {
             [$target, $method] = $this->handler;
             if (is_string($target)) {
-                return $target::$method(...$args);
-            } else {
-                return $target->$method(...$args);
+                $constructorArgs = $this->serviceContainer->getParameterResolver()
+                    ->resolveForConstructor($target, $request->props->getAll());
+
+                $target = new $target(...$constructorArgs);
             }
+            return $target->$method(...$args);
         }
         $args = $this->serviceContainer->getParameterResolver()
             ->resolveForCallable($this->handler, $request->props->getAll());
