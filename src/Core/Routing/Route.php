@@ -28,17 +28,14 @@ class Route implements RouteInterface
     public HttpMethod $method {
         get => $this->method;
     }
-    private array|object|string $handler;
-
 
     public function __construct(
         private readonly ServiceContainer $serviceContainer,
         private readonly string $path,
         HttpMethod $method,
-        callable $handler,
+        private readonly array|object|string $handler,
         private readonly string $name = ''
     ) {
-        $this->handler = $handler;
         $this->method = $method;
     }
 
@@ -87,8 +84,24 @@ class Route implements RouteInterface
 
     public function run(HttpRequest $request): mixed
     {
+        if (is_string($this->handler) && !str_contains($this->handler, '::')) {
+            if (class_exists($this->handler)) {
+                $constructorArgs = $this->serviceContainer->getParameterResolver()
+                    ->resolveForConstructor($this->handler, $request->props->getAll());
+
+                $controller = new $this->handler(...$constructorArgs);
+                $handler = [$controller, '__invoke'];
+                $args = $this->serviceContainer->getParameterResolver()
+                    ->resolveForCallable($handler, $request->props->getAll());
+                return $controller(...$args);
+            }
+            $args = $this->serviceContainer->getParameterResolver()
+                ->resolveForCallable($this->handler, $request->props->getAll());
+            return ($this->handler)(...$args);
+        }
         $args = $this->serviceContainer->getParameterResolver()
             ->resolveForCallable($this->handler, $request->props->getAll());
+
 
         if ($this->handler instanceof \Closure) {
             return ($this->handler)(...$args);
@@ -101,12 +114,11 @@ class Route implements RouteInterface
                 return $target->$method(...$args);
             }
         }
-
-        if (is_string($this->handler) && !str_contains($this->handler, '::')) {
-            return ($this->handler)(...$args);
-        }
+        $args = $this->serviceContainer->getParameterResolver()
+            ->resolveForCallable($this->handler, $request->props->getAll());
 
         [$class, $method] = explode('::', $this->handler, 2);
+
         return $class::$method(...$args);
     }
 }

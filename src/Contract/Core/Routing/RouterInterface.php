@@ -17,82 +17,82 @@ interface RouterInterface
      * Регистрация маршрута отвечающего на POST запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function post(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function post(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на GET запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function get(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function get(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PUT запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function put(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function put(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на DELETE запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function delete(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function delete(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function patch(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function patch(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function head(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function head(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на любой запрос
      *
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function any(string $path, callable $callback, string $name = ''): RouteInterface;
+    public function any(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на запрос заданного перечня методов
      *
      * @param list<HttpMethod> $methods Список допустимых методов
      * @param string $path Паттерн URI (например, '/users').
-     * @param callable $callback Метод выполняющийся для данного маршрута
+     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function match(array $methods, string $path, callable $callback, string $name = ''): RouteInterface;
+    public function match(array $methods, string $path, callable|string|array $handler, string $name = ''): RouteInterface;
 
     /**
      * Направляет входящий HTTP-запрос обработчику соответствующего маршрута.

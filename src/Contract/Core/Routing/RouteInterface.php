@@ -31,7 +31,9 @@ interface RouteInterface
      *
      * @var string|null
      */
-    public ?string $compiledPattern { get; }
+    public ?string $compiledPattern {
+        get;
+    }
 
     /**
      * HTTP-метод, с которым ассоциирован данный маршрут.
@@ -40,25 +42,31 @@ interface RouteInterface
      *
      * @var HttpMethod
      */
-    public HttpMethod $method { get; }
+    public HttpMethod $method {
+        get;
+    }
 
     /**
      * Конструктор маршрута.
      *
      * @param ServiceContainer $serviceContainer DI-контейнер, используемый для разрешения
      *                                           зависимостей при вызове обработчика.
-     * @param string           $path             URI-шаблон маршрута (например, '/users/{id}').
-     * @param HttpMethod       $method           HTTP-метод, который будет обрабатываться.
-     * @param callable         $handler          Обработчик запроса — функция или замыкание,
-     *                                           возвращающее ответ.
-     * @param string           $name             Необязательное имя маршрута, используемое
+     * @param string $path URI-шаблон маршрута (например, '/users/{id}').
+     * @param HttpMethod $method HTTP-метод, который будет обрабатываться.
+     * @param array|object|string $handler Обработчик запроса, возвращающий ответ. Может быть:
+     *                                            - замыканием или callable-функцией;
+     *                                            - строкой с именем класса, реализующего метод __invoke;
+     *                                            - массивом вида [класс, метод], где класс может быть указан
+     *                                              как строка (имя класса), объект или интерфейс,
+     *                                              а метод — строка с именем публичного метода.
+     * @param string $name Необязательное имя маршрута, используемое
      *                                           для обратной маршрутизации (генерации URL).
      */
     public function __construct(
         ServiceContainer $serviceContainer,
         string $path,
         HttpMethod $method,
-        callable $handler,
+        array|object|string $handler,
         string $name = ''
     );
 

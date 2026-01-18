@@ -8,6 +8,7 @@ use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Routing\Route;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;
 
 include_once __DIR__ . '/FakeExample.php';
 
@@ -104,5 +105,16 @@ class RouteTest extends TestCase
         $request = new HttpRequest(server: ['REQUEST_URI' => '/api/1/2']);
         $route->matches($request);
         self::assertEquals(3, $route->run($request));
+    }
+
+    public function testInvoke(): void
+    {
+        $route = new Route(self::$serviceContainer, '/invoke/{prop}', HttpMethod::GET, InvokeController::class);
+        $request = new HttpRequest(server: ['REQUEST_URI' => '/invoke/property']);
+        $route->matches($request);
+        self::assertEquals([
+            'ServiceContainer' => spl_object_id(self::$serviceContainer),
+            'propValue' => 'property',
+        ], $route->run($request));
     }
 }
