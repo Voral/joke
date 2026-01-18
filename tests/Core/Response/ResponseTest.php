@@ -4,6 +4,7 @@ namespace Vasoft\Joke\Tests\Core\Response;
 
 use phpmock\phpunit\MockObjectProxy;
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Collections\HeadersCollection;
@@ -49,6 +50,7 @@ class ResponseTest extends TestCase
         $this->assertEquals(['Content-Type' => 'application/json'], $response->headers->getAll());
     }
 
+    #[RunInSeparateProcess]
     public function testSendCallsHeaderAndEchoesBody(): void
     {
         $response = new HtmlResponse();
