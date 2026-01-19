@@ -9,4 +9,5 @@ enum StdMiddleware: string
 {
     case SESSION = 'session';
     case EXCEPTION = 'exception';
+    case CSRF = 'csrf';
 }

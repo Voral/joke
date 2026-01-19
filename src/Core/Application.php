@@ -4,6 +4,7 @@ namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
+use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
 use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
 use Vasoft\Joke\Core\Middlewares\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
@@ -15,6 +16,7 @@ use Vasoft\Joke\Core\Response\HtmlResponse;
 use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
+use Vasoft\Joke\Core\Routing\StdGroup;
 
 class Application
 {
@@ -39,7 +41,8 @@ class Application
         $this->middlewares = new MiddlewareCollection()
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
         $this->routeMiddlewares = new MiddlewareCollection()
-            ->addMiddleware(SessionMiddleware::class, StdMiddleware::SESSION->value);
+            ->addMiddleware(SessionMiddleware::class, StdMiddleware::SESSION->value)
+            ->addMiddleware(CsrfMiddleware::class, StdMiddleware::CSRF->value, [StdGroup::WEB]);
         $this->loadRoutes();
     }
 
@@ -168,10 +171,12 @@ class Application
     {
         /** @var RouterInterface $router */
         $router = $this->serviceContainer->get(RouterInterface::class);
+        $router->addAutoGroups([StdGroup::WEB]);
         $file = $this->getFullPath($this->routeConfigWeb);
         if (file_exists($file)) {
             require $file;
         }
+        $router->cleanAutoGroups();
         return $router;
     }
 }

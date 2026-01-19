@@ -36,7 +36,7 @@ class Session extends PropsCollection
     public function save(): static
     {
         if ($this->modified) {
-            if ($this->isStarted()) {
+            if (!$this->isStarted()) {
                 throw new SessionException();
             }
             foreach ($this->props as $key => $prop) {

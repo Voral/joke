@@ -118,4 +118,16 @@ interface RouterInterface
      * @return RouteInterface|null Возвращает объект маршрута или null, если маршрут не найден
      */
     public function route(string $name): ?RouteInterface;
+
+    /**
+     * Назначение групп, которые автоматически добавятся, при загрузке маршрутов
+     * @param array $groups
+     * @return $this
+     */
+    public function addAutoGroups(array $groups): static;
+    /**
+     * Очистка групп, которые автоматически добавятся, при загрузке маршрутов
+     * @return $this
+     */
+    public function cleanAutoGroups(): static;
 }

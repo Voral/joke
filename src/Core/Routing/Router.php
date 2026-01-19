@@ -20,6 +20,8 @@ use Vasoft\Joke\Core\ServiceContainer;
  */
 class Router implements RouterInterface
 {
+    /** @var array<string> Автоматически добавляемые группы для маршрутов */
+    private array $autoGroups = [];
     /**
      * Хранилище роутов сгруппированных по HTTP методу (например, 'GET', 'POST').
      *
@@ -132,5 +134,17 @@ class Router implements RouterInterface
     public function route(string $name): ?Route
     {
         return $this->namedRoutes[$name] ?? null;
+    }
+
+    public function addAutoGroups(array $groups): static
+    {
+        $this->autoGroups = $groups;
+        return $this;
+    }
+
+    public function cleanAutoGroups(): static
+    {
+        $this->autoGroups = [];
+        return $this;
     }
 }
