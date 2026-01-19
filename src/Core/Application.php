@@ -94,7 +94,7 @@ class Application
         $next = function () use ($request) {
             return $this->handleRoute($request);
         };
-        $response = $this->processMiddlewares($request, $this->middlewares, $next);
+        $response = $this->processMiddlewares($request, $this->middlewares->getArrayForRun(), $next);
         $this->sendResponse($response);
     }
 
@@ -120,15 +120,22 @@ class Application
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
-        return $this->processMiddlewares($request, $this->routeMiddlewares, $next);
+        $middlewares = $this->routeMiddlewares->getArrayForRun($route->getGroups());
+        return $this->processMiddlewares($request, $middlewares, $next);
     }
 
+    /**
+     * @param HttpRequest $request Входящий запрос
+     * @param array<MiddlewareInterface|string> $middlewares Список мидлваров для выполнения
+     * @param callable $next Следующий функция для выполнения
+     * @return mixed
+     * @throws WrongMiddlewareException
+     */
     private function processMiddlewares(
         HttpRequest $request,
-        MiddlewareCollection $middlewareCollection,
+        array $middlewares,
         callable $next
     ): mixed {
-        $middlewares = $middlewareCollection->getArrayForRun();
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next, $request) {
                 $instance = ($middleware instanceof MiddlewareInterface)

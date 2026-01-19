@@ -69,7 +69,7 @@ class MiddlewareCollection
      * Возвращает развернутый список миддлваров для запуска
      * @param array<string> $group Массив групп для фильтрации. Если передан пустой массив будут возвращены только
      *                             мидлвары с пустым списком групп
-     * @return array
+     * @return array<MiddlewareInterface|string>
      */
     public function getArrayForRun(array $group = []): array
     {

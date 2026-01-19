@@ -103,4 +103,17 @@ interface RouteInterface
      * @return mixed Результат работы обработчика (например, строка, массив, Response-объект).
      */
     public function run(HttpRequest $request): mixed;
+
+    /**
+     * Возвращает список групп маршрута
+     * @return array<string>
+     */
+    public function getGroups(): array;
+
+    /**
+     * Добавление маршрута в группу
+     * @param string $groupName
+     * @return $this
+     */
+    public function addGroup(string $groupName): static;
 }
