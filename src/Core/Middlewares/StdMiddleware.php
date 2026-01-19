@@ -8,4 +8,5 @@ namespace Vasoft\Joke\Core\Middlewares;
 enum StdMiddleware: string
 {
     case SESSION = 'session';
+    case EXCEPTION = 'exception';
 }

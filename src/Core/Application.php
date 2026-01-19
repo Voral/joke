@@ -6,6 +6,8 @@ use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
 use Vasoft\Joke\Core\Middlewares\Exceptions\WrongMiddlewareException;
+use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
+use Vasoft\Joke\Core\Middlewares\StdMiddleware;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Request\Request;
 use Vasoft\Joke\Core\Response\HtmlResponse;
@@ -16,22 +18,31 @@ use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 class Application
 {
     /**
-     * @var array<MiddlewareInterface|string> Массив глобальных middleware
+     * @var MiddlewareCollection Массив глобальных middleware работают до определения маршрута
      */
-    protected array $middlewares = [
-        ExceptionMiddleware::class,
-    ];
+    public MiddlewareCollection $middlewares {
+        get => $this->middlewares;
+    }
 
     public function __construct(
         public readonly string $basePath,
         public readonly string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
+        $this->middlewares = new MiddlewareCollection()
+            ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
     }
-
-    public function addMiddleware(MiddlewareInterface|string $middleware): static
+    /**
+     * Добавляет глобальный миддлвар в коллекцию
+     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара в той же позиции где
+     * и был найден
+     * @param MiddlewareInterface|string $middleware
+     * @param string $name
+     * @return $this
+     */
+    public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
     {
-        $this->middlewares[] = $middleware;
+        $this->middlewares->addMiddleware($middleware, $name);
         return $this;
     }
 
@@ -55,7 +66,7 @@ class Application
         $next = function () use ($request) {
             return $this->handleRoute($request);
         };
-        $response = $this->processMiddlewares($request, $this->middlewares, $next);
+        $response = $this->processMiddlewares($request, $this->middlewares->getListForRun(), $next);
         $this->sendResponse($response);
     }
 
@@ -83,13 +94,12 @@ class Application
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
-        
+
         return $this->processMiddlewares($request, $middlewares, $next);
     }
 
     private function processMiddlewares(HttpRequest $request, array $middlewares, callable $next): mixed
     {
-        $middlewares = array_reverse($middlewares);
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next, $request) {
                 $instance = ($middleware instanceof MiddlewareInterface)

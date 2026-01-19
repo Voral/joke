@@ -76,8 +76,7 @@ class ApplicationTest extends TestCase
             dirname(__DIR__, 2),
             '/routes/web.php',
             new ServiceContainer()
-        )
-            ->addMiddleware(Router::class);
+        )->addMiddleware(Router::class);
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
         $output = ob_get_clean();
