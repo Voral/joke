@@ -66,13 +66,17 @@ class HttpRequest extends Request
 
     private ?string $path = null;
 
+    public array $json = [] {
+        get => $this->json;
+    }
+
     public function __construct(
         array $get = [],
         array $post = [],
         array $cookies = [],
         array $files = [],
         array $server = [],
-        protected ?string $content = null,
+        protected ?string $rawBody = null,
     ) {
         $this->get = new PropsCollection($get);
         $this->post = new PropsCollection($post);
@@ -81,6 +85,25 @@ class HttpRequest extends Request
         $this->server = new ServerCollection($server);
         $this->props = new PropsCollection([]);
         $this->session = new Session([]);
+        if ($this->isUrlEncoded()) {
+            $params = [];
+            parse_str($rawBody, $params);
+            $this->post->reset($params);
+        } elseif ($this->isJson()) {
+            $this->json = json_decode($rawBody, true) ?: [];
+        }
+    }
+
+    private function isJson(): bool
+    {
+        $contentType = $this->server->getHeaders()['Content-Type'] ?? '';
+        return str_starts_with(strtolower($contentType), 'application/json');
+    }
+
+    private function isUrlEncoded(): bool
+    {
+        $contentType = $this->server->getHeaders()['Content-Type'] ?? '';
+        return str_starts_with(strtolower($contentType), 'application/x-www-form-urlencoded');
     }
 
     public function setProps(array $props): static
@@ -101,6 +124,6 @@ class HttpRequest extends Request
 
     public static function fromGlobals(): static
     {
-        return new static($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER);
+        return new static($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input'));
     }
 }
