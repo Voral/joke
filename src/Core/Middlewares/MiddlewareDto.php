@@ -12,10 +12,12 @@ class MiddlewareDto
     /**
      * @param MiddlewareInterface|string $middleware Миддлвар
      * @param string $name Наименование миддваров для одиночек
+     * @param array<string> $groups Привязка миддлвра к набору групп. (Имеет значение в миддлварах привязанных к маршруту)
      */
     public function __construct(
         public MiddlewareInterface|string $middleware,
         public readonly string $name = '',
+        public array $groups = [],
     ) {
     }
 }

@@ -20,8 +20,14 @@ class Application
     /**
      * @var MiddlewareCollection Массив глобальных middleware работают до определения маршрута
      */
-    public MiddlewareCollection $middlewares {
+    protected MiddlewareCollection $middlewares {
         get => $this->middlewares;
+    }
+    /**
+     * @var MiddlewareCollection Массив middleware роутов работают до определения маршрута
+     */
+    protected MiddlewareCollection $routeMiddlewares {
+        get => $this->routeMiddlewares;
     }
 
     public function __construct(
@@ -31,18 +37,38 @@ class Application
     ) {
         $this->middlewares = new MiddlewareCollection()
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
+        $this->routeMiddlewares = new MiddlewareCollection();
     }
+
     /**
      * Добавляет глобальный миддлвар в коллекцию
      * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара в той же позиции где
      * и был найден
-     * @param MiddlewareInterface|string $middleware
-     * @param string $name
+     * @param MiddlewareInterface|string $middleware Экземпляр или класс миддлвра
+     * @param string $name Наименование миддлвра для тех, которые могут быть только в единственном экземпляре
      * @return $this
      */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
     {
         $this->middlewares->addMiddleware($middleware, $name);
+        return $this;
+    }
+
+    /**
+     * Добавляет миддлвар в коллекцию мидлваров роутов (которые выполняются когда роут уже определен)
+     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара в той же позиции где
+     * и был найден. Возможна привязка к группе
+     * @param MiddlewareInterface|string $middleware Экземпляр или класс миддлвра
+     * @param string $name Наименование миддлвра для тех, которые могут быть только в единственном экземпляре
+     * @param array<string> $groups Привязка миддлвра к набору групп.
+     * @return $this
+     */
+    public function addRouteMiddleware(
+        MiddlewareInterface|string $middleware,
+        string $name = '',
+        array $groups = []
+    ): static {
+        $this->middlewares->addMiddleware($middleware, $name, $groups);
         return $this;
     }
 
@@ -66,7 +92,7 @@ class Application
         $next = function () use ($request) {
             return $this->handleRoute($request);
         };
-        $response = $this->processMiddlewares($request, $this->middlewares->getListForRun(), $next);
+        $response = $this->processMiddlewares($request, $this->middlewares, $next);
         $this->sendResponse($response);
     }
 
@@ -89,17 +115,19 @@ class Application
         if ($route === null) {
             throw new NotFoundException('Route not found');
         }
-        // @todo Миддлвары групп и отдельных маршрутов
-        $middlewares = [];
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
 
-        return $this->processMiddlewares($request, $middlewares, $next);
+        return $this->processMiddlewares($request, $this->routeMiddlewares, $next);
     }
 
-    private function processMiddlewares(HttpRequest $request, array $middlewares, callable $next): mixed
-    {
+    private function processMiddlewares(
+        HttpRequest $request,
+        MiddlewareCollection $middlewareCollection,
+        callable $next
+    ): mixed {
+        $middlewares = $middlewareCollection->getListForRun();
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next, $request) {
                 $instance = ($middleware instanceof MiddlewareInterface)

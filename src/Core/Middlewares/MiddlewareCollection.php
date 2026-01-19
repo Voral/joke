@@ -18,25 +18,27 @@ class MiddlewareCollection
 
     /**
      * Добавляет миддлвар в коллекцию
-     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара в той же позиции где
+     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара и групп в той же позиции где
      * и был найден
      * @param MiddlewareInterface|string $middleware
      * @param string $name
+     * @param array<string> $groups Привязка миддлвра к набору групп. (Имеет значение в миддлварах привязанных к маршруту)
      * @return $this
      */
-    public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
+    public function addMiddleware(MiddlewareInterface|string $middleware, string $name = '', array $groups = []): static
     {
         if ($name === '') {
-            $this->middlewares[] = new MiddlewareDto($middleware);
+            $this->middlewares[] = new MiddlewareDto($middleware, groups: $groups);
             return $this;
         }
         foreach ($this->middlewares as $exits) {
             if ($name === $exits->name) {
                 $exits->middleware = $middleware;
+                $exits->groups = $groups;
                 return $this;
             }
         }
-        $this->middlewares[] = new MiddlewareDto($middleware, $name);
+        $this->middlewares[] = new MiddlewareDto($middleware, $name, $groups);
         return $this;
     }
 

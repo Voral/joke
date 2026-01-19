@@ -70,6 +70,30 @@ class ApplicationTest extends TestCase
         self::assertSame('Middleware 0 begin#Middleware 3 begin#Hi jons#Middleware 3 end#Middleware 0 end', $output);
     }
 
+    public function testAddMiddlewareAndRouteMiddleware(): void
+    {
+        $middleware = new SingleMiddleware();
+        $middleware->index = 3;
+        $routeMiddleware = new SingleMiddleware();
+        $routeMiddleware->index = 4;
+        $app = new Application(
+            dirname(__DIR__, 2),
+            '/routes/web.php',
+            new ServiceContainer()
+        )
+            ->addMiddleware(SingleMiddleware::class)
+            ->addMiddleware($middleware)
+            ->addRouteMiddleware($routeMiddleware);
+
+        ob_start();
+        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
+        $output = ob_get_clean();
+        self::assertSame(
+            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Hi jons#Middleware 4 end#Middleware 3 end#Middleware 0 end',
+            $output
+        );
+    }
+
     public function testWrongMiddleware(): void
     {
         $app = new Application(
