@@ -31,6 +31,30 @@ $router->get('/shop/{filter}', [SingleController::class, 'find']);
 
 $router->get(
     '/csrf',
-    fn(Vasoft\Joke\Core\Request\HttpRequest $request) => ['csrf' => $request->session->get(CsrfMiddleware::CSRF_TOKEN_NAME)]
+    fn(Vasoft\Joke\Core\Request\HttpRequest $request) => [
+        'csrf' => $request->session->get(
+            CsrfMiddleware::CSRF_TOKEN_NAME
+        )
+    ]
 );
+$router->delete(
+    '/csrf',
+    fn(Vasoft\Joke\Core\Request\HttpRequest $request) => [
+        'csrf' => $request->session->unset(
+            CsrfMiddleware::CSRF_TOKEN_NAME
+        )
+    ]
+);
+$routeHandler = fn(Vasoft\Joke\Core\Request\HttpRequest $request) => [
+    'id' => spl_object_id($request),
+    'get' => $request->get->getAll(),
+    'post' => $request->post->getAll(),
+    'files' => $request->files->getAll(),
+    'json' => $request->json,
+];
+
+$router->post('/queries', $routeHandler);
+$router->put('/queries', $routeHandler);
+$router->patch('/queries', $routeHandler);
+$router->head('/queries', $routeHandler);
 // @todo Интерфейс, публичный/статический метод

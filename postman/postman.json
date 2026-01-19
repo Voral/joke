@@ -1,0 +1,295 @@
+{
+	"info": {
+		"_postman_id": "0f7a7df8-6579-4c22-aef5-762b13ab5d47",
+		"name": "Joke",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10958285"
+	},
+	"item": [
+		{
+			"name": "Получение CSRF токена",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const csrf = pm.response.json().csrf;",
+							"pm.globals.set(\"csrfToken\", csrf);        ",
+							"pm.environment.set(\"csrfToken\", csrf);    ",
+							"console.log(\"csrfToken\", csrf)"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/csrf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"csrf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Удаление CSRF токена",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/csrf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"csrf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get запрос",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/queries?example=123&csrf_token={{csrfToken}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"queries"
+					],
+					"query": [
+						{
+							"key": "example",
+							"value": "123"
+						},
+						{
+							"key": "csrf_token",
+							"value": "{{csrfToken}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "HEAD запрос",
+			"request": {
+				"method": "HEAD",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/queries?example=123&csrf_token={{csrfToken}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"queries"
+					],
+					"query": [
+						{
+							"key": "example",
+							"value": "123"
+						},
+						{
+							"key": "csrf_token",
+							"value": "{{csrfToken}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST запрос",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "csrf_token",
+							"value": "{{csrfToken}}\n",
+							"type": "text"
+						},
+						{
+							"key": "File",
+							"type": "file",
+							"src": "phptp.JPG"
+						},
+						{
+							"key": "example2",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/queries?example=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"queries"
+					],
+					"query": [
+						{
+							"key": "example",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT запрос JSON",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-CSRF-Token",
+						"value": "{{csrfToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"variable\": 123,\n    \"variableBoolean\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/queries?example=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"queries"
+					],
+					"query": [
+						{
+							"key": "example",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH запрос JSON",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "X-CSRF-Token",
+						"value": "{{csrfToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"variable\": 123,\n    \"variableBoolean\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/queries?example=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"queries"
+					],
+					"query": [
+						{
+							"key": "example",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT запрос JSON URLencoded",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-CSRF-Token",
+						"value": "{{csrfToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "ExampleEncoded",
+							"value": "111",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/queries?example=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"queries"
+					],
+					"query": [
+						{
+							"key": "example",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -5,3 +5,4 @@
 /composer.lock export-ignore
 /bootstrap export-ignore
 /public export-ignore
+/postman
