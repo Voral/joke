@@ -78,9 +78,28 @@ class HttpRequestTest extends TestCase
         $request = new HttpRequest(server: ['REQUEST_URI' => 'some/uri']);
         $this->assertEquals('some/uri', $request->getPath());
     }
+
     public function testGetUriDefault(): void
     {
         $request = new HttpRequest();
         $this->assertEquals('/', $request->getPath());
+    }
+
+    public function testJson(): void
+    {
+        $expect = ['example' => 1, 'stringValue' => 'someValue', 'boolValue' => true];
+        $request = new HttpRequest(
+            server: ['REQUEST_URI' => 'some/uri', 'CONTENT_TYPE' => 'application/json'],
+            rawBody: json_encode($expect)
+        );
+        $this->assertEquals($expect, $request->json);
+    }
+    public function testUrlencoded(): void
+    {
+        $request = new HttpRequest(
+            server: ['REQUEST_URI' => 'some/uri', 'CONTENT_TYPE' => 'application/x-www-form-urlencoded'],
+            rawBody: 'name=Alex&age=30'
+        );
+        $this->assertEquals(['name' => 'Alex', 'age' => 30], $request->post->getAll());
     }
 }
