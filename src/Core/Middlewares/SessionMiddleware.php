@@ -10,9 +10,10 @@ class SessionMiddleware implements MiddlewareInterface
 
     public function handle(HttpRequest $request, callable $next)
     {
-        if (PHP_SESSION_ACTIVE !== session_status()) {
+        if (!$request->session->isStarted()) {
             session_start();
         }
+        $request->session->load();
         return $next($request);
     }
 }

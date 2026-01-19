@@ -36,7 +36,7 @@ class Session extends PropsCollection
     public function save(): static
     {
         if ($this->modified) {
-            if (session_status() !== PHP_SESSION_ACTIVE) {
+            if ($this->isStarted()) {
                 throw new SessionException();
             }
             foreach ($this->props as $key => $prop) {
@@ -50,6 +50,11 @@ class Session extends PropsCollection
             $this->modified = false;
         };
         return $this;
+    }
+
+    public function isStarted(): bool
+    {
+        return session_status() === PHP_SESSION_ACTIVE;
     }
 
     public function set(string $key, mixed $value): static
