@@ -16,6 +16,7 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на POST запрос
      *
+     * Создание нового ресурса или выполнение произвольного действия. Не идемпотентен. Меняет состояние
      * @param string $path Паттерн URI (например, '/users').
      * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
@@ -26,6 +27,7 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на GET запрос
      *
+     * Поучение данных. Идемпотентен. Не должен менять состояние
      * @param string $path Паттерн URI (например, '/users').
      * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
@@ -36,6 +38,7 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на PUT запрос
      *
+     * Полная замена существующего ресурса. Идемпотентен. Меняет состояние ресурса.
      * @param string $path Паттерн URI (например, '/users').
      * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
@@ -46,6 +49,7 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на DELETE запрос
      *
+     * Удаление существующего ресурса. Идемпотентен. Меняет состояние ресурса.
      * @param string $path Паттерн URI (например, '/users').
      * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
@@ -56,6 +60,7 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
+     * Частичное обновление существующего ресурса. Идемпотентен или нет - зависит от логики. Меняет состояние ресурса.
      * @param string $path Паттерн URI (например, '/users').
      * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
@@ -66,6 +71,7 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
+     * Поучение данных только в заголовках. Идемпотентен. Не должен менять состояние
      * @param string $path Паттерн URI (например, '/users').
      * @param callable|string|array $handler Метод выполняющийся для данного маршрута
      * @param string $name Опциональное имя маршрута
@@ -125,6 +131,7 @@ interface RouterInterface
      * @return $this
      */
     public function addAutoGroups(array $groups): static;
+
     /**
      * Очистка групп, которые автоматически добавятся, при загрузке маршрутов
      * @return $this
