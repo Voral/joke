@@ -92,7 +92,8 @@ class HttpRequest extends Request
     public function getPath(): string
     {
         if ($this->path === null) {
-            $this->path = $this->server->get('REQUEST_URI', '/');
+            $path = explode('?', $this->server->get('REQUEST_URI', '/'));
+            $this->path = $path[0] ?? '/';
         }
         return $this->path;
     }
