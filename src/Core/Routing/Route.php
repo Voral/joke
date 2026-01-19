@@ -9,6 +9,8 @@ use Vasoft\Joke\Core\ServiceContainer;
 
 class Route implements RouteInterface
 {
+    /** @var array<string> Массив групп маршрута */
+    protected array $groups = [];
     /**
      * Массив доступных правил обработки параметров
      *
@@ -121,5 +123,24 @@ class Route implements RouteInterface
         [$class, $method] = explode('::', $this->handler, 2);
 
         return $class::$method(...$args);
+    }
+
+    /**
+     * @return array<string> Массив групп маршрута
+     */
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+
+    /**
+     * Добавление маршрута в группу
+     * @param string $groupName
+     * @return $this
+     */
+    public function addGroup(string $groupName): static
+    {
+        $this->groups[$groupName] = $groupName;
+        return $this;
     }
 }

@@ -44,7 +44,7 @@ class MiddlewareCollectionTest extends TestCase
         self::assertCount(2, $list, 'Must replace named middleware');
         self::assertSame($testMiddleware2, $list[1]->middleware, 'Must replace named middleware');
 
-        $forRun = $collection->getListForRun();
+        $forRun = $collection->getArrayForRun();
         self::assertCount(2, $forRun);
         self::assertSame(
             $testMiddleware2,
@@ -72,5 +72,34 @@ class MiddlewareCollectionTest extends TestCase
         self::assertSame(ExceptionMiddleware::class, $list[0]->middleware);
         self::assertSame($testMiddleware4, $list[1]->middleware);
         self::assertSame($testMiddleware3, $list[2]->middleware);
+    }
+
+    public function testFilterMiddleware()
+    {
+        $testMiddleware1 = $this->getMiddleware(1);
+        $testMiddleware2 = $this->getMiddleware(2);
+        $testMiddleware3 = $this->getMiddleware(3);
+        $testMiddleware4 = $this->getMiddleware(4);
+
+        $collection1 = new MiddlewareCollection();
+        $collection1->addMiddleware($testMiddleware1, groups: ['post']);
+        $collection1->addMiddleware($testMiddleware2, 'singleton', ['example']);
+        $collection1->addMiddleware($testMiddleware3, groups: ['example']);
+
+        $collection2 = new MiddlewareCollection();
+        $collection2->addMiddleware($testMiddleware4, 'singleton', ['post', 'token']);
+
+        $collection3 = $collection1->withMiddlewares($collection2->getMiddlewares());
+
+        $list = $collection3->getArrayForRun();
+        self::assertCount(0, $list);
+        $list = $collection3->getArrayForRun(['post']);
+        self::assertCount(2, $list);
+
+        $list = $collection3->getArrayForRun(['example']);
+        self::assertCount(1, $list);
+
+        $list = $collection3->getArrayForRun(['example', 'token']);
+        self::assertCount(2, $list);
     }
 }

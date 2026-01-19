@@ -53,25 +53,36 @@ class MiddlewareCollection
     /**
      * Клонирует коллекцию с дополнительными наборами, для именованных обеспечивается единственность экземпляра и
      * позиция в списке как при первом добавлении
-     * @param array $middlewares
+     * @param array<MiddlewareDto> $middlewares
      * @return $this
      */
     public function withMiddlewares(array $middlewares): static
     {
         $instance = clone $this;
         foreach ($middlewares as $middleware) {
-            $instance->addMiddleware($middleware->middleware, $middleware->name);
+            $instance->addMiddleware($middleware->middleware, $middleware->name, $middleware->groups);
         }
         return $instance;
     }
 
     /**
      * Возвращает развернутый список миддлваров для запуска
+     * @param array<string> $group Массив групп для фильтрации. Если передан пустой массив будут возвращены только
+     *                             мидлвары с пустым списком групп
      * @return array
      */
-    public function getListForRun(): array
+    public function getArrayForRun(array $group = []): array
     {
-        $result = array_map(fn(MiddlewareDto $middleware) => $middleware->middleware, $this->getMiddlewares());
+        $filtered = empty($group)
+            ? array_filter(
+                $this->getMiddlewares(),
+                static fn($middleware) => empty($middleware->groups)
+            )
+            : array_filter(
+                $this->getMiddlewares(),
+                static fn($middleware) => !empty(array_intersect($middleware->groups, $group))
+            );
+        $result = array_map(fn(MiddlewareDto $middleware) => $middleware->middleware, $filtered);
         return array_reverse($result);
     }
 }

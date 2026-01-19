@@ -21,9 +21,10 @@ HTML
 );
 $router->get('/name/{name:slug}', fn(string $name) => 'Hi ' . $name);
 $router->get('/json/{name:slug}', fn(string $name) => ['fio' => $name]);
+$router->get('/name-filtered/{name:slug}', fn(string $name) => ['fio' => $name])->addGroup('filtered');
 $router->get('/invoke/{prop}', InvokeController::class);
 $router->get('/shop', [SingleController::class, 'index']);
 $router->get('/shop/info', SingleController::info(...));
-$router->get('/shop/infoNew', SingleController::class.'::info');
+$router->get('/shop/infoNew', SingleController::class . '::info');
 $router->get('/shop/{filter}', [SingleController::class, 'find']);
 // @todo Интерфейс, публичный/статический метод

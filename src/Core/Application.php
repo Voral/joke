@@ -127,7 +127,7 @@ class Application
         MiddlewareCollection $middlewareCollection,
         callable $next
     ): mixed {
-        $middlewares = $middlewareCollection->getListForRun();
+        $middlewares = $middlewareCollection->getArrayForRun();
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next, $request) {
                 $instance = ($middleware instanceof MiddlewareInterface)

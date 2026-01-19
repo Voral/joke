@@ -94,6 +94,40 @@ class ApplicationTest extends TestCase
         );
     }
 
+    public function testAddMiddlewareAndRouteMiddlewareFilter(): void
+    {
+        $middleware = new SingleMiddleware();
+        $middleware->index = 3;
+        $routeMiddleware1 = new SingleMiddleware();
+        $routeMiddleware1->index = 4;
+        $routeMiddleware2 = new SingleMiddleware();
+        $routeMiddleware2->index = 5;
+        $app = new Application(
+            dirname(__DIR__, 2),
+            '/routes/web.php',
+            new ServiceContainer()
+        )
+            ->addMiddleware(SingleMiddleware::class)
+            ->addMiddleware($middleware)
+            ->addRouteMiddleware($routeMiddleware1)
+            ->addRouteMiddleware($routeMiddleware2, groups: ['filtered']);
+
+        ob_start();
+        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
+        $output = ob_get_clean();
+        self::assertSame(
+            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Hi jons#Middleware 4 end#Middleware 3 end#Middleware 0 end',
+            $output
+        );
+//        ob_start();
+//        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name-filtered/jons']));
+//        $output = ob_get_clean();
+//        self::assertSame(
+//            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Middleware 5 begin#Array#Middleware 5 end#Middleware 4 end#Middleware 3 end#Middleware 0 end',
+//            $output
+//        );
+    }
+
     public function testWrongMiddleware(): void
     {
         $app = new Application(
