@@ -38,6 +38,7 @@ abstract class Response
         foreach ($headers as $name => $value) {
             header(sprintf('%s: %s', $name, $value));
         }
+        header('HTTP/1.1 ' . $this->status->value . ' ' . $this->status->http());
     }
 
     public function setStatus(ResponseStatus $status): static

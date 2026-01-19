@@ -58,7 +58,7 @@ class ResponseTest extends TestCase
         $response->setBody('Hello, world!');
 
         $headerParams = [];
-        $this->headerMock->expects($this->exactly(2))
+        $this->headerMock->expects($this->exactly(3))
             ->willReturnCallback(function ($header) use (&$headerParams) {
                 $headerParams[] = $header;
             });
@@ -68,6 +68,7 @@ class ResponseTest extends TestCase
 
         $expectedHeaders = [
             'Content-Type: text/html',
+            'HTTP/1.1 200 OK',
             'X-Custom: test-value'
         ];
 

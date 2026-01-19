@@ -83,7 +83,7 @@ class Application
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
-
+        
         return $this->processMiddlewares($request, $middlewares, $next);
     }
 
