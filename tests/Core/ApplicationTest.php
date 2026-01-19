@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Tests\Core;
 
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Vasoft\Joke\Core\Application;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Request\HttpRequest;
@@ -40,6 +41,7 @@ class ApplicationTest extends TestCase
         self::assertSame('{"fio":"Alex"}', $output);
     }
 
+
     public function testDefaultMiddleware(): void
     {
         $app = new Application(
@@ -51,6 +53,22 @@ class ApplicationTest extends TestCase
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
         $output = ob_get_clean();
         self::assertSame('{"message":"Route not found"}', $output);
+    }
+
+    #[RunInSeparateProcess]
+    public function testDefaultRouteMiddleware(): void
+    {
+        $app = new Application(
+            dirname(__DIR__, 2),
+            '/routes/web.php',
+            new ServiceContainer()
+        );
+        self::assertEquals(PHP_SESSION_NONE, session_status());
+        ob_start();
+        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/Alex']));
+        $output = ob_get_clean();
+        self::assertEquals(PHP_SESSION_ACTIVE, session_status(), 'Session middleware is not active');
+        self::assertSame('Hi Alex', $output);
     }
 
     public function testAddMiddleware(): void

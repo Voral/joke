@@ -7,6 +7,7 @@ use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
 use Vasoft\Joke\Core\Middlewares\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
+use Vasoft\Joke\Core\Middlewares\SessionMiddleware;
 use Vasoft\Joke\Core\Middlewares\StdMiddleware;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Request\Request;
@@ -37,7 +38,8 @@ class Application
     ) {
         $this->middlewares = new MiddlewareCollection()
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
-        $this->routeMiddlewares = new MiddlewareCollection();
+        $this->routeMiddlewares = new MiddlewareCollection()
+            ->addMiddleware(SessionMiddleware::class, StdMiddleware::SESSION->value);
     }
 
     /**
@@ -118,7 +120,6 @@ class Application
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
-
         return $this->processMiddlewares($request, $this->routeMiddlewares, $next);
     }
 
