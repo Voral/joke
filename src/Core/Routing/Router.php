@@ -83,7 +83,9 @@ class Router implements RouterInterface
         if ($name === '') {
             $name = $this->getRouteIndex($methods, $path);
         }
-        $this->namedRoutes[$name] = new Route($this->serviceContainer, $path, $methods[0], $handler);
+        $this->namedRoutes[$name] = new Route($this->serviceContainer, $path, $methods[0], $handler)->mergeGroup(
+            $this->autoGroups
+        );
         foreach ($methods as $method) {
             $this->routes[$method->value][] = &$this->namedRoutes[$name];
         }

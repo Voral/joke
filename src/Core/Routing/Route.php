@@ -154,7 +154,15 @@ class Route implements RouteInterface
      */
     public function addGroup(string $groupName): static
     {
-        $this->groups[$groupName] = $groupName;
+        $this->groups[$groupName] = true;
+        return $this;
+    }
+
+    public function mergeGroup(array $groups): static
+    {
+        foreach ($groups as $group) {
+            $this->addGroup($group);
+        }
         return $this;
     }
 

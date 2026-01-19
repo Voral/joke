@@ -127,6 +127,12 @@ interface RouteInterface
      * @return $this
      */
     public function addGroup(string $groupName): static;
+    /**
+     * Добавление маршрута в спиок групп
+     * @param array<string> $groups
+     * @return $this
+     */
+    public function mergeGroup(array $groups): static;
 
     /**
      * Возвращает список миддлваров привязанных к маршруту

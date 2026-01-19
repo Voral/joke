@@ -1,5 +1,6 @@
 <?php
 
+use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
 use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;
 use Vasoft\Joke\Core\Routing\Router;
 use Vasoft\Joke\Tests\Fixtures\Controllers\SingleController;
@@ -27,4 +28,9 @@ $router->get('/shop', [SingleController::class, 'index']);
 $router->get('/shop/info', SingleController::info(...));
 $router->get('/shop/infoNew', SingleController::class . '::info');
 $router->get('/shop/{filter}', [SingleController::class, 'find']);
+
+$router->get(
+    '/csrf',
+    fn(Vasoft\Joke\Core\Request\HttpRequest $request) => ['csrf' => $request->session->get(CsrfMiddleware::CSRF_TOKEN_NAME)]
+);
 // @todo Интерфейс, публичный/статический метод

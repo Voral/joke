@@ -117,4 +117,13 @@ class RouteTest extends TestCase
             'propValue' => 'property',
         ], $route->run($request));
     }
+
+    public function testMergeGroups(): void
+    {
+        $route = new Route(self::$serviceContainer, '/invoke/{prop}', HttpMethod::GET, InvokeController::class);
+        $route->addGroup('test1');
+        self::assertSame(['test1' => true], $route->getGroups());
+        $route->mergeGroup(['test1', 'test2']);
+        self::assertSame(['test1' => true, 'test2' => true], $route->getGroups());
+    }
 }

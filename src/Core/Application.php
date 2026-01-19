@@ -42,7 +42,7 @@ class Application
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
         $this->routeMiddlewares = new MiddlewareCollection()
             ->addMiddleware(SessionMiddleware::class, StdMiddleware::SESSION->value)
-            ->addMiddleware(CsrfMiddleware::class, StdMiddleware::CSRF->value, [StdGroup::WEB]);
+            ->addMiddleware(CsrfMiddleware::class, StdMiddleware::CSRF->value, [StdGroup::WEB->value]);
         $this->loadRoutes();
     }
 
@@ -171,7 +171,7 @@ class Application
     {
         /** @var RouterInterface $router */
         $router = $this->serviceContainer->get(RouterInterface::class);
-        $router->addAutoGroups([StdGroup::WEB]);
+        $router->addAutoGroups([StdGroup::WEB->value]);
         $file = $this->getFullPath($this->routeConfigWeb);
         if (file_exists($file)) {
             require $file;
