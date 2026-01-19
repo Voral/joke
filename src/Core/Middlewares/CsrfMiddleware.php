@@ -25,9 +25,11 @@ class CsrfMiddleware implements MiddlewareInterface
             return $next();
         }
 
-        $tokenFromRequest = $request->get->get(self::CSRF_TOKEN_NAME)
+        $tokenFromRequest = trim(
+            $request->get->get(self::CSRF_TOKEN_NAME)
             ?? $request->post->get(self::CSRF_TOKEN_NAME)
-            ?? $request->headers->get(self::CSRF_TOKEN_HEADER);
+            ?? $request->headers->get(self::CSRF_TOKEN_HEADER)
+        );
 
         if (!hash_equals($token, (string)$tokenFromRequest)) {
             throw new CsrfMismatchException();
