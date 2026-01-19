@@ -14,6 +14,8 @@ class SessionMiddleware implements MiddlewareInterface
             session_start();
         }
         $request->session->load();
-        return $next($request);
+        $result = $next($request);
+        $request->session->save();
+        return $result;
     }
 }

@@ -13,8 +13,13 @@ class SessionMiddlewareTest extends TestCase
     #[RunInSeparateProcess]
     public function testHandle()
     {
+        $salt = time();
         self::assertEquals(PHP_SESSION_NONE, session_status());
-        new SessionMiddleware()->handle(new HttpRequest(), fn() => 'test');
+        new SessionMiddleware()->handle(new HttpRequest(), function (HttpRequest $request) use ($salt) {
+            $request->session->set('example', $salt);
+            return 'test';
+        });
         self::assertEquals(PHP_SESSION_ACTIVE, session_status());
+        self::assertSame($salt, $_SESSION['example']);
     }
 }
