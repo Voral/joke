@@ -2,13 +2,20 @@
 
 namespace Vasoft\Joke\Core\Routing;
 
+use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
+use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
+use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\ServiceContainer;
 
 class Route implements RouteInterface
 {
+    /**
+     * @var MiddlewareCollection Массив middleware
+     */
+    protected MiddlewareCollection $middlewares;
     /** @var array<string> Массив групп маршрута */
     protected array $groups = [];
     /**
@@ -39,6 +46,13 @@ class Route implements RouteInterface
         private readonly string $name = ''
     ) {
         $this->method = $method;
+        $this->middlewares = new MiddlewareCollection();
+    }
+
+    public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
+    {
+        $this->middlewares->addMiddleware($middleware, $name);
+        return $this;
     }
 
     protected function compilePattern(): string
@@ -142,5 +156,13 @@ class Route implements RouteInterface
     {
         $this->groups[$groupName] = $groupName;
         return $this;
+    }
+
+    /**
+     * @return array<MiddlewareDto>
+     */
+    public function getMiddlewares(): array
+    {
+        return $this->middlewares->getMiddlewares();
     }
 }

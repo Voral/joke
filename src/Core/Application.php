@@ -40,6 +40,7 @@ class Application
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
         $this->routeMiddlewares = new MiddlewareCollection()
             ->addMiddleware(SessionMiddleware::class, StdMiddleware::SESSION->value);
+        $this->loadRoutes();
     }
 
     /**
@@ -113,14 +114,16 @@ class Application
     private function handleRoute(Request $request): mixed
     {
         $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
-        $route = $this->loadRoutes()->findRoute($request);
+        $route = $this->serviceContainer->get(RouterInterface::class)?->findRoute($request);
         if ($route === null) {
             throw new NotFoundException('Route not found');
         }
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
-        $middlewares = $this->routeMiddlewares->getArrayForRun($route->getGroups());
+
+        $middlewareCollection = $this->routeMiddlewares->withMiddlewares($route->getMiddlewares());
+        $middlewares = $middlewareCollection->getArrayForRun($route->getGroups());
         return $this->processMiddlewares($request, $middlewares, $next);
     }
 

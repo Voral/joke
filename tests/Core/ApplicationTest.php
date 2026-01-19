@@ -3,6 +3,7 @@
 namespace Vasoft\Joke\Tests\Core;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Application;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Request\HttpRequest;
@@ -94,20 +95,28 @@ class ApplicationTest extends TestCase
         $middleware->index = 3;
         $routeMiddleware = new SingleMiddleware();
         $routeMiddleware->index = 4;
+        $routeMiddleware2 = new SingleMiddleware();
+        $routeMiddleware2->index = 5;
+
+        $diContainer = new ServiceContainer();
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            $diContainer
         )
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
             ->addRouteMiddleware($routeMiddleware);
+        /** @var Router $router */
+        $router = $diContainer->get(RouterInterface::class);
+        $route = $router->route('hiName');
+        $route->addMiddleware($routeMiddleware2);
 
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
         $output = ob_get_clean();
         self::assertSame(
-            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Hi jons#Middleware 4 end#Middleware 3 end#Middleware 0 end',
+            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Middleware 5 begin#Hi jons#Middleware 5 end#Middleware 4 end#Middleware 3 end#Middleware 0 end',
             $output
         );
     }

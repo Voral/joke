@@ -19,7 +19,7 @@ $router->get('/', fn() => <<<HTML
 </ul>
 HTML
 );
-$router->get('/name/{name:slug}', fn(string $name) => 'Hi ' . $name);
+$router->get('/name/{name:slug}', fn(string $name) => 'Hi ' . $name, 'hiName');
 $router->get('/json/{name:slug}', fn(string $name) => ['fio' => $name]);
 $router->get('/name-filtered/{name:slug}', fn(string $name) => ['fio' => $name])->addGroup('filtered');
 $router->get('/invoke/{prop}', InvokeController::class);

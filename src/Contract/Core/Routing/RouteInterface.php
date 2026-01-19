@@ -2,6 +2,9 @@
 
 namespace Vasoft\Joke\Contract\Core\Routing;
 
+use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
+use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
+use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\ServiceContainer;
@@ -71,6 +74,14 @@ interface RouteInterface
     );
 
     /**
+     * Добавляет мидлвар к маршруту
+     * @param MiddlewareInterface|string $middleware Миддвар
+     * @param string $name Имя мидлвара (если задано, то возможен только единственный вариант)
+     * @return $this
+     */
+    public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static;
+
+    /**
      * Создаёт новый экземпляр маршрута с тем же путём и обработчиком, но другим HTTP-методом.
      *
      * Используется, когда один URI-шаблон должен обрабатывать несколько HTTP-методов
@@ -116,4 +127,10 @@ interface RouteInterface
      * @return $this
      */
     public function addGroup(string $groupName): static;
+
+    /**
+     * Возвращает список миддлваров привязанных к маршруту
+     * @return array<MiddlewareDto>
+     */
+    public function getMiddlewares(): array;
 }
