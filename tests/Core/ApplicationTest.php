@@ -137,7 +137,8 @@ class ApplicationTest extends TestCase
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
             ->addRouteMiddleware($routeMiddleware1)
-            ->addRouteMiddleware($routeMiddleware2, groups: ['filtered']);
+            ->addRouteMiddleware($routeMiddleware2, groups: ['filtered'])
+        ;
 
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
@@ -146,13 +147,13 @@ class ApplicationTest extends TestCase
             'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Hi jons#Middleware 4 end#Middleware 3 end#Middleware 0 end',
             $output
         );
-//        ob_start();
-//        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name-filtered/jons']));
-//        $output = ob_get_clean();
-//        self::assertSame(
-//            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Middleware 5 begin#Array#Middleware 5 end#Middleware 4 end#Middleware 3 end#Middleware 0 end',
-//            $output
-//        );
+        ob_start();
+        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name-filtered/jons']));
+        $output = ob_get_clean();
+        self::assertSame(
+            'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Middleware 5 begin#Hi jons#Middleware 5 end#Middleware 4 end#Middleware 3 end#Middleware 0 end',
+            $output
+        );
     }
 
     public function testWrongMiddleware(): void

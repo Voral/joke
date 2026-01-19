@@ -140,7 +140,7 @@ class Router implements RouterInterface
 
     public function addAutoGroups(array $groups): static
     {
-        $this->autoGroups = $groups;
+        $this->autoGroups = array_merge($this->autoGroups, $groups);
         return $this;
     }
 

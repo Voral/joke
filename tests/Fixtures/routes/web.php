@@ -22,7 +22,7 @@ HTML
 );
 $router->get('/name/{name:slug}', fn(string $name) => 'Hi ' . $name, 'hiName');
 $router->get('/json/{name:slug}', fn(string $name) => ['fio' => $name]);
-$router->get('/name-filtered/{name:slug}', fn(string $name) => ['fio' => $name])->addGroup('filtered');
+$route = $router->get('/name-filtered/{name:slug}', fn(string $name) => 'Hi ' . $name)->addGroup('filtered');
 $router->get('/invoke/{prop}', InvokeController::class);
 $router->get('/shop', [SingleController::class, 'index']);
 $router->get('/shop/info', SingleController::info(...));

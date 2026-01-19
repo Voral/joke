@@ -93,13 +93,13 @@ class MiddlewareCollectionTest extends TestCase
 
         $list = $collection3->getArrayForRun();
         self::assertCount(0, $list);
-        $list = $collection3->getArrayForRun(['post']);
+        $list = $collection3->getArrayForRun(['post' => true]);
         self::assertCount(2, $list);
 
-        $list = $collection3->getArrayForRun(['example']);
+        $list = $collection3->getArrayForRun(['example' => true]);
         self::assertCount(1, $list);
 
-        $list = $collection3->getArrayForRun(['example', 'token']);
+        $list = $collection3->getArrayForRun(['example' => true, 'token' => true]);
         self::assertCount(2, $list);
     }
 }

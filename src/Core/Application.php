@@ -74,7 +74,7 @@ class Application
         string $name = '',
         array $groups = []
     ): static {
-        $this->middlewares->addMiddleware($middleware, $name, $groups);
+        $this->routeMiddlewares->addMiddleware($middleware, $name, $groups);
         return $this;
     }
 
@@ -124,8 +124,8 @@ class Application
         $next = static function () use ($request, $route) {
             return $route->run($request);
         };
-
         $middlewareCollection = $this->routeMiddlewares->withMiddlewares($route->getMiddlewares());
+
         $middlewares = $middlewareCollection->getArrayForRun($route->getGroups());
         return $this->processMiddlewares($request, $middlewares, $next);
     }
