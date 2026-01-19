@@ -25,8 +25,21 @@ class PropsCollection
         return $this->props;
     }
 
-    public function reset(array $props): void
+    public function reset(array $props): static
     {
         $this->props = $props;
+        return $this;
+    }
+    /**
+     * Удаление переменной
+     * @param string $key ключ переменной
+     * @return static
+     */
+    public function unset(string $key): static
+    {
+        if (array_key_exists($key, $this->props)) {
+            unset($this->props[$key]);
+        }
+        return $this;
     }
 }

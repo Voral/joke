@@ -62,4 +62,12 @@ class PropsCollectionTest extends TestCase
         $collection->set('example', 456);
         self::assertSame(456, $collection->get('example'));
     }
+
+    public function testUnset(): void{
+        $collection = new PropsCollection(['example' => 1234]);
+        self::assertSame(1234, $collection->get('example'));
+        $collection->unset('example');
+        self::assertNull($collection->get('example'));
+
+    }
 }

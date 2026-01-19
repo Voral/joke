@@ -3,6 +3,7 @@
 namespace Vasoft\Joke\Core\Request;
 
 use Vasoft\Joke\Core\Collections\PropsCollection;
+use Vasoft\Joke\Core\Collections\Session;
 use Vasoft\Joke\Core\Request\Exceptions\WrongRequestMethodException;
 
 class HttpRequest extends Request
@@ -35,6 +36,11 @@ class HttpRequest extends Request
     public PropsCollection $props {
         get {
             return $this->props;
+        }
+    }
+    public Session $session {
+        get {
+            return $this->session;
         }
     }
     public ?PropsCollection $headers = null {
@@ -74,6 +80,7 @@ class HttpRequest extends Request
         $this->files = new PropsCollection($files);
         $this->server = new ServerCollection($server);
         $this->props = new PropsCollection([]);
+        $this->session = new Session([]);
     }
 
     public function setProps(array $props): static
