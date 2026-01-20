@@ -1,4 +1,4 @@
-# Joke — Микро-фреймворк для PHP
+# Joke — Микрофреймворк для PHP
 
 [EN](#joke--a-micro-framework-for-php)
 
