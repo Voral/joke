@@ -119,7 +119,7 @@ class Application
         $response->send();
     }
 
-    private function handleRoute(Request $request): mixed
+    private function handleRoute(HttpRequest $request): mixed
     {
         $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
         $route = $this->serviceContainer->get(RouterInterface::class)?->findRoute($request);
