@@ -1,3 +1,11 @@
+* text=auto eol=lf
+
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php
+
+
 /tests export-ignore
 /phpunit.xml export-ignore
 /.github export-ignore
@@ -8,3 +16,4 @@
 /postman export-ignore
 /docs export-ignore
 /routes export-ignore
+CHANGELOG.md export-ignore
