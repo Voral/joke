@@ -9,8 +9,6 @@ use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
  */
 class MiddlewareDto
 {
-    public array $groups = [];
-
     /**
      * @param MiddlewareInterface|string $middleware middleware
      * @param string $name Наименование middleware для одиночек
@@ -19,10 +17,7 @@ class MiddlewareDto
     public function __construct(
         public MiddlewareInterface|string $middleware,
         public readonly string $name = '',
-        array $groups = [],
+        public array  $groups = [],
     ) {
-        foreach ($groups as $group) {
-            $this->groups[$group] = true;
-        }
     }
 }

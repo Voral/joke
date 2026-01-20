@@ -143,7 +143,7 @@ class Route implements RouteInterface
      */
     public function getGroups(): array
     {
-        return $this->groups;
+        return array_keys($this->groups);
     }
 
     /**

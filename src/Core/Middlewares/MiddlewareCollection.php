@@ -67,13 +67,14 @@ class MiddlewareCollection
 
     /**
      * Возвращает развернутый список middleware для запуска
-     * @param array<string,bool> $group Массив групп для фильтрации. Если передан пустой массив будут возвращены только
+     * @param array<string> $group Массив групп для фильтрации. Если передан пустой массив будут возвращены только
      *                             middleware с пустым списком групп, если не пустой, то с пересечением либо если у middleware
      *                              нет групп
      * @return array<MiddlewareInterface|string>
      */
     public function getArrayForRun(array $group = []): array
     {
+        file_put_contents('test.log',print_r($group, true), FILE_APPEND);
         $filtered = empty($group)
             ? array_filter(
                 $this->getMiddlewares(),
@@ -82,7 +83,7 @@ class MiddlewareCollection
             : array_filter(
                 $this->getMiddlewares(),
                 static fn($middleware) => empty($middleware->groups)
-                    || !empty(array_intersect_key($middleware->groups, $group))
+                    || !empty(array_intersect($middleware->groups, $group))
             );
         $result = array_map(fn(MiddlewareDto $middleware) => $middleware->middleware, $filtered);
         return array_reverse($result);

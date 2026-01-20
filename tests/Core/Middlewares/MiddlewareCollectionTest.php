@@ -20,7 +20,7 @@ class MiddlewareCollectionTest extends TestCase
             {
             }
 
-            public function handle(HttpRequest $request, callable $next):mixed
+            public function handle(HttpRequest $request, callable $next): mixed
             {
                 return $next($request) . 'example' . $this->id;
             }
@@ -93,13 +93,13 @@ class MiddlewareCollectionTest extends TestCase
 
         $list = $collection3->getArrayForRun();
         self::assertCount(0, $list);
-        $list = $collection3->getArrayForRun(['post' => true]);
+        $list = $collection3->getArrayForRun(['post']);
         self::assertCount(2, $list);
 
-        $list = $collection3->getArrayForRun(['example' => true]);
+        $list = $collection3->getArrayForRun(['example']);
         self::assertCount(1, $list);
 
-        $list = $collection3->getArrayForRun(['example' => true, 'token' => true]);
+        $list = $collection3->getArrayForRun(['example', 'token']);
         self::assertCount(2, $list);
     }
 }

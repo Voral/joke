@@ -3,6 +3,7 @@
 namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
+use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
 use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
@@ -122,6 +123,7 @@ class Application
     private function handleRoute(HttpRequest $request): mixed
     {
         $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
+        /** @var RouteInterface $route */
         $route = $this->serviceContainer->get(RouterInterface::class)?->findRoute($request);
         if ($route === null) {
             throw new NotFoundException('Route not found');
