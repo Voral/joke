@@ -174,7 +174,7 @@ class Application
         return $instance instanceof MiddlewareInterface ? $instance : null;
     }
 
-    private function loadRoutes(): RouterInterface
+    private function loadRoutes(): void
     {
         /** @var RouterInterface $router */
         $router = $this->serviceContainer->get(RouterInterface::class);
@@ -184,6 +184,5 @@ class Application
             require $file;
         }
         $router->cleanAutoGroups();
-        return $router;
     }
 }
