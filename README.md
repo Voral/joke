@@ -1,7 +1,5 @@
 # Joke — Микро-фреймворк для PHP
 
----
-
 [EN](#joke--a-micro-framework-for-php)
 
 
