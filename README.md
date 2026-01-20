@@ -9,7 +9,7 @@ Joke — это учебный микрофреймворк с ручной ма
 использования в реальных проектах — в том числе в обучающих или прототипных задачах.
 
 По условиям челенджа: не использовать существующие решения (кромe composer,
-PHPUnit, [voral/version-increment](https://github.com/Voral/laravel-version-increment))
+PHPUnit, [voral/version-increment](https://github.com/Voral/vs-version-incrementor))
 
 # Требования
 
@@ -83,7 +83,7 @@ Despite its limited scope, the implemented components aim to be reliable, testab
 in educational or prototyping scenarios.
 
 As per the challenge rules, no existing solutions may be used except for Composer, PHPUnit,
-and [voral/version-increment](https://github.com/Voral/laravel-version-increment).
+and [voral/version-increment](https://github.com/Voral/vs-version-incrementor).
 
 ## Requirements
 
