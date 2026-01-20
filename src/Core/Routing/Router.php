@@ -23,14 +23,14 @@ class Router implements RouterInterface
     /** @var array<string> Автоматически добавляемые группы для маршрутов */
     private array $autoGroups = [];
     /**
-     * Хранилище роутов сгруппированных по HTTP методу (например, 'GET', 'POST').
+     * Хранилище маршрутов сгруппированных по HTTP методу (например, 'GET', 'POST').
      *
      * Структура: ['GET' => [Route, Route, ...], 'POST' => [...], ...]
      * @var array<string, list<Route>>
      */
     protected array $routes = [];
     /**
-     * Хранилище именованных роутов для легкого доступа по имени
+     * Хранилище именованных маршрутов для легкого доступа по имени
      *
      * @var array<string, Route>
      */

@@ -27,7 +27,7 @@ class Application
         get => $this->middlewares;
     }
     /**
-     * @var MiddlewareCollection Массив middleware роутов работают до определения маршрута
+     * @var MiddlewareCollection Массив middleware маршрут работают до определения маршрута
      */
     protected MiddlewareCollection $routeMiddlewares {
         get => $this->routeMiddlewares;
