@@ -52,11 +52,11 @@ class Application
     }
 
     /**
-     * Добавляет глобальный миддлвар в коллекцию
-     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара в той же позиции где
+     * Добавляет глобальный middleware в коллекцию
+     * Если middleware именованный производится поиск, и, если найден, производится замена middleware в той же позиции где
      * и был найден
-     * @param MiddlewareInterface|string $middleware Экземпляр или класс миддлвра
-     * @param string $name Наименование миддлвра для тех, которые могут быть только в единственном экземпляре
+     * @param MiddlewareInterface|string $middleware Экземпляр или класс middleware
+     * @param string $name Наименование middleware для тех, которые могут быть только в единственном экземпляре
      * @return $this
      */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
@@ -66,12 +66,12 @@ class Application
     }
 
     /**
-     * Добавляет миддлвар в коллекцию мидлваров роутов (которые выполняются когда роут уже определен)
-     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара в той же позиции где
+     * Добавляет middleware в коллекцию middleware маршрутов (которые выполняются когда маршрут уже определен)
+     * Если middleware именованный производится поиск, и, если найден, производится замена middleware в той же позиции где
      * и был найден. Возможна привязка к группе
-     * @param MiddlewareInterface|string $middleware Экземпляр или класс миддлвра
-     * @param string $name Наименование миддлвра для тех, которые могут быть только в единственном экземпляре
-     * @param array<string> $groups Привязка миддлвра к набору групп.
+     * @param MiddlewareInterface|string $middleware Экземпляр или класс middleware
+     * @param string $name Наименование middleware для тех, которые могут быть только в единственном экземпляре
+     * @param array<string> $groups Привязка middleware к набору групп.
      * @return $this
      */
     public function addRouteMiddleware(
@@ -137,7 +137,7 @@ class Application
 
     /**
      * @param HttpRequest $request Входящий запрос
-     * @param array<MiddlewareInterface|string> $middlewares Список мидлваров для выполнения
+     * @param array<MiddlewareInterface|string> $middlewares Список middleware для выполнения
      * @param callable $next Следующий функция для выполнения
      * @return mixed
      * @throws WrongMiddlewareException

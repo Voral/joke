@@ -5,9 +5,9 @@ namespace Vasoft\Joke\Core\Middlewares;
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 
 /**
- * Коллекция миддваров.
+ * Коллекция middleware.
  *
- * Обеспечивает хранение набора миддлваров и единственность экземпляров для именованных
+ * Обеспечивает хранение набора middleware и единственность экземпляров для именованных
  */
 class MiddlewareCollection
 {
@@ -17,12 +17,12 @@ class MiddlewareCollection
     private array $middlewares = [];
 
     /**
-     * Добавляет миддлвар в коллекцию
-     * Если мидллвар именованный производится поиск, и, если найден, производится замена миддлвара и групп в той же позиции где
+     * Добавляет middleware в коллекцию
+     * Если middleware именованный производится поиск, и, если найден, производится замена middleware и групп в той же позиции где
      * и был найден
      * @param MiddlewareInterface|string $middleware
      * @param string $name
-     * @param array<string> $groups Привязка миддлвра к набору групп. (Имеет значение в миддлварах привязанных к маршруту)
+     * @param array<string> $groups Привязка middleware к набору групп. (Имеет значение в middleware привязанных к маршруту)
      * @return $this
      */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = '', array $groups = []): static
@@ -43,7 +43,7 @@ class MiddlewareCollection
     }
 
     /**
-     * @return MiddlewareDto[] Список миддлваров
+     * @return MiddlewareDto[] Список middleware
      */
     public function getMiddlewares(): array
     {
@@ -66,9 +66,9 @@ class MiddlewareCollection
     }
 
     /**
-     * Возвращает развернутый список миддлваров для запуска
+     * Возвращает развернутый список middleware для запуска
      * @param array<string,bool> $group Массив групп для фильтрации. Если передан пустой массив будут возвращены только
-     *                             мидлвары с пустым списком групп, если не пустой, то с пересечением либо если у мидлавара
+     *                             middleware с пустым списком групп, если не пустой, то с пересечением либо если у middleware
      *                              нет групп
      * @return array<MiddlewareInterface|string>
      */

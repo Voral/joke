@@ -73,9 +73,9 @@ interface RouteInterface
     );
 
     /**
-     * Добавляет мидлвар к маршруту
-     * @param MiddlewareInterface|string $middleware Миддвар
-     * @param string $name Имя мидлвара (если задано, то возможен только единственный вариант)
+     * Добавляет middleware к маршруту
+     * @param MiddlewareInterface|string $middleware middleware
+     * @param string $name Имя middleware (если задано, то возможен только единственный вариант)
      * @return $this
      */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static;
@@ -134,7 +134,7 @@ interface RouteInterface
     public function mergeGroup(array $groups): static;
 
     /**
-     * Возвращает список миддлваров привязанных к маршруту
+     * Возвращает список middleware привязанных к маршруту
      * @return array<MiddlewareDto>
      */
     public function getMiddlewares(): array;
