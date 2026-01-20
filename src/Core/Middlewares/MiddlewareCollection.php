@@ -74,7 +74,6 @@ class MiddlewareCollection
      */
     public function getArrayForRun(array $group = []): array
     {
-        file_put_contents('test.log',print_r($group, true), FILE_APPEND);
         $filtered = empty($group)
             ? array_filter(
                 $this->getMiddlewares(),
