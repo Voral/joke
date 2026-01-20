@@ -2,14 +2,14 @@
 
 [EN](#joke--a-micro-framework-for-php)
 
-
 Joke — это учебный микрофреймворк с ручной маршрутизацией и встроенным DI-контейнером. Он разрабатывается в рамках
 образовательного челленджа и не претендует на конкуренцию с промышленными решениями, такими как Laravel или Symfony.
 
 Несмотря на скромный функционал, реализуемые компоненты стремятся быть надёжными, тестируемыми и пригодными для
 использования в реальных проектах — в том числе в обучающих или прототипных задачах.
 
-По условиям челенджа: не использовать существующие решения (кромe composer, PHPUnit, voral/version-increment)
+По условиям челенджа: не использовать существующие решения (кромe composer,
+PHPUnit, [voral/version-increment](https://github.com/Voral/laravel-version-increment))
 
 # Требования
 
@@ -18,31 +18,36 @@ Joke — это учебный микрофреймворк с ручной ма
 
 # Реализованная функциональность
 
-- Маршрутизация
-- Сервисный контейнер
+- Ручная маршрутизация HTTP-запросов
+- DI-контейнер с поддержкой автовайринга параметров
+- Система middleware (блокирующие и неблокирующие)
+- Управление сессиями (включая поддержку «неблокирующего» режима — данные сессии считываются в начале обработки запроса,
+  после чего сессия немедленно закрывается, позволяя другим запросам от того же пользователя работать параллельно без
+  ожидания завершения текущего.)
+- Обработка ошибок и исключений
 
 # Как начать
 
-На данный момент релиз не опубликован, по этому для начала разработки необходимо клонировать репозиторий и установить
-зависимости:
+1. Создайте новый проект (или используйте существующий):
+    ```bash
+    composer init
+    ```
+2. Установите ядро фреймворка:
 
-```bash
-git clone https://github.com/Voral/joke.git
-cd joke
-composer install
-```
+    ```bash
+    composer require voral/joke
+    ```
 
-Для запуска тестов:
+3. Настройте точку входа.
 
-```bash
-composer test
-```
+   Убедитесь, что корневая директория веб-сервера указывает на папку public/. Например, при использовании встроенного
+   сервера PHP:
 
-Для запуска приложения либо настроить веб-сервер на каталог ./public, либо запустить локальный сервер:
+    ```bash
+    php -S localhost:8000 -t public/
+    ```
 
-```bash
-compsoer dev
-```
+Теперь ваше приложение доступно по адресу http://localhost:8000.
 
 # Основные этапы челенджа
 
@@ -71,12 +76,14 @@ compsoer dev
 
 # Joke — A Micro Framework for PHP
 
-This is a minimal micro-framework with manual routing and a dependency injection (DI) container, designed primarily for
-educational purposes. It handles HTTP requests, invokes controllers via the container, and returns responses—but does *
-*not** include an ORM, database migrations, or built-in authentication components.
+Joke is an educational microframework featuring manual routing and a built-in DI container. It is developed as part of a
+learning challenge and is not intended to compete with production-grade frameworks like Laravel or Symfony.
 
-As part of the challenge, no existing frameworks or component libraries are used—except for Composer, PHPUnit, and
-`voral/version-increment`.
+Despite its limited scope, the implemented components aim to be reliable, testable, and suitable for real-world use—even
+in educational or prototyping scenarios.
+
+As per the challenge rules, no existing solutions may be used except for Composer, PHPUnit,
+and [voral/version-increment](https://github.com/Voral/laravel-version-increment).
 
 ## Requirements
 
@@ -85,31 +92,35 @@ As part of the challenge, no existing frameworks or component libraries are used
 
 ## Implemented Features
 
-- Routing
-- Service Container
+- Manual HTTP request routing
+- DI container with automatic parameter wiring
+- Middleware system (blocking and non-blocking)
+- Session management, including **non-blocking mode** — session data is read at the beginning of request processing and
+  the session is immediately closed, allowing concurrent requests from the same user to proceed without waiting for the
+  current request to finish
+- Error and exception handling
 
 ## Getting Started
 
-No release has been published yet. To begin development, clone the repository and install dependencies:
+1. Create a new project (or use an existing one):
+   ```bash
+   composer init
+   ```
 
-```bash
-git clone https://github.com/Voral/joke.git
-cd joke
-composer install
-```
+2. Install the framework core:
+   ```bash
+   composer require voral/joke
+   ```
 
-To run tests:
+3. Configure the entry point.
 
-```bash
-composer test
-```
+   Make sure your web server’s document root points to the `public/` directory. For example, when using PHP’s built-in
+   server:
+   ```bash
+   php -S localhost:8000 -t public/
+   ```
 
-To run the application, either configure your web server to use the `./public` directory as the document root, or start
-the built-in PHP development server:
-
-```bash
-composer dev
-```
+Your application will now be available at [http://localhost:8000](http://localhost:8000).
 
 ## Challenge Roadmap
 
