@@ -47,13 +47,26 @@ class ApplicationTest extends TestCase
     {
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            '/tests/Fixtures/routes/web-no-wildcard.php',
             new ServiceContainer()
         );
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
         $output = ob_get_clean();
         self::assertSame('{"message":"Route not found"}', $output);
+    }
+
+    public function testWildCard(): void
+    {
+        $app = new Application(
+            dirname(__DIR__, 2),
+            '/routes/web.php',
+            new ServiceContainer()
+        );
+        ob_start();
+        $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
+        $output = ob_get_clean();
+        self::assertSame('Запрошен несуществующий путь: not-found-url', $output);
     }
 
     #[RunInSeparateProcess]

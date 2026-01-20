@@ -1,6 +1,8 @@
 <?php
 
 use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
+use Vasoft\Joke\Core\Response\HtmlResponse;
+use Vasoft\Joke\Core\Response\ResponseStatus;
 use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;
 use Vasoft\Joke\Core\Routing\Router;
 use Vasoft\Joke\Tests\Fixtures\Controllers\SingleController;
@@ -57,4 +59,7 @@ $router->post('/queries', $routeHandler);
 $router->put('/queries', $routeHandler);
 $router->patch('/queries', $routeHandler);
 $router->head('/queries', $routeHandler);
+$router->get('/{*}', static fn(string $path) => new HtmlResponse()
+    ->setStatus(ResponseStatus::NOT_FOUND)
+    ->setBody("Запрошен несуществующий путь: {$path}"));
 // @todo Интерфейс, публичный/статический метод

@@ -114,6 +114,10 @@ class Route implements RouteInterface
         foreach ($tokens as $token) {
             if (str_starts_with($token, '{') && str_ends_with($token, '}')) {
                 $inner = substr($token, 1, -1);
+                if ($inner === '*') {
+                    $regex .= '(?P<path>.*)';
+                    continue;
+                }
 
                 if (str_contains($inner, ':')) {
                     [$name, $ruleName] = explode(':', $inner, 2);
