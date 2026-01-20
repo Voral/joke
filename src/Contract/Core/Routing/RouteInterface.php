@@ -3,7 +3,6 @@
 namespace Vasoft\Joke\Contract\Core\Routing;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
 use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
@@ -128,7 +127,7 @@ interface RouteInterface
      */
     public function addGroup(string $groupName): static;
     /**
-     * Добавление маршрута в спиок групп
+     * Добавление маршрута в список групп
      * @param array<string> $groups
      * @return $this
      */

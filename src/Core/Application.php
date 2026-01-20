@@ -33,6 +33,11 @@ class Application
         get => $this->routeMiddlewares;
     }
 
+    /**
+     * @param string $basePath Базовый путь приложения
+     * @param string $routeConfigWeb Путь к файлу конфигурации веб-маршрутов относительно базового пути
+     * @param ServiceContainer $serviceContainer Объект DI контейнера
+     */
     public function __construct(
         public readonly string $basePath,
         public readonly string $routeConfigWeb,

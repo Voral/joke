@@ -28,7 +28,6 @@ class Route implements RouteInterface
         'default' => '[^/]+',
         'slug' => '[a-z0-9\-_]+',
         'int' => '\d+',
-        'id' => '\d+',
     ];
 
     public ?string $compiledPattern = null {

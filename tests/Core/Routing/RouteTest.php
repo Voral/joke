@@ -45,7 +45,7 @@ class RouteTest extends TestCase
     {
         $route = new Route(
             self::$serviceContainer,
-            '/api/{section}/{num:id}/{page:int}/{filter:slug}',
+            '/api/{section}/{num:int}/{page:int}/{filter:slug}',
             HttpMethod::GET,
             function () { }
         );
@@ -68,7 +68,7 @@ class RouteTest extends TestCase
     {
         $route = new Route(
             self::$serviceContainer,
-            '/api/{section}/{num:id}/{page:int}/{filter:slug}',
+            '/api/{section}/{num:int}/{page:int}/{filter:slug}',
             HttpMethod::GET,
             function () { }
         );
@@ -88,7 +88,7 @@ class RouteTest extends TestCase
     {
         $route = new Route(
             self::$serviceContainer,
-            '/api/{section}/{num:id}/{page:int}/{filter:slug}',
+            '/api/{section}/{num:int}/{page:int}/{filter:slug}',
             HttpMethod::GET,
             function () { }
         );
@@ -101,7 +101,7 @@ class RouteTest extends TestCase
     #[DataProvider('dataProviderRun')]
     public function testRun($closure): void
     {
-        $route = new Route(self::$serviceContainer, '/api/{num:id}/{page:int}', HttpMethod::GET, $closure);
+        $route = new Route(self::$serviceContainer, '/api/{num:int}/{page:int}', HttpMethod::GET, $closure);
         $request = new HttpRequest(server: ['REQUEST_URI' => '/api/1/2']);
         $route->matches($request);
         self::assertEquals(3, $route->run($request));

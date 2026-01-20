@@ -15,4 +15,5 @@ session_set_cookie_params([
     'domain' => '',
 ]);
 
-return new Application(dirname(__DIR__), '/routes/web.php', new ServiceContainer());
+return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer());
+
