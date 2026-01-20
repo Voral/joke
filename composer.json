@@ -1,6 +1,6 @@
 {
   "name": "voral/joke",
-  "description": "A minimal PHP micro-framework built for learning purposes, featuring routing, a service container, and .env-based environment configuration.",
+  "description": "A minimal PHP microframework with manual routing and dependency injection container.",
   "type": "library",
   "license": "MIT",
   "version": "0.0.1",
