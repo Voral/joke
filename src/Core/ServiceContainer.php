@@ -8,35 +8,71 @@ use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 use Vasoft\Joke\Core\Routing\Router;
 
+/**
+ * Контейнер внедрения зависимостей (DI Container).
+ *
+ * Управляет жизненным циклом сервисов, поддерживает синглтоны и прототипы,
+ * автоматически разрешает зависимости через рефлексию и интегрируется
+ * с системой маршрутизации фреймворка.
+ */
 class ServiceContainer
 {
     /**
-     * @var array<string,callable|string>
+     * Регистр прототипов (новый экземпляр при каждом запросе).
+     *
+     * @var array<string, callable|string>
      */
     private array $serviceRegistry = [];
     /**
-     * /**
-     * @var array<string,callable|string>
+     * Регистр определений синглтонов.
+     *
+     * @var array<string, callable|string>
      */
     private array $singletonsRegistry = [];
     /**
-     * @var array<string,object>
+     * Кэш созданных синглтонов.
+     *
+     * @var array<string, object>
      */
     private array $singletons = [];
+    /**
+     * Флаг блокировки рекурсивного разрешения резолвера.
+     *
+     * Используется для предотвращения бесконечной рекурсии при создании резолвера.
+     *
+     * @var bool
+     */
     private bool $lockResolver = false;
 
+    /**
+     * Конструктор контейнера.
+     *
+     * Регистрирует стандартные сервисы и добавляет сам себя в список синглтонов.
+     */
     public function __construct()
     {
         $this->initDefault();
         $this->singletons[self::class] = $this;
     }
-
+    /**
+     * Инициализирует стандартные сервисы по умолчанию.
+     *
+     * Регистрирует реализации ResolverInterface и RouterInterface.
+     */
     protected function initDefault(): void
     {
         $this->registerSingleton(ResolverInterface::class, ParameterResolver::class);
         $this->registerSingleton(RouterInterface::class, Router::class);
     }
 
+    /**
+     * Возвращает экземпляр резолвера параметров.
+     *
+     * Гарантирует, что резолвер создаётся только один раз и не вызывает
+     * рекурсивного разрешения зависимостей.
+     *
+     * @return ResolverInterface
+     */
     public function getParameterResolver(): ResolverInterface
     {
         if (isset($this->singletons[ResolverInterface::class])) {
@@ -50,6 +86,17 @@ class ServiceContainer
     }
 
 
+    /**
+     * Регистрирует сервис как синглтон.
+     *
+     * Сервис будет создан один раз при первом обращении и переиспользоваться во всех последующих вызовах.
+     *
+     * @param string $name Имя сервиса (обычно интерфейс или абстрактный класс)
+     * @param callable|string|object $service Определение сервиса:
+     *        - строка с именем класса
+     *        - callable (фабрика)
+     *        - готовый объект
+     */
     public function registerSingleton(string $name, callable|string|object $service): void
     {
         $this->singletonsRegistry[$name] = $service;
@@ -57,7 +104,15 @@ class ServiceContainer
             $this->singletons[$name] = $service;
         }
     }
-
+    /**
+     * Регистрирует сервис как прототип.
+     *
+     * При каждом вызове get() будет создаваться новый экземпляр.
+     * Если передан готовый объект (не callable), он автоматически регистрируется как синглтон.
+     *
+     * @param string $name Имя сервиса
+     * @param callable|string|object $service Определение сервиса
+     */
     public function register(string $name, callable|string|object $service): void
     {
         if (is_object($service) && !is_callable($service)) {
@@ -68,10 +123,15 @@ class ServiceContainer
     }
 
     /**
-     * @param string $name
-     * @return ?object
-     * @throws AutowiredException
-     * @throws \ReflectionException
+     * Получает экземпляр сервиса.
+     *
+     * Сначала ищет среди синглтонов, затем среди прототипов.
+     * Возвращает null, если сервис не зарегистрирован.
+     *
+     * @param string $name Имя сервиса
+     * @return object|null Экземпляр сервиса или null, если не найден
+     * @throws AutowiredException Если не удаётся разрешить зависимости
+     * @throws \ReflectionException При ошибках рефлексии
      */
     public function get(string $name): ?object
     {
@@ -83,10 +143,12 @@ class ServiceContainer
     }
 
     /**
-     * @param string $name
-     * @return ?object
-     * @throws AutowiredException
-     * @throws \ReflectionException
+     * Создаёт новый экземпляр прототипа.
+     *
+     * @param string $name Имя сервиса
+     * @return object|null Экземпляр сервиса или null, если не зарегистрирован
+     * @throws AutowiredException Если не удаётся разрешить зависимости
+     * @throws \ReflectionException При ошибках рефлексии
      */
     private function getService(string $name): ?object
     {
@@ -106,10 +168,12 @@ class ServiceContainer
     }
 
     /**
-     * @param string $name
-     * @return ?object
-     * @throws AutowiredException
-     * @throws \ReflectionException
+     * Получает или создаёт синглтон.
+     *
+     * @param string $name Имя сервиса
+     * @return object|null Экземпляр сервиса или null, если не зарегистрирован
+     * @throws AutowiredException Если не удаётся разрешить зависимости
+     * @throws \ReflectionException При ошибках рефлексии
      */
     private function getSingleton(string $name): ?object
     {

@@ -5,18 +5,32 @@ namespace Vasoft\Joke\Core\Collections;
 use Vasoft\Joke\Core\Exceptions\SessionException;
 
 /**
- * Хранилище переменных сессии.
+ * Хранилище переменных сессии с отслеживанием изменений.
+ *
+ * Обеспечивает безопасную работу с $_SESSION, отслеживает модификации
+ * и позволяет корректно сохранять изменения только при необходимости.
+ * Используется в middleware для поддержки как блокирующего, так и неблокирующего режимов сессии.
  */
 class Session extends PropsCollection
 {
-
+    /**
+     * Список ключей, помеченных на удаление.
+     *
+     * @var array<string, bool>
+     */
     private array $unsets = [];
+
+    /**
+     * Флаг, указывающий, были ли внесены изменения в данные сессии.
+     *
+     * @var bool
+     */
     private bool $modified = false;
 
     /**
-     * Загрузка переменных сессии из $_SESSION
+     * Загружает переменные сессии из глобального массива $_SESSION.
      * @return $this
-     * @throws SessionException Исключение выбрасывается в неблокирующем режиме сессии
+     * @throws SessionException Если сессия не активна
      */
     public function load(): static
     {
@@ -29,9 +43,11 @@ class Session extends PropsCollection
     }
 
     /**
-     * Сохранение сессии
+     * Сохраняет изменения в глобальный массив $_SESSION.
+     * Данные записываются только если были внесены изменения (флаг $modified).
+     * Удаляет ключи, помеченные через метод unset().
      * @return $this
-     * @throws SessionException Исключение выбрасывается в неблокирующем режиме сессии
+     * @throws SessionException Если сессия не активна
      */
     public function save(): static
     {
@@ -52,11 +68,25 @@ class Session extends PropsCollection
         return $this;
     }
 
+    /**
+     * Проверяет, активна ли сессия.
+     *
+     * @return bool true, если сессия запущена и активна
+     */
     public function isStarted(): bool
     {
         return session_status() === PHP_SESSION_ACTIVE;
     }
 
+    /**
+     * Устанавливает значение переменной сессии.
+     *
+     * Помечает сессию как изменённую и удаляет ключ из списка на удаление (если был добавлен).
+     *
+     * @param string $key Имя переменной сессии
+     * @param mixed $value Значение (скаляр, массив или null)
+     * @return static
+     */
     public function set(string $key, mixed $value): static
     {
         $this->modified = true;
@@ -66,6 +96,14 @@ class Session extends PropsCollection
         return parent::set($key, $value);
     }
 
+    /**
+     * Полностью заменяет содержимое сессии новым набором данных.
+     *
+     * Помечает сессию как изменённую и очищает список ключей на удаление для всех новых ключей.
+     *
+     * @param array<string, mixed> $props Новый набор переменных сессии
+     * @return static
+     */
     public function reset(array $props): static
     {
         $this->modified = true;
@@ -78,6 +116,15 @@ class Session extends PropsCollection
         return $this;
     }
 
+    /**
+     * Помечает переменную сессии на удаление.
+     *
+     * Переменная будет удалена из $_SESSION при вызове save().
+     * Помечает сессию как изменённую.
+     *
+     * @param string $key Имя переменной сессии
+     * @return static
+     */
     public function unset(string $key): static
     {
         $this->modified = true;

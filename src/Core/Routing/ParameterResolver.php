@@ -11,23 +11,38 @@ use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
 /**
- * Реализация связывания параметров
+ * Реализация резолвера параметров для автоматического связывания зависимостей.
  *
- * Кроме передаваемых переменных контекста анализируется и контейнер внедрения зависимостей
- * При связывании в первую очередь поиск значений происходит в контексте, далее, если ожидается объект,
- * проверяется наличие необходимой реализации в DI контейнере
- * @todo Кеширование рефлексии
- * @todo Учет параметров по умолчанию и вероятность ситуации, где один параметр со значением по умолчанию пропущен, а следующий есть в контексте
+ * Анализирует сигнатуру callable-значений и конструкторов, разрешая параметры
+ * из двух источников в порядке приоритета:
+ * 1. Контекст (например, параметры маршрута, переменные запроса)
+ * 2. DI-контейнер (зарегистрированные сервисы)
+ *
+ * Поддерживает автоматическую десериализацию backed enum через tryFrom().
+ *
+ * @todo Реализовать кэширование результатов рефлексии для повышения производительности
+ * @todo Добавить поддержку параметров со значениями по умолчанию
+ * @todo Привести исключения рефлексии к JokeException
  */
 class ParameterResolver
     implements ResolverInterface
 {
+    /**
+     * Конструктор резолвера.
+     *
+     * @param ServiceContainer $serviceContainer DI-контейнер для разрешения сервисов
+     */
     public function __construct(private readonly ServiceContainer $serviceContainer) { }
 
     /**
-     * @param callable|string|array $callable
-     * @return ReflectionFunctionAbstract
-     * @throws \ReflectionException
+     * Создаёт объект рефлексии для заданного callable.
+     *
+     * Поддерживает все формы callable: замыкания, строки вида 'Class::method',
+     * массивы [Class::class, 'method'].
+     *
+     * @param callable|string|array $callable Целевой callable для анализа
+     * @return ReflectionFunctionAbstract Объект рефлексии функции или метода
+     * @throws \ReflectionException Если callable недействителен
      */
     private function getCallableReflection(callable|string|array $callable): ReflectionFunctionAbstract
     {
@@ -50,10 +65,21 @@ class ParameterResolver
     }
 
     /**
-     * @param array<ReflectionParameter> $parameters
-     * @param array<string,mixed> $context
-     * @return array
-     * @throws AutowiredException
+     * Разрешает параметры на основе их типов и контекста.
+     *
+     * Для каждого параметра:
+     * - если имя совпадает с ключом в контексте → использует значение из контекста
+     *   - если тип — backed enum → вызывает tryFrom()
+     *   - иначе → использует значение как есть
+     * - если имя не найдено в контексте, но тип — класс → запрашивает сервис из DI-контейнера
+     * - иначе → выбрасывает исключение
+     *
+     * @param array<ReflectionParameter> $parameters Список параметров для разрешения
+     * @param array<string, mixed> $context Контекстные переменные (например, параметры маршрута)
+     * @return array Массив разрешённых аргументов
+     * @throws AutowiredException Если параметр не может быть разрешён
+     *
+     * @todo Декомпозировать метод
      */
     protected function resolveProps(array $parameters, array $context = []): array
     {
@@ -88,9 +114,10 @@ class ParameterResolver
     }
 
     /**
-     * @inherit
+     * @inheritDoc
+     *
      * @throws \ReflectionException
-     * @todo Привести исключения рефлексии к исключению авто-связывания
+     * @throws AutowiredException
      */
     public function resolveForCallable(callable|string|array $callable, array $context = []): array
     {
@@ -99,9 +126,10 @@ class ParameterResolver
     }
 
     /**
-     * @inherit
+     * @inheritDoc
+     *
      * @throws \ReflectionException
-     * @todo Привести исключения рефлексии к исключению авто-связывания
+     * @throws AutowiredException
      */
     public function resolveForConstructor(string $className, array $context = []): array
     {

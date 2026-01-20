@@ -2,6 +2,9 @@
 
 namespace Vasoft\Joke\Core\Request;
 
+/**
+ * Стандартные HTTP методы обрабатываемые фреймворком
+ */
 enum HttpMethod: string
 {
     case GET = 'GET';

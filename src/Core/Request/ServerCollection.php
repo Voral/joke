@@ -4,8 +4,25 @@ namespace Vasoft\Joke\Core\Request;
 
 use Vasoft\Joke\Core\Collections\PropsCollection;
 
+/**
+ * Коллекция серверных переменных с преобразованием в HTTP-заголовки.
+ *
+ * Расширяет PropsCollection, добавляя метод для извлечения и нормализации
+ * HTTP-заголовков из серверных переменных (в формате $_SERVER).
+ * Обрабатывает как стандартные заголовки (HTTP_*), так и специальные
+ * переменные контента (CONTENT_TYPE, CONTENT_LENGTH и др.).
+ */
 class ServerCollection extends PropsCollection
 {
+    /**
+     * Извлекает и нормализует HTTP-заголовки из серверных переменных.
+     *
+     * Преобразует ключи вида HTTP_ACCEPT_LANGUAGE → Accept-Language
+     * и добавляет специальные заголовки контента (Content-Type, Content-Length и др.)
+     * из соответствующих серверных переменных.
+     *
+     * @return array<string, string> Ассоциативный массив заголовков в стандартном HTTP-формате
+     */
     public function getHeaders(): array
     {
         $headers = [];

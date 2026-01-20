@@ -8,35 +8,73 @@ use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
 use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
+/**
+ * Реализация маршрута HTTP-запроса.
+ *
+ * Представляет собой сопоставление URI-паттерна, HTTP-метода и обработчика.
+ * Поддерживает параметризованные маршруты, группы, middleware и различные типы обработчиков.
+ */
 class Route implements RouteInterface
 {
     /**
-     * @var MiddlewareCollection Массив middleware
+     * Коллекция middleware, привязанных к маршруту.
+     *
+     * @var MiddlewareCollection
      */
     protected MiddlewareCollection $middlewares;
-    /** @var array<string> Массив групп маршрута */
+
+    /**
+     * Список групп, к которым принадлежит маршрут.
+     *
+     * Используется для фильтрации middleware на уровне маршрутизатора.
+     *
+     * @var array<string, bool>
+     */
     protected array $groups = [];
     /**
-     * Массив доступных правил обработки параметров
+     * Правила валидации параметров маршрута.
      *
-     * Добавляется через двоеточие после параметра в URI например /catalog/{code:slug}. Используется для построения регулярного выражения
-     * @var array<string,string>
+     * Используются для построения регулярных выражений при компиляции URI-паттерна.
+     * Формат: /catalog/{code:slug} — правило 'slug' применяется к параметру 'code'.
+     *
+     * @var array<string, string>
      */
     protected array $rules = [
         'default' => '[^/]+',
         'slug' => '[a-z0-9\-_]+',
         'int' => '\d+',
     ];
-
+    /**
+     * Скомпилированный регулярный шаблон URI.
+     *
+     * Лениво компилируется при первом обращении.
+     *
+     * @var string|null
+     */
     public ?string $compiledPattern = null {
         get => $this->compiledPattern ??= $this->compilePattern();
     }
+    /**
+     * HTTP-метод, который обрабатывает маршрут.
+     *
+     * @var HttpMethod
+     */
     public HttpMethod $method {
         get => $this->method;
     }
 
+    /**
+     * Конструктор маршрута.
+     *
+     * @param ServiceContainer $serviceContainer DI-контейнер для разрешения зависимостей
+     * @param string $path URI-паттерн маршрута (например, '/user/{id:int}')
+     * @param HttpMethod $method HTTP-метод
+     * @param array|object|string $handler Обработчик маршрута (callable любого поддерживаемого типа)
+     * @param string $name Имя маршрута (опционально, для программного доступа)
+     */
     public function __construct(
         private readonly ServiceContainer $serviceContainer,
         private readonly string $path,
@@ -48,12 +86,26 @@ class Route implements RouteInterface
         $this->middlewares = new MiddlewareCollection();
     }
 
+    /**
+     * Добавляет middleware к маршруту.
+     *
+     * @param MiddlewareInterface|string $middleware Класс middleware или его экземпляр
+     * @param string $name Имя middleware (для возможности переопределения)
+     * @return static
+     */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
     {
         $this->middlewares->addMiddleware($middleware, $name);
         return $this;
     }
 
+    /**
+     * Компилирует URI-паттерн в регулярное выражение.
+     *
+     * Поддерживает параметры с правилами валидации: {name}, {id:int}, {slug:slug}.
+     *
+     * @return string Скомпилированный шаблон в формате '#^...$#i'
+     */
     protected function compilePattern(): string
     {
         $tokens = preg_split('/(\{[^}]+\})/', $this->path, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
@@ -79,12 +131,27 @@ class Route implements RouteInterface
         return '#^' . $regex . '$#i';
     }
 
-
+    /**
+     * Создаёт новый маршрут с изменённым HTTP-методом.
+     *
+     * Используется при регистрации маршрутов для нескольких методов.
+     *
+     * @param HttpMethod $method Новый HTTP-метод
+     * @return static
+     */
     public function withMethod(HttpMethod $method): static
     {
         return new static($this->serviceContainer, $this->path, $method, $this->handler, $this->name);
     }
 
+    /**
+     * Проверяет, соответствует ли текущий запрос URI-паттерну маршрута.
+     *
+     * При совпадении извлекает параметры и сохраняет их в свойствах запроса.
+     *
+     * @param HttpRequest $request Входящий HTTP-запрос
+     * @return bool true, если маршрут совпадает с запросом
+     */
     public function matches(HttpRequest $request): bool
     {
         $matches = [];
@@ -96,6 +163,23 @@ class Route implements RouteInterface
         return true;
     }
 
+    /**
+     * Выполняет обработчик маршрута.
+     *
+     * Поддерживает все типы callable:
+     * - замыкания
+     * - строки-функции
+     * - статические методы ('Class::method')
+     * - массивы [Class::class, 'method']
+     * - invokable-классы.
+     *
+     * Автоматически внедряет зависимости через DI-контейнер и передаёт параметры маршрута.
+     *
+     * @param HttpRequest $request Входящий HTTP-запрос (с уже извлечёнными параметрами)
+     * @return mixed Результат выполнения обработчика (строка, массив, Response и т.д.)
+     * @throws AutowiredException
+     * @todo Декомпозировать метод
+     */
 
     public function run(HttpRequest $request): mixed
     {
@@ -139,7 +223,9 @@ class Route implements RouteInterface
     }
 
     /**
-     * @return array<string> Массив групп маршрута
+     * Возвращает список групп маршрута.
+     *
+     * @return array<string> Массив имён групп
      */
     public function getGroups(): array
     {
@@ -147,9 +233,10 @@ class Route implements RouteInterface
     }
 
     /**
-     * Добавление маршрута в группу
-     * @param string $groupName
-     * @return $this
+     * Добавляет маршрут в указанную группу.
+     *
+     * @param string $groupName Имя группы
+     * @return static
      */
     public function addGroup(string $groupName): static
     {
@@ -157,6 +244,12 @@ class Route implements RouteInterface
         return $this;
     }
 
+    /**
+     * Добавляет маршрут в несколько групп одновременно.
+     *
+     * @param array<string> $groups Список имён групп
+     * @return static
+     */
     public function mergeGroup(array $groups): static
     {
         foreach ($groups as $group) {
@@ -166,6 +259,8 @@ class Route implements RouteInterface
     }
 
     /**
+     * Возвращает middleware, привязанные к маршруту.
+     *
      * @return array<MiddlewareDto>
      */
     public function getMiddlewares(): array
