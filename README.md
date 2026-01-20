@@ -28,26 +28,15 @@ PHPUnit, [voral/version-increment](https://github.com/Voral/vs-version-increment
 
 # Как начать
 
-1. Создайте новый проект (или используйте существующий):
-    ```bash
-    composer init
-    ```
-2. Установите ядро фреймворка:
+Самый простой способ начать — использовать официальный [скелетон](../skeleton/minimal.md):
 
-    ```bash
-    composer require voral/joke
-    ```
+```bash
+composer create-project voral/joke-minimal my-app
+cd my-app
+composer run dev
+```
 
-3. Настройте точку входа.
-
-   Убедитесь, что корневая директория веб-сервера указывает на папку public/. Например, при использовании встроенного
-   сервера PHP:
-
-    ```bash
-    php -S localhost:8000 -t public/
-    ```
-
-Теперь ваше приложение доступно по адресу http://localhost:8000.
+Приложение будет доступно по адресу: http://localhost:8000
 
 # Основные этапы челенджа
 
@@ -102,25 +91,15 @@ and [voral/version-increment](https://github.com/Voral/vs-version-incrementor).
 
 ## Getting Started
 
-1. Create a new project (or use an existing one):
-   ```bash
-   composer init
-   ```
+The easiest way to get started is to use the official [skeleton](../skeleton/minimal.md):
 
-2. Install the framework core:
-   ```bash
-   composer require voral/joke
-   ```
+```bash
+composer create-project voral/joke-minimal my-app
+cd my-app
+composer run dev
+```
 
-3. Configure the entry point.
-
-   Make sure your web server’s document root points to the `public/` directory. For example, when using PHP’s built-in
-   server:
-   ```bash
-   php -S localhost:8000 -t public/
-   ```
-
-Your application will now be available at [http://localhost:8000](http://localhost:8000).
+Your application will be available at: http://localhost:8000
 
 ## Challenge Roadmap
 
