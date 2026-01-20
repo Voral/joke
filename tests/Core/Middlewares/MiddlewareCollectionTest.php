@@ -20,7 +20,7 @@ class MiddlewareCollectionTest extends TestCase
             {
             }
 
-            public function handle(HttpRequest $request, callable $next)
+            public function handle(HttpRequest $request, callable $next):mixed
             {
                 return $next($request) . 'example' . $this->id;
             }

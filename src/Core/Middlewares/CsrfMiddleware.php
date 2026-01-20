@@ -7,6 +7,17 @@ use Vasoft\Joke\Core\Exceptions\Http\CsrfMismatchException;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
 
+/**
+ * Обеспечивает защиту от межсайтовой подделки запроса (CSRF):
+ *
+ * Генерирует токен, если его нет в сессии (csrf_token).
+ * Для небезопасных методов (POST, PUT, DELETE и др.) проверяет наличие токена:
+ * - в параметрах запроса: ?csrf_token=... или csrf_token=... (POST),
+ * - в заголовке: X-Csrf-Token: ....
+ * При несоответствии выбрасывает CsrfMismatchException (HTTP 403).
+ *
+ * Токен генерируется автоматически. Вам нужно только передать его в форму или заголовок.
+ */
 class CsrfMiddleware implements MiddlewareInterface
 {
     public const string CSRF_TOKEN_NAME = 'csrf_token';
