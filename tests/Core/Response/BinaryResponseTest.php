@@ -2,6 +2,7 @@
 
 namespace Vasoft\Joke\Tests\Core\Response;
 
+use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Tests\Fixtures\Core\Response\DummyFileResponse;
 use PHPUnit\Framework\TestCase;
 
@@ -107,6 +108,18 @@ class BinaryResponseTest extends TestCase
         }
     }
 
+    public function testFileNotfound(): void
+    {
+        $length = random_int(22, 256);
+        $baseName = 'test' . $length . '.joke';
+        $tempFile = dirname(__DIR__, 2) . '/Fixtures/cache/' . $baseName;
+
+        $instance = new DummyFileResponse();
+        self::expectException(NotFoundException::class);
+        self::expectExceptionMessage('File not found');
+        $instance->load($tempFile);
+    }
+
     public function testCustomContent(): void
     {
         $instance = new DummyFileResponse();
@@ -123,5 +136,12 @@ class BinaryResponseTest extends TestCase
             ]
             , $instance->sentHeaders
         );
+    }
+
+    public function testBody(): void
+    {
+        $instance = new DummyFileResponse();
+        $instance->setBody('test');
+        self::assertSame($instance->getBodyAsString(), $instance->getBody());
     }
 }

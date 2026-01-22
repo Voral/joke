@@ -25,8 +25,9 @@ abstract class BinaryResponse extends Response
      */
     public function load(string $filename): static
     {
-        $this->body = file_get_contents($filename);
-        if ($this->body === false) {
+        if (
+            !file_exists($filename) ||
+            ($this->body = file_get_contents($filename)) === false) {
             throw new NotFoundException('File not found');
         }
         if ($this->filename === '') {
