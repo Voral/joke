@@ -7,6 +7,7 @@ use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionParameter;
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
@@ -42,26 +43,30 @@ class ParameterResolver
      *
      * @param callable|string|array $callable Целевой callable для анализа
      * @return ReflectionFunctionAbstract Объект рефлексии функции или метода
-     * @throws \ReflectionException Если callable недействителен
+     * @throws ParameterResolveException
      */
     private function getCallableReflection(callable|string|array $callable): ReflectionFunctionAbstract
     {
-        if ($callable instanceof Closure) {
-            return new ReflectionFunction($callable);
-        }
-
-        if (is_string($callable)) {
-            if (str_contains($callable, '::')) {
-                [$class, $method] = explode('::', $callable, 2);
-                return new \ReflectionMethod($class, $method);
-            } else {
+        try {
+            if ($callable instanceof Closure) {
                 return new ReflectionFunction($callable);
             }
+
+            if (is_string($callable)) {
+                if (str_contains($callable, '::')) {
+                    [$class, $method] = explode('::', $callable, 2);
+                    return new \ReflectionMethod($class, $method);
+                } else {
+                    return new ReflectionFunction($callable);
+                }
+            }
+
+            [$target, $method] = $callable;
+            $result = new \ReflectionMethod($target, $method);
+        } catch (\ReflectionException $e) {
+            throw new ParameterResolveException($e->getMessage(), $e->getCode(), $e);
         }
-
-        [$target, $method] = $callable;
-
-        return new \ReflectionMethod($target, $method);
+        return $result;
     }
 
     /**
@@ -77,7 +82,7 @@ class ParameterResolver
      * @param array<ReflectionParameter> $parameters Список параметров для разрешения
      * @param array<string, mixed> $context Контекстные переменные (например, параметры маршрута)
      * @return array Массив разрешённых аргументов
-     * @throws AutowiredException Если параметр не может быть разрешён
+     * @throws ParameterResolveException Если параметр не может быть разрешён
      *
      * @todo Декомпозировать метод
      */
@@ -115,9 +120,6 @@ class ParameterResolver
 
     /**
      * @inheritDoc
-     *
-     * @throws \ReflectionException
-     * @throws AutowiredException
      */
     public function resolveForCallable(callable|string|array $callable, array $context = []): array
     {
@@ -127,13 +129,14 @@ class ParameterResolver
 
     /**
      * @inheritDoc
-     *
-     * @throws \ReflectionException
-     * @throws AutowiredException
      */
     public function resolveForConstructor(string $className, array $context = []): array
     {
-        $reflection = new \ReflectionClass($className);
+        try {
+            $reflection = new \ReflectionClass($className);
+        } catch (\ReflectionException $e) {
+            throw new ParameterResolveException($e->getMessage(), $e->getCode(), $e);
+        }
         $constructor = $reflection->getConstructor();
 
         if ($constructor === null) {

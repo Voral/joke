@@ -2,7 +2,7 @@
 
 namespace Vasoft\Joke\Contract\Core\Routing;
 
-use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 
 /**
  * Автоматическое связывание параметров
@@ -16,6 +16,7 @@ interface ResolverInterface
      * @param callable|string|array $callable функция или метод
      * @param array<string,mixed> $context Массив переменных контекста
      * @return array
+     * @throws ParameterResolveException
      */
     public function resolveForCallable(callable|string|array $callable, array $context = []): array;
 
@@ -24,7 +25,7 @@ interface ResolverInterface
      * @param string $className Имя класса
      * @param array<string,mixed> $context Массив переменных контекста
      * @return array
-     * @throws AutowiredException
+     * @throws ParameterResolveException
      */
     public function resolveForConstructor(string $className, array $context = []): array;
 }

@@ -5,6 +5,7 @@ namespace Vasoft\Joke\Core;
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
 use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
 use Vasoft\Joke\Core\Middlewares\Exceptions\WrongMiddlewareException;
@@ -60,6 +61,7 @@ class Application
      * @param string $basePath Базовый путь приложения (обычно корень проекта)
      * @param string $routeConfigWeb Путь к файлу web-маршрутов относительно базового пути
      * @param ServiceContainer $serviceContainer DI-контейнер
+     * @throws ParameterResolveException
      */
     public function __construct(
         public readonly string $basePath,
@@ -134,7 +136,7 @@ class Application
      *
      * @param Request $request Входящий HTTP-запрос
      * @return void
-     * @throws NotFoundException Если маршрут не найден
+     * @throws ParameterResolveException
      * @throws WrongMiddlewareException Если middleware не реализует MiddlewareInterface
      */
     public function handle(Request $request): void
@@ -165,6 +167,7 @@ class Application
         }
         $response->send();
     }
+
     /**
      * Обрабатывает запрос после определения маршрута.
      *
@@ -173,7 +176,8 @@ class Application
      *
      * @param HttpRequest $request Входящий HTTP-запрос
      * @return mixed Результат выполнения обработчика маршрута
-     * @throws NotFoundException Если маршрут не найден
+     * @throws ParameterResolveException
+     * @throws WrongMiddlewareException
      */
     private function handleRoute(HttpRequest $request): mixed
     {
@@ -202,6 +206,7 @@ class Application
      * @param array<MiddlewareInterface|string> $middlewares Список middleware для выполнения
      * @param callable $next Функция следующего звена цепочки
      * @return mixed Результат выполнения цепочки
+     * @throws ParameterResolveException
      * @throws WrongMiddlewareException Если middleware не реализует MiddlewareInterface
      */
     private function processMiddlewares(
@@ -225,12 +230,13 @@ class Application
         }
         return $next();
     }
+
     /**
      * Создаёт экземпляр middleware через DI-контейнер.
      *
      * @param string $middleware Имя класса middleware
      * @return MiddlewareInterface|null Экземпляр middleware или null, если класс не реализует интерфейс
-     * @throws \ReflectionException При ошибках рефлексии
+     * @throws ParameterResolveException
      */
     private function resolveMiddleware(string $middleware): ?MiddlewareInterface
     {
@@ -243,6 +249,7 @@ class Application
      * Загружает маршруты из конфигурационного файла.
      *
      * Автоматически назначает всем загружаемым маршрутам группу 'web'.
+     * @throws ParameterResolveException
      */
     private function loadRoutes(): void
     {

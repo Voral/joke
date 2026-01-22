@@ -4,6 +4,7 @@ namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 use Vasoft\Joke\Core\Routing\Router;
@@ -130,8 +131,7 @@ class ServiceContainer
      *
      * @param string $name Имя сервиса
      * @return object|null Экземпляр сервиса или null, если не найден
-     * @throws AutowiredException Если не удаётся разрешить зависимости
-     * @throws \ReflectionException При ошибках рефлексии
+     * @throws ParameterResolveException Если не удаётся разрешить зависимости
      */
     public function get(string $name): ?object
     {
@@ -147,8 +147,7 @@ class ServiceContainer
      *
      * @param string $name Имя сервиса
      * @return object|null Экземпляр сервиса или null, если не зарегистрирован
-     * @throws AutowiredException Если не удаётся разрешить зависимости
-     * @throws \ReflectionException При ошибках рефлексии
+     * @throws ParameterResolveException При ошибках
      */
     private function getService(string $name): ?object
     {
@@ -172,8 +171,7 @@ class ServiceContainer
      *
      * @param string $name Имя сервиса
      * @return object|null Экземпляр сервиса или null, если не зарегистрирован
-     * @throws AutowiredException Если не удаётся разрешить зависимости
-     * @throws \ReflectionException При ошибках рефлексии
+     * @throws ParameterResolveException При ошибках рефлексии
      */
     private function getSingleton(string $name): ?object
     {
