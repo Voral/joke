@@ -19,6 +19,7 @@ use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Core\Routing\StdGroup;
+
 /**
  * Основной класс приложения Joke.
  *
@@ -109,6 +110,7 @@ class Application
         $this->routeMiddlewares->addMiddleware($middleware, $name, $groups);
         return $this;
     }
+
     /**
      * Преобразует относительный путь в абсолютный.
      *
@@ -147,6 +149,7 @@ class Application
         $response = $this->processMiddlewares($request, $this->middlewares->getArrayForRun(), $next);
         $this->sendResponse($response);
     }
+
     /**
      * Отправляет ответ клиенту.
      *
@@ -178,12 +181,12 @@ class Application
      * @return mixed Результат выполнения обработчика маршрута
      * @throws ParameterResolveException
      * @throws WrongMiddlewareException
+     * @throws NotFoundException
      */
     private function handleRoute(HttpRequest $request): mixed
     {
         $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
-        /** @var RouteInterface $route */
-        $route = $this->serviceContainer->get(RouterInterface::class)?->findRoute($request);
+        $route = $this->serviceContainer->getRouter()?->findRoute($request);
         if ($route === null) {
             throw new NotFoundException('Route not found');
         }
@@ -245,6 +248,7 @@ class Application
         $instance = new $middleware(...$args);
         return $instance instanceof MiddlewareInterface ? $instance : null;
     }
+
     /**
      * Загружает маршруты из конфигурационного файла.
      *
@@ -253,8 +257,7 @@ class Application
      */
     private function loadRoutes(): void
     {
-        /** @var RouterInterface $router */
-        $router = $this->serviceContainer->get(RouterInterface::class);
+        $router = $this->serviceContainer->getRouter();
         $router->addAutoGroups([StdGroup::WEB->value]);
         $file = $this->getFullPath($this->routeConfigWeb);
         if (file_exists($file)) {

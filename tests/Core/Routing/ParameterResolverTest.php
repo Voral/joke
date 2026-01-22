@@ -5,6 +5,7 @@ namespace Vasoft\Joke\Tests\Core\Routing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 use Vasoft\Joke\Core\ServiceContainer;
@@ -130,5 +131,22 @@ class ParameterResolverTest extends TestCase
         $args = $resolver->resolveForConstructor(FakeExample::class, ['num' => 12, 'z' => 14]);
         self::assertCount(1, $args);
         self::assertEquals(12, $args[0]);
+    }
+
+    public function testResolveForCallableThrowsOnInvalidCallable(): void
+    {
+        $container = $this->createStub(ServiceContainer::class);
+        $resolver = new ParameterResolver($container);
+
+        $this->expectException(ParameterResolveException::class);
+        $resolver->resolveForCallable('NonExistentClass::nonExistentMethod');
+    }
+    public function testResolveForConstructorThrowsOnNonExistentClass(): void
+    {
+        $container = $this->createStub(ServiceContainer::class);
+        $resolver = new ParameterResolver($container);
+
+        $this->expectException(ParameterResolveException::class);
+        $resolver->resolveForConstructor('Totally\NonExistent\ClassName');
     }
 }

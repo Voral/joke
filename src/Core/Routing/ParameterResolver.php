@@ -23,7 +23,6 @@ use Vasoft\Joke\Core\ServiceContainer;
  *
  * @todo Реализовать кэширование результатов рефлексии для повышения производительности
  * @todo Добавить поддержку параметров со значениями по умолчанию
- * @todo Привести исключения рефлексии к JokeException
  */
 class ParameterResolver
     implements ResolverInterface
