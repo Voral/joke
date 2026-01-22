@@ -2,9 +2,9 @@
 
 namespace Vasoft\Joke\Core\Routing\Exceptions;
 
-use Vasoft\Joke\Core\Exceptions\JokeException;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 
-class AutowiredException extends JokeException
+class AutowiredException extends ParameterResolveException
 {
     public function __construct(string $paramName, string $type, int $code = 0, ?\Throwable $previous = null)
     {
