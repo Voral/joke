@@ -9,10 +9,25 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Routing\Router;
 use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Kernel\Environment;
 use Vasoft\Joke\Tests\Fixtures\Core\Middlewares\SingleMiddleware;
 
 class ApplicationTest extends TestCase
 {
+    public function testLoadingEnvironment(): void
+    {
+        $di = new ServiceContainer();
+        new Application(
+            dirname(__DIR__, 2),
+            '/routes/web.php',
+            $di
+        );
+        $byAlias = $di->get('env');
+        $byClass = $di->get(Environment::class);
+        self::assertInstanceOf(Environment::class, $byAlias);
+        self::assertSame($byAlias, $byClass);
+    }
+
     public function testExecuteDefaultHtml(): void
     {
         $di = new ServiceContainer();
@@ -150,8 +165,7 @@ class ApplicationTest extends TestCase
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
             ->addRouteMiddleware($routeMiddleware1)
-            ->addRouteMiddleware($routeMiddleware2, groups: ['filtered'])
-        ;
+            ->addRouteMiddleware($routeMiddleware2, groups: ['filtered']);
 
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));

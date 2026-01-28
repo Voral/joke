@@ -19,6 +19,8 @@ use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Core\Routing\StdGroup;
+use Vasoft\Joke\Kernel\Environment;
+use Vasoft\Joke\Kernel\EnvironmentLoader;
 
 /**
  * Основной класс приложения Joke.
@@ -69,6 +71,9 @@ class Application
         public readonly string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
+        $environment = new Environment(new EnvironmentLoader($this->basePath));
+        $serviceContainer->registerSingleton('env', $environment);
+        $serviceContainer->registerSingleton(Environment::class, $environment);
         $this->middlewares = new MiddlewareCollection()
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
         $this->routeMiddlewares = new MiddlewareCollection()
