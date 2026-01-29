@@ -6,9 +6,9 @@ use phpmock\phpunit\MockObjectProxy;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Vasoft\Joke\Kernel\Environment;
-use Vasoft\Joke\Kernel\EnvironmentLoader;
-use Vasoft\Joke\Kernel\Exceptions\KernelException;
+use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Config\EnvironmentLoader;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
 
 class EnvironmentTest extends TestCase
 {
@@ -30,7 +30,7 @@ class EnvironmentTest extends TestCase
         $this->mockLoader = self::getMockBuilder(EnvironmentLoader::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockGetEnv = self::getFunctionMock('Vasoft\Joke\Kernel', 'getenv');
+        $this->mockGetEnv = self::getFunctionMock('Vasoft\Joke\Config', 'getenv');
     }
 
     protected function tearDown(): void
@@ -181,7 +181,7 @@ class EnvironmentTest extends TestCase
         $this->mockLoader->expects(self::once())->method('load')->willReturn([]);
 
         $env = new Environment($this->mockLoader);
-        self::expectException(KernelException::class);
+        self::expectException(ConfigException::class);
         self::expectExceptionMessage('The environment "PROPS" does not exist.');
         $value = $env->getOrFail('props');
     }
@@ -191,7 +191,7 @@ class EnvironmentTest extends TestCase
         $this->mockLoader->expects(self::once())->method('load')->willReturn([]);
 
         $env = new Environment($this->mockLoader);
-        self::expectException(KernelException::class);
+        self::expectException(ConfigException::class);
         self::expectExceptionMessage('Not exists');
         $value = $env->getOrFail('props','Not exists');
     }

@@ -1,8 +1,8 @@
 <?php
 
-namespace Vasoft\Joke\Kernel;
+namespace Vasoft\Joke\Config;
 
-use Vasoft\Joke\Kernel\Exceptions\KernelException;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
 
 /**
  * Клас для определения текущего окружения и доступа к переменным окружения
@@ -128,13 +128,13 @@ class Environment
      * @param string $name Имя переменной
      * @param string|null $message Сообщение об ошибке или null - для сообщения по умолчанию
      * @return int|float|string|bool|null
-     * @throws KernelException если переменная не существует в окружении
+     * @throws ConfigException если переменная не существует в окружении
      */
     public function getOrFail(string $name, ?string $message = null): int|float|string|bool|null
     {
         if (!$this->has($name)) {
             $message = $message ?? ('The environment "' . strtoupper($name) . '" does not exist.');
-            throw new KernelException($message);
+            throw new ConfigException($message);
         }
         return $this->get($name);
     }

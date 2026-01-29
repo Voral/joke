@@ -1,6 +1,6 @@
 <?php
 
-namespace Vasoft\Joke\Kernel;
+namespace Vasoft\Joke\Config;
 
 /**
  * Загрузчик переменных из .env файлов

@@ -3,7 +3,7 @@
 namespace Vasoft\Joke\Tests\Kernel;
 
 use PHPUnit\Framework\TestCase;
-use Vasoft\Joke\Kernel\EnvironmentLoader;
+use Vasoft\Joke\Config\EnvironmentLoader;
 
 class EnvironmentLoaderTest extends TestCase
 {

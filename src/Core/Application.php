@@ -19,8 +19,8 @@ use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Core\Routing\StdGroup;
-use Vasoft\Joke\Kernel\Environment;
-use Vasoft\Joke\Kernel\EnvironmentLoader;
+use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Config\EnvironmentLoader;
 
 /**
  * Основной класс приложения Joke.

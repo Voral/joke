@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Routing\Router;
 use Vasoft\Joke\Core\ServiceContainer;
-use Vasoft\Joke\Kernel\Environment;
+use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Tests\Fixtures\Core\Middlewares\SingleMiddleware;
 
 class ApplicationTest extends TestCase
