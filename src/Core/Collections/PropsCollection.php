@@ -7,25 +7,8 @@ namespace Vasoft\Joke\Core\Collections;
  *
  * Поддерживает значения любого скалярного типа, массивы и null.
  */
-class PropsCollection
+class PropsCollection extends ReadonlyPropsCollection
 {
-    /**
-     * @param array<string,mixed> $props Начальный набор свойств
-     */
-    public function __construct(protected array $props) { }
-
-    /**
-     * Возвращает значение свойства по ключу.
-     *
-     * @param string $key Имя свойства
-     * @param mixed $default Значение по умолчанию, если ключ не существует
-     * @return null|int|float|string|bool|array Значение свойства или значение по умолчанию
-     */
-    public function get(string $key, mixed $default = null): null|int|float|string|bool|array
-    {
-        return $this->props[$key] ?? $default;
-    }
-
     /**
      * Устанавливает значение свойства.
      *
@@ -37,16 +20,6 @@ class PropsCollection
     {
         $this->props[$key] = $value;
         return $this;
-    }
-
-    /**
-     * Возвращает все свойства в виде ассоциативного массива.
-     *
-     * @return array<string, mixed>
-     */
-    public function getAll(): array
-    {
-        return $this->props;
     }
 
     /**
