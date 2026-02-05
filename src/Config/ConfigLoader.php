@@ -1,0 +1,199 @@
+<?php
+
+namespace Vasoft\Joke\Config;
+
+use DirectoryIterator;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
+
+/**
+ * Загрузчик конфигурационных файлов.
+ *
+ * Отвечает за загрузку конфигураций из двух типов путей:
+ * - базовые пути — конфигурации, загружаемые при старте приложения;
+ * - ленивые пути — конфигурации, загружаемые по требованию.
+ *
+ * Каждый конфигурационный файл должен возвращать массив.
+ * Имя конфигурации определяется по имени файла без расширения .php.
+ *
+ * Класс оперирует во всех публичных методах абсолютными путями, попытка добавить относительный путь
+ * вызовет исключение в момент обращения к этому пути
+ */
+class ConfigLoader
+{
+    /**
+     * Список путей к директориям с ленивыми (загружаемыми по требованию) конфигурациями.
+     * Ключ: нормализованные пути (с завершающим DIRECTORY_SEPARATOR).
+     * Значение: false — не проверен, true — прошёл валидацию.
+     *
+     * @var array<string, bool>
+     */
+    private array $lazyPaths = [];
+    /**
+     * Список путей к директориям с базовыми (загружаемыми сразу) конфигурациями.
+     * Ключ: нормализованные пути (с завершающим DIRECTORY_SEPARATOR).
+     * Значение: false — не проверен, true — прошёл валидацию.
+     *
+     * @var array<string, bool>
+     */
+    private array $basePaths = [];
+
+    /**
+     * Конструктор загрузчика конфигураций.
+     *
+     * @param string $basePath Абсолютный путь к основной директории с базовыми конфигурациями.
+     * @param array<string> $lazyPaths Массив абсолютных путей к директориям с ленивыми конфигурациями.
+     *
+     */
+    public function __construct(string $basePath, array $lazyPaths = [])
+    {
+        $this->addBasePath($basePath);
+        array_walk($lazyPaths, $this->addLazyPath(...));
+    }
+
+    /**
+     * Добавляет путь к директории с базовыми конфигурациями.
+     *
+     * Базовые конфигурации загружаются сразу при вызове метода load().
+     *
+     * @param string $path Абсолютный путь к директории, добавление относительного вызовет ошибку в момент загрузки
+     *
+     * @return $this
+     */
+    public function addBasePath(string $path): static
+    {
+        $normalized = $this->normalizePath($path);
+        $this->basePaths[$normalized] = false;
+        return $this;
+    }
+
+    /**
+     * Добавляет путь к директории с ленивыми конфигурациями.
+     *
+     * Ленивые конфигурации загружаются только по запросу через метод loadLazy().
+     *
+     * @param string $path Абсолютный путь к директории, добавление относительного вызовет ошибку в момент загрузки
+     *
+     * @return $this
+     */
+    public function addLazyPath(string $path): static
+    {
+        $normalized = $this->normalizePath($path);
+        $this->lazyPaths[$normalized] = false;
+        return $this;
+    }
+
+    /**
+     * Нормализация добавляемого пути
+     *
+     * Проверяет, что путь является абсолютным и возвращает нормализованное значение
+     * (с завершающим DIRECTORY_SEPARATOR).
+     * @param string $path Путь к директории
+     * @return string Нормализованный путь
+     */
+    private function normalizePath(string $path): string
+    {
+        return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Проверяет, является ли путь абсолютным и существует ли
+     * @param string $path путь
+     * @param string $scopeName имя типа каталога Базовый (Base) или Ленивый (Lazy)
+     * @return void
+     * @throws ConfigException Если путь относительный или каталог не существует
+     */
+    private function assertPath(string $path, string $scopeName): void
+    {
+        if (!str_starts_with($path, DIRECTORY_SEPARATOR) &&
+            !preg_match('~^[A-Z]:~i', $path)) {
+            throw new ConfigException("Path must be absolute: $path");
+        }
+        if (!is_dir($path)) {
+            throw new ConfigException("$scopeName config path does not exist: $path");
+        }
+    }
+
+    /**
+     * Загружает все конфигурации из зарегистрированных базовых путей.
+     *
+     * Каждый PHP-файл в указанных директориях должен возвращать массив.
+     * Имя конфигурации берётся из имени файла без расширения .php.
+     *
+     * @return array<string, array> Ассоциативный массив вида ['config_name' => [...]]
+     * @throws ConfigException если каталог относительный или не существует
+     */
+    public function load(): array
+    {
+        $result = [];
+        foreach ($this->basePaths as $path => &$validated) {
+            $this->assertPath($path, 'Base');
+            $this->loadFromPath($path, $result);
+            $validated = true;
+        }
+        unset($validated);
+        return $result;
+    }
+
+    /**
+     * Загружает конфигурационные файлы из указанной директории и добавляет их в результат.
+     *
+     * @param string $path Нормализованный путь к директории (с завершающим DIRECTORY_SEPARATOR).
+     * @param array<string, array> &$result Ссылка на массив для накопления результатов.
+     */
+    protected function loadFromPath(string $path, array &$result): void
+    {
+        $iterator = new DirectoryIterator($path);
+        foreach ($iterator as $file) {
+            if (
+                $file->isFile()
+                && $file->getExtension() === 'php'
+            ) {
+                $result[$file->getBasename('.php')] = $this->loadFile($file->getRealPath());
+            }
+        }
+    }
+
+    /**
+     * Загружает один конфигурационный файл.
+     *
+     * Файл должен возвращать массив. Если возвращено не массив — используется пустой массив.
+     *
+     * @param string $path Абсолютный путь к PHP-файлу конфигурации.
+     *
+     * @return array Данные конфигурации.
+     */
+    protected function loadFile(string $path): array
+    {
+        $vars = require $path;
+        return is_array($vars) ? $vars : [];
+    }
+
+    /**
+     * Загружает ленивую конфигурацию по её имени.
+     *
+     * Ищет файл {name}.php в зарегистрированных ленивых путях в обратном порядке
+     * (последний добавленный путь имеет наивысший приоритет).
+     *
+     * @param string $name Имя конфигурации (без расширения .php).
+     *
+     * @return array Загруженная конфигурация.
+     *
+     * @throws ConfigException Если файл конфигурации не найден ни в одном из ленивых путей или зарегистрирован не существующий путь.
+     */
+    public function loadLazy(string $name): array
+    {
+        $dirs = array_reverse($this->lazyPaths);
+        foreach ($dirs as $path => &$validated) {
+            if (!$validated) {
+                $this->assertPath($path, 'Lazy');
+                $validated = true;
+            }
+            $fileName = $path . $name . '.php';
+            if (file_exists($fileName)) {
+                return $this->loadFile($fileName);
+            }
+        }
+        unset($validated);
+        throw new ConfigException('No configuration for ' . $name);
+    }
+}
