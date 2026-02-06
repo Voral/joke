@@ -4,20 +4,23 @@ namespace Vasoft\Joke\Tests\Config;
 
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\ConfigLoader;
+use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
-use Vasoft\Joke\Kernel\Exceptions\KernelException;
 
 class ConfigLoaderTest extends TestCase
 {
     private static string $basePath = '';
     private static array $dirForClean = [];
+    private static ?Environment $env = null;
 
     public static function setUpBeforeClass(): void
     {
         $name = random_int(1, 100) . '-config';
-        self::$basePath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Fixtures'
-            . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR;
+        $base = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR;
+        self::$basePath = $base . $name . DIRECTORY_SEPARATOR;
         mkdir(self::$basePath);
+        self::$env = new Environment(new EnvironmentLoader($base));
     }
 
     public static function tearDownAfterClass(): void
@@ -66,13 +69,24 @@ class ConfigLoaderTest extends TestCase
         file_put_contents($fileName, '<?php return ' . var_export($content, true) . ';');
     }
 
+    protected function writeConfigFileWithEnv(string $subDir, string $name, string $configContent): void
+    {
+        $path = self::$basePath . $subDir . DIRECTORY_SEPARATOR;
+        if (!file_exists($path)) {
+            mkdir($path, recursive: true);
+        }
+        self::$dirForClean[] = $path;
+        $fileName = $path . $name . '.php';
+        file_put_contents($fileName, '<?php ' . $configContent);
+    }
+
     public function testLoading(): void
     {
         $firstConfig = ['first-var' => 1];
         $secondConfig = ['first-var' => 2];
         $this->writeConfigFile('config', 'first', $firstConfig);
         $this->writeConfigFile('config', 'second', $secondConfig);
-        $loader = new ConfigLoader(self::$basePath . DIRECTORY_SEPARATOR . 'config');
+        $loader = new ConfigLoader(self::$basePath . DIRECTORY_SEPARATOR . 'config', self::$env);
         $vars = $loader->load();
         self::assertSame($firstConfig, $vars['first']);
         self::assertSame($secondConfig, $vars['second']);
@@ -84,7 +98,7 @@ class ConfigLoaderTest extends TestCase
         $secondConfig = ['first-var' => 2];
         $this->writeConfigFile('config', 'first', $firstConfig);
         $this->writeConfigFile('config/lazy', 'second', $secondConfig);
-        $loader = new ConfigLoader(self::$basePath . 'config');
+        $loader = new ConfigLoader(self::$basePath . 'config', self::$env);
         $vars = $loader->load();
         self::assertSame($firstConfig, $vars['first']);
         self::assertArrayNotHasKey('second', $vars);
@@ -97,6 +111,7 @@ class ConfigLoaderTest extends TestCase
         $this->writeConfigFile('config/lazy', 'first', $firstConfig);
         $loader = new ConfigLoader(
             self::$basePath . 'config',
+            self::$env,
             [self::$basePath . 'config/lazy'],
         );
         $vars = $loader->loadLazy('first');
@@ -108,7 +123,11 @@ class ConfigLoaderTest extends TestCase
         self::$dirForClean[] = $path = self::$basePath . 'config/lazy';
         mkdir($path, recursive: true);
 
-        $loader = new ConfigLoader(self::$basePath . DIRECTORY_SEPARATOR . 'config', [self::$basePath . 'config/lazy']);
+        $loader = new ConfigLoader(
+            self::$basePath . DIRECTORY_SEPARATOR . 'config',
+            self::$env,
+            [self::$basePath . 'config/lazy']
+        );
         self::expectException(ConfigException::class);
         self::expectExceptionMessage('No configuration for core');
         $loader->loadLazy('core');
@@ -116,7 +135,7 @@ class ConfigLoaderTest extends TestCase
 
     public function testNotAbsoluteBasePath(): void
     {
-        $loader = new ConfigLoader('config');
+        $loader = new ConfigLoader('config', self::$env);
         self::expectException(ConfigException::class);
         self::expectExceptionMessage('Path must be absolute: config/');
         $loader->load();
@@ -124,7 +143,7 @@ class ConfigLoaderTest extends TestCase
 
     public function testNotAbsoluteLazy(): void
     {
-        $loader = new ConfigLoader(self::$basePath . 'config', ['config/lazy']);
+        $loader = new ConfigLoader(self::$basePath . 'config', self::$env, ['config/lazy']);
         self::expectException(ConfigException::class);
         self::expectExceptionMessage('Path must be absolute: config/lazy/');
         $loader->loadLazy('test');
@@ -132,24 +151,60 @@ class ConfigLoaderTest extends TestCase
 
     public function testBasePathNotExists(): void
     {
-        $path = self::$basePath . 'config';
-        $loader = new ConfigLoader($path, ['config/lazy']);
+        $path = self::$basePath . 'config_salt';
+        $loader = new ConfigLoader($path, self::$env, ['config/lazy']);
         self::expectException(ConfigException::class);
         self::expectExceptionMessage('Base config path does not exist: ' . $path . DIRECTORY_SEPARATOR);
         $loader->load();
     }
+
     public function testLazyPathNotExists(): void
     {
-        $loader = new ConfigLoader(self::$basePath . 'config', [self::$basePath.'config/lazy']);
+        $loader = new ConfigLoader(self::$basePath . 'config', self::$env, [self::$basePath . 'config/lazy']);
         self::expectException(ConfigException::class);
-        self::expectExceptionMessage('Lazy config path does not exist: ' . self::$basePath.'config/lazy' . DIRECTORY_SEPARATOR);
+        self::expectExceptionMessage(
+            'Lazy config path does not exist: ' . self::$basePath . 'config/lazy' . DIRECTORY_SEPARATOR
+        );
         $loader->loadLazy('test');
     }
+
     public function testLazyPathNotExistsForWindows(): void
     {
-        $loader = new ConfigLoader(self::$basePath . 'config', ['C:\config\lazy']);
+        $loader = new ConfigLoader(self::$basePath . 'config', self::$env, ['C:\config\lazy']);
         self::expectException(ConfigException::class);
         self::expectExceptionMessage('Lazy config path does not exist: C:\config\lazy' . DIRECTORY_SEPARATOR);
         $loader->loadLazy('test');
+    }
+
+    public function testEnvironmentVariablesInConfig(): void
+    {
+        /**
+         * @var $env Environment
+         */
+        $env = self::getMockBuilder(Environment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $env->expects(self::once())->method('get')
+            ->with('DB_USERNAME', 'default_user')
+            ->willReturn('test_user');
+
+        $this->writeConfigFileWithEnv(
+            'config',
+            'database',
+            <<<'PHP'
+return [
+    'username' => $env->get('DB_USERNAME', 'default_user'),
+];
+PHP
+        );
+
+        $loader = new ConfigLoader(
+            self::$basePath . DIRECTORY_SEPARATOR . 'config',
+            $env
+        );
+
+        $config = $loader->load();
+
+        self::assertSame('test_user', $config['database']['username']);
     }
 }

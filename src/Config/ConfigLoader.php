@@ -17,6 +17,9 @@ use Vasoft\Joke\Config\Exceptions\ConfigException;
  *
  * Класс оперирует во всех публичных методах абсолютными путями, попытка добавить относительный путь
  * вызовет исключение в момент обращения к этому пути
+ *
+ * В конфигурационных файлах доступна переменная $env типа Environment
+ *  для безопасного доступа к переменным окружения.
  */
 class ConfigLoader
 {
@@ -41,11 +44,15 @@ class ConfigLoader
      * Конструктор загрузчика конфигураций.
      *
      * @param string $basePath Абсолютный путь к основной директории с базовыми конфигурациями.
+     * @param Environment $env Экземпляр окружения для доступа из конфигурационных файлов
      * @param array<string> $lazyPaths Массив абсолютных путей к директориям с ленивыми конфигурациями.
      *
      */
-    public function __construct(string $basePath, array $lazyPaths = [])
-    {
+    public function __construct(
+        string $basePath,
+        private readonly Environment $env,
+        array $lazyPaths = []
+    ) {
         $this->addBasePath($basePath);
         array_walk($lazyPaths, $this->addLazyPath(...));
     }
@@ -164,7 +171,11 @@ class ConfigLoader
      */
     protected function loadFile(string $path): array
     {
-        $vars = require $path;
+        $env = $this->env;
+        $loader = static function () use ($env, $path) {
+            return require $path;
+        };
+        $vars = $loader();
         return is_array($vars) ? $vars : [];
     }
 
