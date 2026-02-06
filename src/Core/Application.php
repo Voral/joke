@@ -2,6 +2,8 @@
 
 namespace Vasoft\Joke\Core;
 
+use Vasoft\Joke\Config\Config;
+use Vasoft\Joke\Config\ConfigLoader;
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
@@ -31,6 +33,11 @@ use Vasoft\Joke\Config\EnvironmentLoader;
  */
 class Application
 {
+    /**
+     * Базовый путь приложения
+     * @var string
+     */
+    public readonly string $basePath;
     /**
      * Коллекция глобальных middleware.
      *
@@ -65,13 +72,25 @@ class Application
      * @param string $routeConfigWeb Путь к файлу web-маршрутов относительно базового пути
      * @param ServiceContainer $serviceContainer DI-контейнер
      * @throws ParameterResolveException
+     *
+     * @todo Нормализовать пути
      */
     public function __construct(
-        public readonly string $basePath,
+        string $basePath,
         public readonly string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
+        $this->basePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $environment = new Environment(new EnvironmentLoader($this->basePath));
+        $serviceContainer->registerSingleton('env', $environment);
+        $serviceContainer->registerSingleton(Environment::class, $environment);
+
+        $configLoader = new ConfigLoader($this->basePath . 'config' . DIRECTORY_SEPARATOR, $environment);
+
+        $config = new Config($configLoader);
+        $serviceContainer->registerSingleton('config', $config);
+        $serviceContainer->registerSingleton(Config::class, $config);
+
         $serviceContainer->registerSingleton('env', $environment);
         $serviceContainer->registerSingleton(Environment::class, $environment);
         $this->middlewares = new MiddlewareCollection()
