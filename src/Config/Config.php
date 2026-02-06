@@ -38,6 +38,15 @@ class Config
     }
 
     /**
+     * Возвращает связанный с конфигурацией загрузчик
+     * @return ConfigLoader
+     */
+    public function getLoader(): ConfigLoader
+    {
+        return $this->loader;
+    }
+
+    /**
      * Получает значение конфигурации по ключу.
      *
      * Поддерживает точечную нотацию (например, 'database.connections.mysql').
@@ -145,7 +154,7 @@ class Config
      * Примеры:
      * - 'app' → ['app', []]
      * - 'database.connections' → ['database', ['connections']]
-    … *
+     * … *
      * @throws ConfigException Если передан пустой ключ
      */
     private function parseKey(string $key): array

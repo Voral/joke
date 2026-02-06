@@ -5,6 +5,8 @@ namespace Vasoft\Joke\Tests\Config;
 use Vasoft\Joke\Config\Config;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\ConfigLoader;
+use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 
 class ConfigTest extends TestCase
@@ -167,6 +169,19 @@ class ConfigTest extends TestCase
         self::expectException(ConfigException::class);
         self::expectExceptionMessage("Property 'core.ttl' does not exist");
         $config->getOrFail('core.ttl');
+    }
+
+    /**
+     * @return void
+     * #[AllowMockObjectsWithoutExpectations]
+     */
+    public function testAccessLoader(): void
+    {
+        $loader = new ConfigLoader('/test', new Environment(new EnvironmentLoader('test')));
+        $config = new Config($loader);
+
+        self::assertSame(spl_object_id($loader), spl_object_id($config->getLoader()));
+
     }
 
     public function testGetOrFailCustomException(): void
