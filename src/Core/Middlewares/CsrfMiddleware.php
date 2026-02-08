@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Middlewares;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
@@ -32,7 +34,7 @@ class CsrfMiddleware implements MiddlewareInterface
             $token = bin2hex(random_bytes(32));
             $request->session->set(self::CSRF_TOKEN_NAME, $token);
         }
-        if (in_array($request->method, self::SAFE_METHODS)) {
+        if (in_array($request->method, self::SAFE_METHODS, true)) {
             return $next();
         }
 
@@ -40,7 +42,7 @@ class CsrfMiddleware implements MiddlewareInterface
             $request->get->get(self::CSRF_TOKEN_NAME)
             ?? $request->post->get(self::CSRF_TOKEN_NAME)
             ?? $request->headers->get(self::CSRF_TOKEN_HEADER)
-            ?? ''
+            ?? '',
         );
 
         if (!hash_equals($token, $tokenFromRequest)) {

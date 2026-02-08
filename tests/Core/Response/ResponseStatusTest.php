@@ -1,28 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Response;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Vasoft\Joke\Core\Response\ResponseStatus;
 use PHPUnit\Framework\TestCase;
 
-class ResponseStatusTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Response\ResponseStatus
+ */
+final class ResponseStatusTest extends TestCase
 {
-
-    /**
-     * @param ResponseStatus $status
-     * @param int $code
-     * @param string $message
-     * @return void
-     */
-    #[DataProvider('dataProviderHttpStatus')]
-    public function testHttp(ResponseStatus $status, int $code, string $message)
+    #[DataProvider('provideHttpCases')]
+    public function testHttp(ResponseStatus $status, int $code, string $message): void
     {
-        $this->assertEquals($code, $status->value);
-        $this->assertEquals($message, $status->http());
+        self::assertSame($code, $status->value);
+        self::assertSame($message, $status->http());
     }
 
-    public static function dataProviderHttpStatus(): array
+    public static function provideHttpCases(): iterable
     {
         return [
             [ResponseStatus::OK, 200, 'OK'],

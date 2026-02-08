@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core;
 
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
@@ -9,9 +11,14 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Tests\Fixtures\Service\SingleService;
 use Vasoft\Joke\Tests\Fixtures\Service\TestableParameterResolver;
 
-class ServiceContainerTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\ServiceContainer
+ */
+final class ServiceContainerTest extends TestCase
 {
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $container = new ServiceContainer();
         $resolver = $container->get(ResolverInterface::class);
@@ -20,7 +27,7 @@ class ServiceContainerTest extends TestCase
         self::assertInstanceOf(ServiceContainer::class, $container);
     }
 
-    public function testGetParameterResolver()
+    public function testGetParameterResolver(): void
     {
         TestableParameterResolver::$constructorCallCount = 0;
         $container = new ServiceContainer();
@@ -30,7 +37,7 @@ class ServiceContainerTest extends TestCase
         self::assertSame(1, TestableParameterResolver::$constructorCallCount);
     }
 
-    public function testRegisterSingletonInstance()
+    public function testRegisterSingletonInstance(): void
     {
         $container = new ServiceContainer();
         $resolver = new TestableParameterResolver($container);
@@ -42,7 +49,7 @@ class ServiceContainerTest extends TestCase
         self::assertSame(0, TestableParameterResolver::$constructorCallCount);
     }
 
-    public function testRegisterInstance()
+    public function testRegisterInstance(): void
     {
         $container = new ServiceContainer();
         $resolver = new TestableParameterResolver($container);
@@ -75,8 +82,9 @@ class ServiceContainerTest extends TestCase
     {
         $callbackCount = 0;
         $container = new ServiceContainer();
-        $container->register(SingleService::class, function () use (&$callbackCount) {
+        $container->register(SingleService::class, static function () use (&$callbackCount) {
             ++$callbackCount;
+
             return new SingleService();
         });
         $service1 = $container->get(SingleService::class);
@@ -84,12 +92,14 @@ class ServiceContainerTest extends TestCase
         self::assertSame(2, $callbackCount);
         self::assertNotSame($service1, $service2);
     }
+
     public function testRegisteredSingletonCallback(): void
     {
         $callbackCount = 0;
         $container = new ServiceContainer();
-        $container->registerSingleton(SingleService::class, function () use (&$callbackCount) {
+        $container->registerSingleton(SingleService::class, static function () use (&$callbackCount) {
             ++$callbackCount;
+
             return new SingleService();
         });
         $service1 = $container->get(SingleService::class);

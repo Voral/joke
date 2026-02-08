@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Collections;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -7,12 +9,17 @@ use Vasoft\Joke\Core\Collections\Session;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Exceptions\SessionException;
 
-class SessionTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Collections\Session
+ */
+final class SessionTest extends TestCase
 {
     #[RunInSeparateProcess]
     public function testSaveNotModified(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             session_start();
         }
         $session = new Session(['foo' => 'bar']);
@@ -23,7 +30,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testSave(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             session_start();
         }
         $session = new Session(['foo' => 'bar']);
@@ -35,7 +42,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testSaveWhenReset(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             session_start();
         }
         $session = new Session(['foo' => 'bar']);
@@ -47,7 +54,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testReadonlyMode(): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE === session_status()) {
             session_write_close();
         }
         $session = new Session(['foo' => 'bar']);
@@ -61,7 +68,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testLoadReadonlyMode(): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE === session_status()) {
             session_write_close();
         }
         $session = new Session([]);
@@ -74,7 +81,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testUnset(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             session_start();
         }
         $session = new Session(['foo' => 'bar']);
@@ -89,7 +96,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testUnsetAndSet(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             session_start();
         }
         $session = new Session(['foo' => 'bar']);
@@ -102,7 +109,7 @@ class SessionTest extends TestCase
     #[RunInSeparateProcess]
     public function testUnsetAndReset(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             session_start();
         }
         $session = new Session(['foo' => 'bar']);

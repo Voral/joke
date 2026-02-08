@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Response;
 
 use JsonException;
@@ -15,8 +17,6 @@ class JsonResponse extends Response
 {
     /**
      * Тело ответа в виде массива (или объекта, совместимого с json_encode).
-     *
-     * @var array
      */
     protected array $body = [];
 
@@ -38,18 +38,16 @@ class JsonResponse extends Response
      * Несовместимые типы (например, ресурсы) вызовут JsonException при отправке.
      *
      * @param array $body Данные для сериализации в JSON
-     * @return static
      */
     public function setBody($body): static
     {
         $this->body = $body;
+
         return $this;
     }
 
     /**
      * Возвращает текущее тело ответа как массив.
-     *
-     * @return array
      */
     public function getBody(): array
     {
@@ -63,7 +61,9 @@ class JsonResponse extends Response
      * будет выброшено исключение JsonException.
      *
      * @return string Строка в формате JSON
-     * @throws JsonException Если данные не могут быть сериализованы в JSON
+     *
+     * @throws \JsonException Если данные не могут быть сериализованы в JSON
+     *
      * @todo Преобразовать в исключение типа JokeException
      */
     public function getBodyAsString(): string

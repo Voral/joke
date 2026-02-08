@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Response;
 
 use Vasoft\Joke\Core\Collections\HeadersCollection;
@@ -17,8 +19,6 @@ abstract class Response
      * HTTP-статус ответа.
      *
      * По умолчанию: OK (200).
-     *
-     * @var ResponseStatus
      */
     public ResponseStatus $status {
         get => $this->status ??= ResponseStatus::OK;
@@ -27,8 +27,6 @@ abstract class Response
      * Коллекция HTTP-заголовков ответа.
      *
      * Лениво инициализируется при первом обращении.
-     *
-     * @var HeadersCollection|null
      */
     public ?HeadersCollection $headers = null {
         get {
@@ -36,7 +34,7 @@ abstract class Response
         }
     }
 
-    public function __construct() { }
+    public function __construct() {}
 
     /**
      * Устанавливает тело ответа.
@@ -44,8 +42,7 @@ abstract class Response
      * Конкретная реализация определяет допустимые типы входных данных
      * (например, строка для HtmlResponse, массив для JsonResponse).
      *
-     * @param string|int|float|bool|array|object|null $body Тело ответа
-     * @return static
+     * @param null|array|bool|float|int|object|string $body Тело ответа
      */
     abstract public function setBody($body): static;
 
@@ -53,8 +50,6 @@ abstract class Response
      * Возвращает текущее тело ответа.
      *
      * Тип возвращаемого значения зависит от реализации.
-     *
-     * @return mixed
      */
     abstract public function getBody(): mixed;
 
@@ -64,13 +59,12 @@ abstract class Response
      * Выполняет следующие действия:
      * 1. Отправляет все установленные HTTP-заголовки
      * 2. Отправляет тело ответа через echo
-     *
-     * @return static
      */
     public function send(): static
     {
         $this->sendHeaders();
         echo $this->getBodyAsString();
+
         return $this;
     }
 
@@ -79,8 +73,6 @@ abstract class Response
      *
      * Используется при отправке ответа. Должен быть реализован
      * с учётом специфики формата (например, json_encode для JSON).
-     *
-     * @return string
      */
     abstract public function getBodyAsString(): string;
 
@@ -89,8 +81,6 @@ abstract class Response
      *
      * Включает все пользовательские заголовки и строку статуса HTTP.
      * Вызывается автоматически методом send().
-     *
-     * @return void
      */
     protected function sendHeaders(): void
     {
@@ -105,11 +95,11 @@ abstract class Response
      * Устанавливает HTTP-статус ответа.
      *
      * @param ResponseStatus $status Статус из перечисления ResponseStatus
-     * @return static
      */
     public function setStatus(ResponseStatus $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 }

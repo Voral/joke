@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Contract\Core\Routing;
 
 use Vasoft\Joke\Core\Request\HttpMethod;
@@ -17,123 +19,147 @@ interface RouterInterface
      * Регистрация маршрута отвечающего на POST запрос
      *
      * Создание нового ресурса или выполнение произвольного действия. Не идемпотентен. Меняет состояние
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     *
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function post(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function post(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на GET запрос
      *
      * Поучение данных. Идемпотентен. Не должен менять состояние
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     *
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function get(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function get(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PUT запрос
      *
      * Полная замена существующего ресурса. Идемпотентен. Меняет состояние ресурса.
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     *
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function put(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function put(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на DELETE запрос
      *
      * Удаление существующего ресурса. Идемпотентен. Меняет состояние ресурса.
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     *
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function delete(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function delete(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
      * Частичное обновление существующего ресурса. Идемпотентен или нет - зависит от логики. Меняет состояние ресурса.
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     *
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function patch(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function patch(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
      * Поучение данных только в заголовках. Идемпотентен. Не должен менять состояние
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     *
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function head(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function head(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на любой запрос
      *
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function any(string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function any(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
 
     /**
-     * Регистрация маршрута отвечающего на запрос заданного перечня методов
+     * Регистрация маршрута отвечающего на запрос заданного перечня методов.
      *
-     * @param list<HttpMethod> $methods Список допустимых методов
-     * @param string $path Паттерн URI (например, '/users').
-     * @param callable|string|array $handler Метод выполняющийся для данного маршрута
-     * @param string $name Опциональное имя маршрута
+     * @param list<HttpMethod>      $methods Список допустимых методов
+     * @param string                $path    паттерн URI (например, '/users')
+     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                $name    Опциональное имя маршрута
+     *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function match(array $methods, string $path, callable|string|array $handler, string $name = ''): RouteInterface;
+    public function match(
+        array $methods,
+        string $path,
+        array|callable|string $handler,
+        string $name = '',
+    ): RouteInterface;
 
     /**
      * Направляет входящий HTTP-запрос обработчику соответствующего маршрута.
      *
-     * @param HttpRequest $request Входящий запрос.
+     * @param HttpRequest $request входящий запрос
+     *
      * @return mixed Результат возвращаемый обработчиком маршрута
+     *
      * @throws NotFoundException Выбрасывается в случае если подходящий маршрут не найден
      */
     public function dispatch(HttpRequest $request): mixed;
 
     /**
-     * Поиск маршрута для входящего запроса
+     * Поиск маршрута для входящего запроса.
      *
      * @param HttpRequest $request Входящий запрос
-     * @return RouteInterface|null Возвращает объект маршрута или null, если подходящий маршрут не найден
+     *
+     * @return null|RouteInterface Возвращает объект маршрута или null, если подходящий маршрут не найден
      */
     public function findRoute(HttpRequest $request): ?RouteInterface;
 
     /**
-     * Возвращает маршрут по имени
+     * Возвращает маршрут по имени.
      *
      * @param string $name Имя маршрута
-     * @return RouteInterface|null Возвращает объект маршрута или null, если маршрут не найден
+     *
+     * @return null|RouteInterface Возвращает объект маршрута или null, если маршрут не найден
      */
     public function route(string $name): ?RouteInterface;
 
     /**
-     * Назначение групп, которые автоматически добавятся, при загрузке маршрутов
-     * @param array $groups
+     * Назначение групп, которые автоматически добавятся, при загрузке маршрутов.
+     *
      * @return $this
      */
     public function addAutoGroups(array $groups): static;
 
     /**
-     * Очистка групп, которые автоматически добавятся, при загрузке маршрутов
+     * Очистка групп, которые автоматически добавятся, при загрузке маршрутов.
+     *
      * @return $this
      */
     public function cleanAutoGroups(): static;

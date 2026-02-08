@@ -1,13 +1,14 @@
 <?php
 
-namespace Vasoft\Joke\Tests\Fixtures\Controllers;
+declare(strict_types=1);
 
+namespace Vasoft\Joke\Tests\Fixtures\Controllers;
 
 use Vasoft\Joke\Core\ServiceContainer;
 
 readonly class InvokeController
 {
-    public function __construct(private ServiceContainer $serviceContainer) { }
+    public function __construct(private ServiceContainer $serviceContainer) {}
 
     public function __invoke(string $prop): array
     {

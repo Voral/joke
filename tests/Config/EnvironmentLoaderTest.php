@@ -1,31 +1,38 @@
 <?php
 
-namespace Vasoft\Joke\Tests\Kernel;
+declare(strict_types=1);
+
+namespace Vasoft\Joke\Tests\Config\Environment;
 
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\EnvironmentLoader;
 
-class EnvironmentLoaderTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Config\EnvironmentLoader
+ */
+final class EnvironmentLoaderTest extends TestCase
 {
     private string $basePath = '';
     private array $createdFiles = [];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
-        $this->basePath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Fixtures' . DIRECTORY_SEPARATOR;
+        $this->basePath = dirname(__DIR__) . \DIRECTORY_SEPARATOR . 'Fixtures' . \DIRECTORY_SEPARATOR;
     }
 
     protected function writeEnvFile(string $name, string $content): void
     {
         $fileName = $this->basePath . '.env';
-        if ($name !== '') {
+        if ('' !== $name) {
             $fileName .= '.' . $name;
         }
         $this->createdFiles[] = $fileName;
         file_put_contents($fileName, $content);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         foreach ($this->createdFiles as $file) {
             unlink($file);
@@ -107,26 +114,26 @@ class EnvironmentLoaderTest extends TestCase
     {
         $this->writeEnvFile(
             '',
-            <<<TEXT
-#COMMENTED=1
-INTEGER=1
-FLOAT_1=1.2
-FLOAT_2=1e2
-FLOAT_3=1E3
-STRING=1.1.1.1
-STRING_1="2"
-STRING_2='1'
-STRING_3=Long string's value
-STRING_4='Long string\'s value'
-STRING_5="Long \"string's\" value"
-BOOLEAN_TRUE=true
-BOOLEAN_FALSE=false
-NULLABLE_NULL=null
-EMPTY=
-NULLABLE_FLAG
-EMPTY_STRING=''
-lower_case=Example
-TEXT
+            <<<'TEXT'
+                #COMMENTED=1
+                INTEGER=1
+                FLOAT_1=1.2
+                FLOAT_2=1e2
+                FLOAT_3=1E3
+                STRING=1.1.1.1
+                STRING_1="2"
+                STRING_2='1'
+                STRING_3=Long string's value
+                STRING_4='Long string\'s value'
+                STRING_5="Long \"string's\" value"
+                BOOLEAN_TRUE=true
+                BOOLEAN_FALSE=false
+                NULLABLE_NULL=null
+                EMPTY=
+                NULLABLE_FLAG
+                EMPTY_STRING=''
+                lower_case=Example
+                TEXT,
         );
         $loader = new EnvironmentLoader($this->basePath);
         $vars = $loader->load('dev', 'custom', 'testing');
@@ -141,14 +148,12 @@ TEXT
         self::assertSame("Long string's value", $vars['STRING_3']);
         self::assertSame("Long string's value", $vars['STRING_4']);
         self::assertSame("Long \"string's\" value", $vars['STRING_5']);
-        self::assertSame(true, $vars['BOOLEAN_TRUE']);
-        self::assertSame(false, $vars['BOOLEAN_FALSE']);
+        self::assertTrue($vars['BOOLEAN_TRUE']);
+        self::assertFalse($vars['BOOLEAN_FALSE']);
         self::assertNull($vars['NULLABLE_NULL']);
         self::assertNull($vars['EMPTY']);
         self::assertNull($vars['NULLABLE_FLAG']);
         self::assertSame('', $vars['EMPTY_STRING']);
         self::assertArrayHasKey('LOWER_CASE', $vars);
     }
-
-
 }

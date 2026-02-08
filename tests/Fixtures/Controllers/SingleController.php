@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Fixtures\Controllers;
 
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
@@ -11,19 +13,20 @@ class SingleController
         'apple',
         'banana',
         'orange',
-        'strawberry'
+        'strawberry',
     ];
 
-    public function __construct(ServiceContainer $service) { }
+    public function __construct(ServiceContainer $service) {}
 
     public function find(string $filter): array
     {
-        return array_filter($this->data, fn($item) => str_contains($item, $filter));
+        return array_filter($this->data, static fn($item) => str_contains($item, $filter));
     }
 
     public static function info(): array
     {
-        throw new AutowiredException('test','todo');
+        throw new AutowiredException('test', 'todo');
+
         return ['shopVersion' => '1.0.0'];
     }
 

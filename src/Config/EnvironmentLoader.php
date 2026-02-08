@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Config;
 
 /**
- * Загрузчик переменных из .env файлов
+ * Загрузчик переменных из .env файлов.
  *
  * Поддерживает три уровня конфигурации:
  * 1. Базовый файл .env
@@ -26,15 +28,17 @@ readonly class EnvironmentLoader
     public function __construct(
         string $basePath,
     ) {
-        $this->basePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->basePath = rtrim($basePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
     }
 
     /**
-     * Загружает переменные окружения из соответствующих .env-файлов
-     * @param string $envName имя текущего окружения
+     * Загружает переменные окружения из соответствующих .env-файлов.
+     *
+     * @param string $envName   имя текущего окружения
      * @param string $localName имя локального окружения. Файл .env.{localName} загружается только один раз, для всех окружений исключая testing
-     * @param string $testName тестовое окружение.
-     * @return array<string, string|float|int|bool|null>
+     * @param string $testName  тестовое окружение
+     *
+     * @return array<string, null|bool|float|int|string>
      */
     public function load(string $envName, string $localName, string $testName): array
     {
@@ -43,6 +47,7 @@ readonly class EnvironmentLoader
         foreach ($files as $file) {
             $this->parseFile($file, $vars);
         }
+
         return $vars;
     }
 
@@ -61,18 +66,19 @@ readonly class EnvironmentLoader
             [$key, $value] = array_pad(explode('=', $line, 2), 2, null);
 
             $key = trim(strtoupper($key));
-            if ($value === null) {
+            if (null === $value) {
                 $vars[$key] = null;
+
                 continue;
             }
             $vars[$key] = $this->normalizeValue($value);
         }
     }
 
-    private function normalizeValue(string $value): int|float|string|bool|null
+    private function normalizeValue(string $value): bool|float|int|string|null
     {
         $value = trim($value);
-        if ($value === '') {
+        if ('' === $value) {
             return null;
         }
         if (str_starts_with($value, '"') && str_ends_with($value, '"')) {
@@ -84,13 +90,14 @@ readonly class EnvironmentLoader
         if (!is_numeric($value)) {
             return $this->normalizeString($value);
         }
-        if (strpbrk($value, '.eE') === false) {
-            return (int)$value;
+        if (false === strpbrk($value, '.eE')) {
+            return (int) $value;
         }
-        return (float)$value;
+
+        return (float) $value;
     }
 
-    private function normalizeString(string $value): string|bool|null
+    private function normalizeString(string $value): bool|string|null
     {
         return match ($value) {
             'false' => false,
@@ -103,12 +110,13 @@ readonly class EnvironmentLoader
     private function getFileList(string $envName, string $localName, string $testName): array
     {
         $files = ['.env'];
-        if ($envName !== '' && $envName !== $localName) {
+        if ('' !== $envName && $envName !== $localName) {
             $files[] = '.env.' . $envName;
         }
         if ($envName !== $testName) {
             $files[] = '.env.' . $localName;
         }
+
         return $files;
     }
 }

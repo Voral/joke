@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Routing;
 
 class FakeExample
 {
-    public function __construct(public int $num) { }
+    public function __construct(public int $num) {}
 
     public static function tryFrom(int $value): ?self
     {

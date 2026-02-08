@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Exceptions;
 
 use Vasoft\Joke\Core\Response\ResponseStatus;

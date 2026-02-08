@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Collections;
 
 use Vasoft\Joke\Core\Exceptions\SessionException;
@@ -22,23 +24,24 @@ class Session extends PropsCollection
 
     /**
      * Флаг, указывающий, были ли внесены изменения в данные сессии.
-     *
-     * @var bool
      */
     private bool $modified = false;
 
     /**
      * Загружает переменные сессии из глобального массива $_SESSION.
+     *
      * @return $this
+     *
      * @throws SessionException Если сессия не активна
      */
     public function load(): static
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
             throw new SessionException();
         }
         $this->reset($_SESSION);
         $this->modified = false;
+
         return $this;
     }
 
@@ -46,7 +49,9 @@ class Session extends PropsCollection
      * Сохраняет изменения в глобальный массив $_SESSION.
      * Данные записываются только если были внесены изменения (флаг $modified).
      * Удаляет ключи, помеченные через метод unset().
+     *
      * @return $this
+     *
      * @throws SessionException Если сессия не активна
      */
     public function save(): static
@@ -64,7 +69,8 @@ class Session extends PropsCollection
                 }
             }
             $this->modified = false;
-        };
+        }
+
         return $this;
     }
 
@@ -75,7 +81,7 @@ class Session extends PropsCollection
      */
     public function isStarted(): bool
     {
-        return session_status() === PHP_SESSION_ACTIVE;
+        return PHP_SESSION_ACTIVE === session_status();
     }
 
     /**
@@ -83,9 +89,8 @@ class Session extends PropsCollection
      *
      * Помечает сессию как изменённую и удаляет ключ из списка на удаление (если был добавлен).
      *
-     * @param string $key Имя переменной сессии
-     * @param mixed $value Значение (скаляр, массив или null)
-     * @return static
+     * @param string $key   Имя переменной сессии
+     * @param mixed  $value Значение (скаляр, массив или null)
      */
     public function set(string $key, mixed $value): static
     {
@@ -93,6 +98,7 @@ class Session extends PropsCollection
         if (array_key_exists($key, $this->unsets)) {
             unset($this->unsets[$key]);
         }
+
         return parent::set($key, $value);
     }
 
@@ -102,7 +108,6 @@ class Session extends PropsCollection
      * Помечает сессию как изменённую и очищает список ключей на удаление для всех новых ключей.
      *
      * @param array<string, mixed> $props Новый набор переменных сессии
-     * @return static
      */
     public function reset(array $props): static
     {
@@ -113,6 +118,7 @@ class Session extends PropsCollection
                 unset($this->unsets[$key]);
             }
         }
+
         return $this;
     }
 
@@ -123,12 +129,12 @@ class Session extends PropsCollection
      * Помечает сессию как изменённую.
      *
      * @param string $key Имя переменной сессии
-     * @return static
      */
     public function unset(string $key): static
     {
         $this->modified = true;
         $this->unsets[$key] = true;
+
         return parent::unset($key);
     }
 }

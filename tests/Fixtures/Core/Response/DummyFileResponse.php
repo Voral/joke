@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Fixtures\Core\Response;
 
 use Vasoft\Joke\Core\Response\BinaryResponse;
@@ -7,9 +9,11 @@ use Vasoft\Joke\Core\Response\BinaryResponse;
 class DummyFileResponse extends BinaryResponse
 {
     public array $sentHeaders = [];
+
     public function send(): static
     {
         $this->sentHeaders = [];
+
         return parent::send();
     }
 

@@ -1,6 +1,8 @@
 <?php
 
-namespace Vasoft\Joke\Tests\Kernel;
+declare(strict_types=1);
+
+namespace Vasoft\Joke\Tests\Config;
 
 use phpmock\phpunit\MockObjectProxy;
 use phpmock\phpunit\PHPMock;
@@ -10,7 +12,12 @@ use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 
-class EnvironmentTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Config\Environment
+ */
+final class EnvironmentTest extends TestCase
 {
     use PHPMock;
 
@@ -18,14 +25,14 @@ class EnvironmentTest extends TestCase
     private array $originalEnv;
     private array $originalServer;
     private MockObject|MockObjectProxy $mockGetEnv;
-    private MockObject|EnvironmentLoader $mockLoader;
+    private EnvironmentLoader|MockObject $mockLoader;
 
     protected function setUp(): void
     {
         $this->originalEnv = $_ENV;
         $this->originalServer = $_SERVER;
-        unset($_SERVER[self::ENV_VAR_NAME]);
-        unset($_ENV[self::ENV_VAR_NAME]);
+        unset($_SERVER[self::ENV_VAR_NAME], $_ENV[self::ENV_VAR_NAME]);
+
 
         $this->mockLoader = self::getMockBuilder(EnvironmentLoader::class)
             ->disableOriginalConstructor()
@@ -41,8 +48,8 @@ class EnvironmentTest extends TestCase
 
     public function testEnvDefault(): void
     {
-        unset($_ENV[self::ENV_VAR_NAME]);
-        unset($_SERVER[self::ENV_VAR_NAME]);
+        unset($_ENV[self::ENV_VAR_NAME], $_SERVER[self::ENV_VAR_NAME]);
+
         $this->mockGetEnv->expects(self::once())->willReturn(false);
 
         $this->mockLoader->expects(self::once())->method('load')->willReturn([]);
@@ -77,8 +84,8 @@ class EnvironmentTest extends TestCase
 
     public function testEnvPriorityFromGetEnv(): void
     {
-        unset($_ENV[self::ENV_VAR_NAME]);
-        unset($_SERVER[self::ENV_VAR_NAME]);
+        unset($_ENV[self::ENV_VAR_NAME], $_SERVER[self::ENV_VAR_NAME]);
+
         $this->mockGetEnv->expects(self::once())->willReturn('from_getenv');
 
         $this->mockLoader->expects(self::once())->method('load')->willReturn([]);
@@ -91,8 +98,9 @@ class EnvironmentTest extends TestCase
     {
         $propValue = '';
         $this->mockGetEnv->expects(self::once())
-            ->willReturnCallback(function (string $name) use (&$propValue) {
+            ->willReturnCallback(static function (string $name) use (&$propValue) {
                 $propValue = $name;
+
                 return 'development';
             });
 
@@ -185,6 +193,7 @@ class EnvironmentTest extends TestCase
         self::expectExceptionMessage('The environment "PROPS" does not exist.');
         $value = $env->getOrFail('props');
     }
+
     public function testGetOrFailCustomMessage(): void
     {
         $this->mockGetEnv->expects(self::once())->willReturn('custom');
@@ -193,9 +202,6 @@ class EnvironmentTest extends TestCase
         $env = new Environment($this->mockLoader);
         self::expectException(ConfigException::class);
         self::expectExceptionMessage('Not exists');
-        $value = $env->getOrFail('props','Not exists');
+        $value = $env->getOrFail('props', 'Not exists');
     }
-
-
 }
-

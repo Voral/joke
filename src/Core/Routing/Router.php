@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Routing;
 
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
@@ -26,84 +28,86 @@ class Router implements RouterInterface
      * Хранилище маршрутов сгруппированных по HTTP методу (например, 'GET', 'POST').
      *
      * Структура: ['GET' => [Route, Route, ...], 'POST' => [...], ...]
+     *
      * @var array<string, list<Route>>
      */
     protected array $routes = [];
     /**
-     * Хранилище именованных маршрутов для легкого доступа по имени
+     * Хранилище именованных маршрутов для легкого доступа по имени.
      *
      * @var array<string, Route>
      */
     protected array $namedRoutes = [];
 
     /**
-     * @param ServiceContainer $serviceContainer DI-контейнер, используемый для разрешения зависимостей маршрутов.
+     * @param ServiceContainer $serviceContainer DI-контейнер, используемый для разрешения зависимостей маршрутов
      */
-    public function __construct(protected readonly ServiceContainer $serviceContainer) { }
+    public function __construct(protected readonly ServiceContainer $serviceContainer) {}
 
-    public function post(string $path, callable|string|array $handler, string $name = ''): Route
+    public function post(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::POST], $path, $handler, $name);
     }
 
-
-    public function get(string $path, callable|string|array $handler, string $name = ''): Route
+    public function get(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::GET], $path, $handler, $name);
     }
 
-    public function put(string $path, callable|string|array $handler, string $name = ''): Route
+    public function put(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::PUT], $path, $handler, $name);
     }
 
-    public function delete(string $path, callable|string|array $handler, string $name = ''): Route
+    public function delete(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::DELETE], $path, $handler, $name);
     }
 
-    public function patch(string $path, callable|string|array $handler, string $name = ''): Route
+    public function patch(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::PATCH], $path, $handler, $name);
     }
 
-
-    public function head(string $path, callable|string|array $handler, string $name = ''): Route
+    public function head(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::HEAD], $path, $handler, $name);
     }
 
-    public function any(string $path, callable|string|array $handler, string $name = ''): Route
+    public function any(string $path, array|callable|string $handler, string $name = ''): Route
     {
         return $this->match(HttpMethod::cases(), $path, $handler, $name);
     }
 
-    public function match(array $methods, string $path, callable|string|array $handler, string $name = ''): Route
+    public function match(array $methods, string $path, array|callable|string $handler, string $name = ''): Route
     {
-        if ($name === '') {
+        if ('' === $name) {
             $name = $this->getRouteIndex($methods, $path);
         }
         $this->namedRoutes[$name] = new Route($this->serviceContainer, $path, $methods[0], $handler)->mergeGroup(
-            $this->autoGroups
+            $this->autoGroups,
         );
         foreach ($methods as $method) {
             $this->routes[$method->value][] = &$this->namedRoutes[$name];
         }
+
         return $this->namedRoutes[$name];
     }
 
     /**
-     * Генерация имени для безымянного маршрута
+     * Генерация имени для безымянного маршрута.
      *
      * Формат: "method1#method2|/path"
      *
      * @param list<HttpMethod> $methods Список метод обрабатываемых маршрутом
-     * @param string $path Паттерн URI (например, '/users').
+     * @param string           $path    паттерн URI (например, '/users')
+     *
      * @return string Имя маршрута
      */
     private function getRouteIndex(array $methods, string $path): string
     {
-        $parts = array_map(fn(HttpMethod $part) => strtolower($part->value), $methods);
+        $parts = array_map(static fn(HttpMethod $part) => strtolower($part->value), $methods);
+
         return implode('#', $parts) . '|' . $path;
     }
 
@@ -113,9 +117,10 @@ class Router implements RouterInterface
     public function dispatch(HttpRequest $request): mixed
     {
         $route = $this->findRoute($request);
-        if ($route === null) {
+        if (null === $route) {
             throw new NotFoundException('Route not found');
         }
+
         return $route->run($request);
     }
 
@@ -130,6 +135,7 @@ class Router implements RouterInterface
                 return $method !== $route->method ? $route->withMethod($method) : $route;
             }
         }
+
         return null;
     }
 
@@ -141,12 +147,14 @@ class Router implements RouterInterface
     public function addAutoGroups(array $groups): static
     {
         $this->autoGroups = array_merge($this->autoGroups, $groups);
+
         return $this;
     }
 
     public function cleanAutoGroups(): static
     {
         $this->autoGroups = [];
+
         return $this;
     }
 }

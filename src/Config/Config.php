@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Config;
 
 use Vasoft\Joke\Config\Exceptions\ConfigException;
@@ -16,7 +18,8 @@ use Vasoft\Joke\Core\Exceptions\JokeException;
 class Config
 {
     /**
-     * Хранилище переменных конфигурации
+     * Хранилище переменных конфигурации.
+     *
      * @var array<string,array>
      */
     private array $props = [];
@@ -25,7 +28,8 @@ class Config
      */
     private bool $loaded = false;
     /**
-     * Массив конфигов загрузка которых завершилась неудачей
+     * Массив конфигов загрузка которых завершилась неудачей.
+     *
      * @var array<string,true>
      */
     private array $missingConfigs = [];
@@ -33,13 +37,10 @@ class Config
     /**
      * @param ConfigLoader $loader Загрузчик конфигурационных файлов
      */
-    public function __construct(private readonly ConfigLoader $loader)
-    {
-    }
+    public function __construct(private readonly ConfigLoader $loader) {}
 
     /**
-     * Возвращает связанный с конфигурацией загрузчик
-     * @return ConfigLoader
+     * Возвращает связанный с конфигурацией загрузчик.
      */
     public function getLoader(): ConfigLoader
     {
@@ -52,14 +53,14 @@ class Config
      * Поддерживает точечную нотацию (например, 'database.connections.mysql').
      * Если значение не найдено, возвращается значение по умолчанию.
      *
-     * @param string $key Ключ конфигурации в формате 'config_name.property.subproperty'
-     * @param null|int|float|string|bool|array $default Значение по умолчанию, если ключ не найден
+     * @param string                           $key     Ключ конфигурации в формате 'config_name.property.subproperty'
+     * @param null|array|bool|float|int|string $default Значение по умолчанию, если ключ не найден
      *
-     * @return null|int|float|string|bool|array Значение конфигурации или значение по умолчанию
+     * @return null|array|bool|float|int|string Значение конфигурации или значение по умолчанию
      *
      * @throws ConfigException Если указан пустой ключ
      */
-    public function get(string $key, null|int|float|string|bool|array $default = null): null|int|float|string|bool|array
+    public function get(string $key, array|bool|float|int|string|null $default = null): array|bool|float|int|string|null
     {
         [$configName, $parts] = $this->parseKey($key);
         $value = $this->props[$configName];
@@ -73,6 +74,7 @@ class Config
                 return $default;
             }
         }
+
         return $value;
     }
 
@@ -90,7 +92,7 @@ class Config
     protected function ensureLoading(string $configName): void
     {
         if (isset($this->missingConfigs[$configName])) {
-            throw new ConfigException("Configuration '$configName' not found");
+            throw new ConfigException("Configuration '{$configName}' not found");
         }
         if (!$this->loaded) {
             $this->props = $this->loader->load();
@@ -101,6 +103,7 @@ class Config
                 $this->props[$configName] = $this->loader->loadLazy($configName);
             } catch (ConfigException $e) {
                 $this->missingConfigs[$configName] = true;
+
                 throw $e;
             }
         }
@@ -112,20 +115,19 @@ class Config
      * Поддерживает точечную нотацию (например, 'database.connections.mysql').
      * В отличие от метода get(), строго проверяет существование каждого уровня вложенности.
      *
-     * @param string $key Ключ конфигурации в формате 'config_name.property.subproperty'
-     * @param (callable(string): JokeException)|null $exceptionFactory Фабрика исключений. Если null, используется стандартное ConfigException.
-     *                                        Должна принимать строковый ключ и возвращать JokeException.
+     * @param string                                 $key              Ключ конфигурации в формате 'config_name.property.subproperty'
+     * @param null|(callable(string): JokeException) $exceptionFactory Фабрика исключений. Если null, используется стандартное ConfigException.
+     *                                                                 Должна принимать строковый ключ и возвращать JokeException.
      *
-     * @return null|int|float|string|bool|array Значение конфигурации
+     * @return null|array|bool|float|int|string Значение конфигурации
      *
-     * @throws JokeException|ConfigException Если ключ не найден (используется либо кастомное, либо стандартное исключение)
-     * @throws ConfigException Если указан пустой ключ
+     * @throws ConfigException|JokeException Если ключ не найден (используется либо кастомное, либо стандартное исключение)
+     * @throws ConfigException               Если указан пустой ключ
      */
-
     public function getOrFail(
         string $key,
-        ?callable $exceptionFactory = null
-    ): null|int|float|string|bool|array {
+        ?callable $exceptionFactory = null,
+    ): array|bool|float|int|string|null {
         [$configName, $parts] = $this->parseKey($key);
         $value = $this->props[$configName];
         if (empty($parts)) {
@@ -136,11 +138,13 @@ class Config
                 $value = $value[$part];
             } else {
                 $factory = $exceptionFactory ?? static fn(string $key): JokeException => new ConfigException(
-                    "Property '" . $key . "' does not exist."
+                    "Property '" . $key . "' does not exist.",
                 );
+
                 throw $factory($key);
             }
         }
+
         return $value;
     }
 
@@ -155,16 +159,18 @@ class Config
      * - 'app' → ['app', []]
      * - 'database.connections' → ['database', ['connections']]
      * … *
+     *
      * @throws ConfigException Если передан пустой ключ
      */
     private function parseKey(string $key): array
     {
-        if ($key === '') {
+        if ('' === $key) {
             throw new ConfigException('Config key cannot be empty');
         }
         $parts = explode('.', $key);
         $configName = array_shift($parts);
         $this->ensureLoading($configName);
+
         return [$configName, $parts];
     }
 }

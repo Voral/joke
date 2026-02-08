@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Config;
 
-use DirectoryIterator;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 
 /**
@@ -43,15 +44,14 @@ class ConfigLoader
     /**
      * Конструктор загрузчика конфигураций.
      *
-     * @param string $basePath Абсолютный путь к основной директории с базовыми конфигурациями.
-     * @param Environment $env Экземпляр окружения для доступа из конфигурационных файлов
-     * @param array<string> $lazyPaths Массив абсолютных путей к директориям с ленивыми конфигурациями.
-     *
+     * @param string        $basePath  абсолютный путь к основной директории с базовыми конфигурациями
+     * @param Environment   $env       Экземпляр окружения для доступа из конфигурационных файлов
+     * @param array<string> $lazyPaths массив абсолютных путей к директориям с ленивыми конфигурациями
      */
     public function __construct(
         string $basePath,
         private readonly Environment $env,
-        array $lazyPaths = []
+        array $lazyPaths = [],
     ) {
         $this->addBasePath($basePath);
         array_walk($lazyPaths, $this->addLazyPath(...));
@@ -70,6 +70,7 @@ class ConfigLoader
     {
         $normalized = $this->normalizePath($path);
         $this->basePaths[$normalized] = false;
+
         return $this;
     }
 
@@ -86,37 +87,41 @@ class ConfigLoader
     {
         $normalized = $this->normalizePath($path);
         $this->lazyPaths[$normalized] = false;
+
         return $this;
     }
 
     /**
-     * Нормализация добавляемого пути
+     * Нормализация добавляемого пути.
      *
      * Проверяет, что путь является абсолютным и возвращает нормализованное значение
      * (с завершающим DIRECTORY_SEPARATOR).
+     *
      * @param string $path Путь к директории
+     *
      * @return string Нормализованный путь
      */
     private function normalizePath(string $path): string
     {
-        return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return rtrim($path, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
     }
 
     /**
-     * Проверяет, является ли путь абсолютным и существует ли
-     * @param string $path путь
+     * Проверяет, является ли путь абсолютным и существует ли.
+     *
+     * @param string $path      путь
      * @param string $scopeName имя типа каталога Базовый (Base) или Ленивый (Lazy)
-     * @return void
+     *
      * @throws ConfigException Если путь относительный или каталог не существует
      */
     private function assertPath(string $path, string $scopeName): void
     {
-        if (!str_starts_with($path, DIRECTORY_SEPARATOR) &&
-            !preg_match('~^[A-Z]:~i', $path)) {
-            throw new ConfigException("Path must be absolute: $path");
+        if (!str_starts_with($path, \DIRECTORY_SEPARATOR)
+            && !preg_match('~^[A-Z]:~i', $path)) {
+            throw new ConfigException("Path must be absolute: {$path}");
         }
         if (!is_dir($path)) {
-            throw new ConfigException("$scopeName config path does not exist: $path");
+            throw new ConfigException("{$scopeName} config path does not exist: {$path}");
         }
     }
 
@@ -127,6 +132,7 @@ class ConfigLoader
      * Имя конфигурации берётся из имени файла без расширения .php.
      *
      * @return array<string, array> Ассоциативный массив вида ['config_name' => [...]]
+     *
      * @throws ConfigException если каталог относительный или не существует
      */
     public function load(): array
@@ -138,22 +144,23 @@ class ConfigLoader
             $validated = true;
         }
         unset($validated);
+
         return $result;
     }
 
     /**
      * Загружает конфигурационные файлы из указанной директории и добавляет их в результат.
      *
-     * @param string $path Нормализованный путь к директории (с завершающим DIRECTORY_SEPARATOR).
-     * @param array<string, array> &$result Ссылка на массив для накопления результатов.
+     * @param string               $path    нормализованный путь к директории (с завершающим DIRECTORY_SEPARATOR)
+     * @param array<string, array> &$result Ссылка на массив для накопления результатов
      */
     protected function loadFromPath(string $path, array &$result): void
     {
-        $iterator = new DirectoryIterator($path);
+        $iterator = new \DirectoryIterator($path);
         foreach ($iterator as $file) {
             if (
                 $file->isFile()
-                && $file->getExtension() === 'php'
+                && 'php' === $file->getExtension()
             ) {
                 $result[$file->getBasename('.php')] = $this->loadFile($file->getRealPath());
             }
@@ -165,9 +172,9 @@ class ConfigLoader
      *
      * Файл должен возвращать массив. Если возвращено не массив — используется пустой массив.
      *
-     * @param string $path Абсолютный путь к PHP-файлу конфигурации.
+     * @param string $path абсолютный путь к PHP-файлу конфигурации
      *
-     * @return array Данные конфигурации.
+     * @return array данные конфигурации
      */
     protected function loadFile(string $path): array
     {
@@ -176,6 +183,7 @@ class ConfigLoader
             return require $path;
         };
         $vars = $loader();
+
         return is_array($vars) ? $vars : [];
     }
 
@@ -187,9 +195,9 @@ class ConfigLoader
      *
      * @param string $name Имя конфигурации (без расширения .php).
      *
-     * @return array Загруженная конфигурация.
+     * @return array загруженная конфигурация
      *
-     * @throws ConfigException Если файл конфигурации не найден ни в одном из ленивых путей или зарегистрирован не существующий путь.
+     * @throws ConfigException если файл конфигурации не найден ни в одном из ленивых путей или зарегистрирован не существующий путь
      */
     public function loadLazy(string $name): array
     {
@@ -205,6 +213,7 @@ class ConfigLoader
             }
         }
         unset($validated);
+
         throw new ConfigException('No configuration for ' . $name);
     }
 }

@@ -1,10 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Exceptions;
 
-use Vasoft\Joke\Core\Exceptions\JokeException;
-
-class InvalidArgumentException extends JokeException
-{
-
-}
+class InvalidArgumentException extends JokeException {}

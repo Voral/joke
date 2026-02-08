@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Response;
 
 use phpmock\phpunit\MockObjectProxy;
@@ -11,11 +13,16 @@ use Vasoft\Joke\Core\Collections\HeadersCollection;
 use Vasoft\Joke\Core\Response\HtmlResponse;
 use Vasoft\Joke\Core\Response\ResponseStatus;
 
-class ResponseTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Response\Response
+ */
+final class ResponseTest extends TestCase
 {
     use PHPMock;
 
-    private MockObjectProxy|MockObject $headerMock;
+    private MockObject|MockObjectProxy $headerMock;
 
     protected function setUp(): void
     {
@@ -25,21 +32,21 @@ class ResponseTest extends TestCase
     public function testDefaultStatusIsOk(): void
     {
         $response = new HtmlResponse();
-        $this->assertEquals(ResponseStatus::OK, $response->status);
+        self::assertSame(ResponseStatus::OK, $response->status);
     }
 
     public function testSetStatus(): void
     {
         $response = new HtmlResponse();
         $response->status = ResponseStatus::NOT_FOUND;
-        $this->assertEquals(ResponseStatus::NOT_FOUND, $response->status);
+        self::assertSame(ResponseStatus::NOT_FOUND, $response->status);
     }
 
     public function testHeadersCollectionIsInitialized(): void
     {
         $response = new HtmlResponse();
-        $this->assertInstanceOf(HeadersCollection::class, $response->headers);
-        $this->assertEquals(['Content-Type' => 'text/html'], $response->headers->getAll());
+        self::assertInstanceOf(HeadersCollection::class, $response->headers);
+        self::assertSame(['Content-Type' => 'text/html'], $response->headers->getAll());
     }
 
     public function testAddHeaderViaCollection(): void
@@ -47,7 +54,7 @@ class ResponseTest extends TestCase
         $response = new HtmlResponse();
         $response->headers->set('Content-Type', 'application/json');
 
-        $this->assertEquals(['Content-Type' => 'application/json'], $response->headers->getAll());
+        self::assertSame(['Content-Type' => 'application/json'], $response->headers->getAll());
     }
 
     #[RunInSeparateProcess]
@@ -58,8 +65,8 @@ class ResponseTest extends TestCase
         $response->setBody('Hello, world!');
 
         $headerParams = [];
-        $this->headerMock->expects($this->exactly(3))
-            ->willReturnCallback(function ($header) use (&$headerParams) {
+        $this->headerMock->expects(self::exactly(3))
+            ->willReturnCallback(static function ($header) use (&$headerParams): void {
                 $headerParams[] = $header;
             });
         ob_start();
@@ -69,21 +76,21 @@ class ResponseTest extends TestCase
         $expectedHeaders = [
             'Content-Type: text/html',
             'HTTP/1.1 200 OK',
-            'X-Custom: test-value'
+            'X-Custom: test-value',
         ];
 
         sort($headerParams);
         sort($expectedHeaders);
 
-        $this->assertEquals($expectedHeaders, $headerParams);
+        self::assertSame($expectedHeaders, $headerParams);
 
-        $this->assertSame('Hello, world!', $output);
+        self::assertSame('Hello, world!', $output);
     }
 
     public function testSendReturnsSelf(): void
     {
         $response = new HtmlResponse();
         $returned = $response->send();
-        $this->assertSame($response, $returned);
+        self::assertSame($response, $returned);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Request;
 
 use Vasoft\Joke\Core\Collections\PropsCollection;
@@ -36,6 +38,7 @@ class ServerCollection extends PropsCollection
         $headers['Content-Encoding'] = $this->get('CONTENT_ENCODING', '');
         $headers['Content-Language'] = $this->get('CONTENT_LANGUAGE', '');
         $headers['Content-MD5'] = $this->get('CONTENT_MD5', '');
+
         return $headers;
     }
 }

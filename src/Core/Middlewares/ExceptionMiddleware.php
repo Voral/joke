@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Middlewares;
 
-use Exception;
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Core\Exceptions\JokeException;
 use Vasoft\Joke\Core\Request\HttpRequest;
@@ -24,11 +25,12 @@ readonly class ExceptionMiddleware implements MiddlewareInterface
             return new JsonResponse()
                 ->setBody(['message' => $exception->getMessage()])
                 ->setStatus($exception->getResponseStatus());
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return new JsonResponse()
                 ->setBody(['message' => $exception->getMessage()])
                 ->setStatus(ResponseStatus::INTERNAL_SERVER_ERROR);
         }
+
         return $response;
     }
 }

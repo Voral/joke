@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Config\Config;
 use Vasoft\Joke\Config\ConfigLoader;
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
-use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
 use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
 use Vasoft\Joke\Core\Middlewares\ExceptionMiddleware;
@@ -34,8 +34,7 @@ use Vasoft\Joke\Config\EnvironmentLoader;
 class Application
 {
     /**
-     * Базовый путь приложения
-     * @var string
+     * Базовый путь приложения.
      */
     public readonly string $basePath;
     /**
@@ -43,8 +42,6 @@ class Application
      *
      * Выполняются до определения маршрута. Используются для обработки ошибок,
      * CORS, логирования и других кросс-функциональных задач.
-     *
-     * @var MiddlewareCollection
      */
     protected MiddlewareCollection $middlewares {
         get => $this->middlewares;
@@ -54,8 +51,6 @@ class Application
      *
      * Выполняются после определения маршрута, но до его обработчика.
      * Могут быть привязаны к группам маршрутов.
-     *
-     * @var MiddlewareCollection
      */
     protected MiddlewareCollection $routeMiddlewares {
         get => $this->routeMiddlewares;
@@ -68,9 +63,10 @@ class Application
      * - ExceptionMiddleware (глобальный уровень)
      * - SessionMiddleware и CsrfMiddleware (уровень маршрутизатора, группа 'web')
      *
-     * @param string $basePath Базовый путь приложения (обычно корень проекта)
-     * @param string $routeConfigWeb Путь к файлу web-маршрутов относительно базового пути
+     * @param string           $basePath         Базовый путь приложения (обычно корень проекта)
+     * @param string           $routeConfigWeb   Путь к файлу web-маршрутов относительно базового пути
      * @param ServiceContainer $serviceContainer DI-контейнер
+     *
      * @throws ParameterResolveException
      *
      * @todo Нормализовать пути
@@ -80,12 +76,12 @@ class Application
         public readonly string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
-        $this->basePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->basePath = rtrim($basePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
         $environment = new Environment(new EnvironmentLoader($this->basePath));
         $serviceContainer->registerSingleton('env', $environment);
         $serviceContainer->registerSingleton(Environment::class, $environment);
 
-        $configLoader = new ConfigLoader($this->basePath . 'config' . DIRECTORY_SEPARATOR, $environment);
+        $configLoader = new ConfigLoader($this->basePath . 'config' . \DIRECTORY_SEPARATOR, $environment);
 
         $config = new Config($configLoader);
         $serviceContainer->registerSingleton('config', $config);
@@ -104,14 +100,17 @@ class Application
     /**
      * Добавляет глобальный middleware в коллекцию
      * Если middleware именованный производится поиск, и, если найден, производится замена middleware в той же позиции где
-     * и был найден
+     * и был найден.
+     *
      * @param MiddlewareInterface|string $middleware Экземпляр или класс middleware
-     * @param string $name Наименование middleware для тех, которые могут быть только в единственном экземпляре
+     * @param string                     $name       Наименование middleware для тех, которые могут быть только в единственном экземпляре
+     *
      * @return $this
      */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
     {
         $this->middlewares->addMiddleware($middleware, $name);
+
         return $this;
     }
 
@@ -122,16 +121,16 @@ class Application
      * Именованные middleware с существующим именем будут заменены, сохраняя свою позицию в цепочке выполнения.
      *
      * @param MiddlewareInterface|string $middleware Класс или экземпляр middleware
-     * @param string $name Имя middleware (для возможности переопределения)
-     * @param array<string> $groups Список групп маршрутов, к которым применяется middleware
-     * @return static
+     * @param string                     $name       Имя middleware (для возможности переопределения)
+     * @param array<string>              $groups     Список групп маршрутов, к которым применяется middleware
      */
     public function addRouteMiddleware(
         MiddlewareInterface|string $middleware,
         string $name = '',
-        array $groups = []
+        array $groups = [],
     ): static {
         $this->routeMiddlewares->addMiddleware($middleware, $name, $groups);
+
         return $this;
     }
 
@@ -139,14 +138,15 @@ class Application
      * Преобразует относительный путь в абсолютный.
      *
      * @param string $relativePath Относительный путь
+     *
      * @return string Абсолютный путь или false, если путь не существует
      */
     private function getFullPath(string $relativePath): string
     {
         return realpath(
-            rtrim($this->basePath, DIRECTORY_SEPARATOR) .
-            DIRECTORY_SEPARATOR .
-            ltrim($relativePath, DIRECTORY_SEPARATOR)
+            rtrim($this->basePath, \DIRECTORY_SEPARATOR)
+            . \DIRECTORY_SEPARATOR
+            . ltrim($relativePath, \DIRECTORY_SEPARATOR),
         );
     }
 
@@ -161,15 +161,13 @@ class Application
      * 5. Отправляет ответ клиенту
      *
      * @param Request $request Входящий HTTP-запрос
-     * @return void
+     *
      * @throws ParameterResolveException
-     * @throws WrongMiddlewareException Если middleware не реализует MiddlewareInterface
+     * @throws WrongMiddlewareException  Если middleware не реализует MiddlewareInterface
      */
     public function handle(Request $request): void
     {
-        $next = function () use ($request) {
-            return $this->handleRoute($request);
-        };
+        $next = fn() => $this->handleRoute($request);
         $response = $this->processMiddlewares($request, $this->middlewares->getArrayForRun(), $next);
         $this->sendResponse($response);
     }
@@ -185,7 +183,7 @@ class Application
      */
     private function sendResponse(mixed $response): void
     {
-        if (!($response instanceof Response)) {
+        if (!$response instanceof Response) {
             if (is_array($response)) {
                 $response = new JsonResponse()->setBody($response);
             } else {
@@ -202,7 +200,9 @@ class Application
      * собирает цепочку middleware и выполняет обработчик.
      *
      * @param HttpRequest $request Входящий HTTP-запрос
+     *
      * @return mixed Результат выполнения обработчика маршрута
+     *
      * @throws ParameterResolveException
      * @throws WrongMiddlewareException
      * @throws NotFoundException
@@ -211,15 +211,14 @@ class Application
     {
         $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
         $route = $this->serviceContainer->getRouter()?->findRoute($request);
-        if ($route === null) {
+        if (null === $route) {
             throw new NotFoundException('Route not found');
         }
-        $next = static function () use ($request, $route) {
-            return $route->run($request);
-        };
+        $next = static fn() => $route->run($request);
         $middlewareCollection = $this->routeMiddlewares->withMiddlewares($route->getMiddlewares());
 
         $middlewares = $middlewareCollection->getArrayForRun($route->getGroups());
+
         return $this->processMiddlewares($request, $middlewares, $next);
     }
 
@@ -229,32 +228,36 @@ class Application
      * Строит вложенную структуру вызовов, где каждый middleware оборачивает
      * результат следующего звена цепочки.
      *
-     * @param HttpRequest $request Входящий HTTP-запрос
+     * @param HttpRequest                       $request     Входящий HTTP-запрос
      * @param array<MiddlewareInterface|string> $middlewares Список middleware для выполнения
-     * @param callable $next Функция следующего звена цепочки
+     * @param callable                          $next        Функция следующего звена цепочки
+     *
      * @return mixed Результат выполнения цепочки
+     *
      * @throws ParameterResolveException
-     * @throws WrongMiddlewareException Если middleware не реализует MiddlewareInterface
+     * @throws WrongMiddlewareException  Если middleware не реализует MiddlewareInterface
      */
     private function processMiddlewares(
         HttpRequest $request,
         array $middlewares,
-        callable $next
+        callable $next,
     ): mixed {
         foreach ($middlewares as $middleware) {
             $next = function () use ($middleware, $next, $request) {
                 $instance = ($middleware instanceof MiddlewareInterface)
                     ? $middleware
                     : $this->resolveMiddleware($middleware);
-                if ($instance === null) {
+                if (null === $instance) {
                     throw new WrongMiddlewareException($middleware);
                 }
+
                 return $instance->handle(
                     $request,
-                    $next
+                    $next,
                 );
             };
         }
+
         return $next();
     }
 
@@ -262,7 +265,9 @@ class Application
      * Создаёт экземпляр middleware через DI-контейнер.
      *
      * @param string $middleware Имя класса middleware
-     * @return MiddlewareInterface|null Экземпляр middleware или null, если класс не реализует интерфейс
+     *
+     * @return null|MiddlewareInterface Экземпляр middleware или null, если класс не реализует интерфейс
+     *
      * @throws ParameterResolveException
      */
     private function resolveMiddleware(string $middleware): ?MiddlewareInterface
@@ -270,6 +275,7 @@ class Application
         $resolver = $this->serviceContainer->getParameterResolver();
         $args = $resolver->resolveForConstructor($middleware);
         $instance = new $middleware(...$args);
+
         return $instance instanceof MiddlewareInterface ? $instance : null;
     }
 
@@ -277,6 +283,7 @@ class Application
      * Загружает маршруты из конфигурационного файла.
      *
      * Автоматически назначает всем загружаемым маршрутам группу 'web'.
+     *
      * @throws ParameterResolveException
      */
     private function loadRoutes(): void

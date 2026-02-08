@@ -1,12 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Response;
 
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Tests\Fixtures\Core\Response\DummyFileResponse;
 use PHPUnit\Framework\TestCase;
 
-class BinaryResponseTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Response\BinaryResponse
+ */
+final class BinaryResponseTest extends TestCase
 {
     public function testEmpty(): void
     {
@@ -19,8 +26,8 @@ class BinaryResponseTest extends TestCase
                 'Content-Type' => 'application/test',
                 'Content-Length' => 0,
                 'Content-Disposition' => 'attachment; filename=""',
-            ]
-            , $instance->sentHeaders
+            ],
+            $instance->sentHeaders,
         );
         self::assertSame('', $instance->getBodyAsString());
     }
@@ -43,9 +50,9 @@ class BinaryResponseTest extends TestCase
                 [
                     'Content-Type' => 'application/test',
                     'Content-Length' => $length,
-                    'Content-Disposition' => 'attachment; filename="' . $baseName . '"'
-                ]
-                , $instance->sentHeaders
+                    'Content-Disposition' => 'attachment; filename="' . $baseName . '"',
+                ],
+                $instance->sentHeaders,
             );
         } finally {
             unlink($tempFile);
@@ -71,9 +78,9 @@ class BinaryResponseTest extends TestCase
                 [
                     'Content-Type' => 'application/test',
                     'Content-Length' => $length,
-                    'Content-Disposition' => 'attachment; filename="base.pdf"'
-                ]
-                , $instance->sentHeaders
+                    'Content-Disposition' => 'attachment; filename="base.pdf"',
+                ],
+                $instance->sentHeaders,
             );
         } finally {
             unlink($tempFile);
@@ -99,9 +106,9 @@ class BinaryResponseTest extends TestCase
                 [
                     'Content-Type' => 'application/test',
                     'Content-Length' => 4,
-                    'Content-Disposition' => 'attachment; filename="' . $baseName . '"'
-                ]
-                , $instance->sentHeaders
+                    'Content-Disposition' => 'attachment; filename="' . $baseName . '"',
+                ],
+                $instance->sentHeaders,
             );
         } finally {
             unlink($tempFile);
@@ -132,9 +139,9 @@ class BinaryResponseTest extends TestCase
             [
                 'Content-Type' => 'application/test',
                 'Content-Length' => 4,
-                'Content-Disposition' => 'attachment; filename="test.pdf"'
-            ]
-            , $instance->sentHeaders
+                'Content-Disposition' => 'attachment; filename="test.pdf"',
+            ],
+            $instance->sentHeaders,
         );
     }
 

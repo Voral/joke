@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Collections;
 
 use Vasoft\Joke\Config\Exceptions\ConfigException;
@@ -15,16 +17,17 @@ class ReadonlyPropsCollection
     /**
      * @param array<string,mixed> $props Начальный набор свойств
      */
-    public function __construct(protected array $props) { }
+    public function __construct(protected array $props) {}
 
     /**
      * Возвращает значение свойства по ключу.
      *
-     * @param string $key Имя свойства
-     * @param mixed $default Значение по умолчанию, если ключ не существует
-     * @return null|int|float|string|bool|array Значение свойства или значение по умолчанию
+     * @param string $key     Имя свойства
+     * @param mixed  $default Значение по умолчанию, если ключ не существует
+     *
+     * @return null|array|bool|float|int|string Значение свойства или значение по умолчанию
      */
-    public function get(string $key, mixed $default = null): null|int|float|string|bool|array
+    public function get(string $key, mixed $default = null): array|bool|float|int|string|null
     {
         return $this->props[$key] ?? $default;
     }
@@ -40,8 +43,10 @@ class ReadonlyPropsCollection
     }
 
     /**
-     * Проверяет существует ли заданный параметр в коллекции
+     * Проверяет существует ли заданный параметр в коллекции.
+     *
      * @param string $key Имя параметра
+     *
      * @return bool true, если существует
      */
     public function has(string $key): bool
@@ -50,23 +55,26 @@ class ReadonlyPropsCollection
     }
 
     /**
-     * Возвращает значение свойства по ключу, если не существует - выбрасывает исключение
+     * Возвращает значение свойства по ключу, если не существует - выбрасывает исключение.
      *
      * Можно переопределить исключение по умолчанию передав фабрику, которая принимает строковый
      * параметр "имя параметра" и возвращает исключение унаследованное от JokeException
-     * @param string $key Имя параметра
-     * @param (callable(string): JokeException)|null $exceptionFactory фабрика исключения
-     * @return null|int|float|string|bool|array
+     *
+     * @param string                                 $key              Имя параметра
+     * @param null|(callable(string): JokeException) $exceptionFactory фабрика исключения
+     *
      * @throws JokeException
      */
-    public function getOrFail(string $key, ?callable $exceptionFactory = null): null|int|float|string|bool|array
+    public function getOrFail(string $key, ?callable $exceptionFactory = null): array|bool|float|int|string|null
     {
         if (!$this->has($key)) {
-            $factory = $exceptionFactory ?? fn(string $key): JokeException => new ConfigException(
-                'Property "' . $key . '" does not exist.'
+            $factory = $exceptionFactory ?? static fn(string $key): JokeException => new ConfigException(
+                'Property "' . $key . '" does not exist.',
             );
+
             throw $factory($key);
         }
+
         return $this->props[$key];
     }
 }

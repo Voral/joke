@@ -1,11 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Request;
 
 use Vasoft\Joke\Core\Request\ServerCollection;
 use PHPUnit\Framework\TestCase;
 
-class ServerCollectionTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Request\ServerCollection
+ */
+final class ServerCollectionTest extends TestCase
 {
     public function testParseHeaderFromServer(): void
     {
@@ -20,22 +27,23 @@ class ServerCollectionTest extends TestCase
             'CONTENT_MD5' => 'QWxhZGRpbWVudA==',
         ]);
         $headers = $serverCollection->getHeaders();
-        $this->assertEquals($agent, $headers['User-Agent'] ?? null);
-        $this->assertEquals('My Custom Header', $headers['Custom-Header'] ?? null);
-        $this->assertEquals('application/json', $headers['Content-Type'] ?? null);
-        $this->assertEquals('100', $headers['Content-Length'] ?? null);
-        $this->assertEquals('gzip', $headers['Content-Encoding'] ?? null);
-        $this->assertEquals('en-US', $headers['Content-Language'] ?? null);
-        $this->assertEquals('QWxhZGRpbWVudA==', $headers['Content-MD5'] ?? null);
+        self::assertSame($agent, $headers['User-Agent'] ?? null);
+        self::assertSame('My Custom Header', $headers['Custom-Header'] ?? null);
+        self::assertSame('application/json', $headers['Content-Type'] ?? null);
+        self::assertSame('100', $headers['Content-Length'] ?? null);
+        self::assertSame('gzip', $headers['Content-Encoding'] ?? null);
+        self::assertSame('en-US', $headers['Content-Language'] ?? null);
+        self::assertSame('QWxhZGRpbWVudA==', $headers['Content-MD5'] ?? null);
     }
+
     public function testParseHeaderFromServerDefaultValues(): void
     {
         $serverCollection = new ServerCollection([]);
         $headers = $serverCollection->getHeaders();
-        $this->assertEquals('text/html', $headers['Content-Type'] ?? null);
-        $this->assertEquals('0', $headers['Content-Length'] ?? null);
-        $this->assertEquals('', $headers['Content-Encoding'] ?? null);
-        $this->assertEquals('', $headers['Content-Language'] ?? null);
-        $this->assertEquals('', $headers['Content-MD5'] ?? null);
+        self::assertSame('text/html', $headers['Content-Type'] ?? null);
+        self::assertSame(0, $headers['Content-Length'] ?? null);
+        self::assertSame('', $headers['Content-Encoding'] ?? null);
+        self::assertSame('', $headers['Content-Language'] ?? null);
+        self::assertSame('', $headers['Content-MD5'] ?? null);
     }
 }

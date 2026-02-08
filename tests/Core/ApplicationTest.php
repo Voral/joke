@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -12,7 +14,12 @@ use Vasoft\Joke\Core\ServiceContainer;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Tests\Fixtures\Core\Middlewares\SingleMiddleware;
 
-class ApplicationTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Application
+ */
+final class ApplicationTest extends TestCase
 {
     public function testLoadingEnvironment(): void
     {
@@ -20,7 +27,7 @@ class ApplicationTest extends TestCase
         new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            $di
+            $di,
         );
         $byAlias = $di->get('env');
         $byClass = $di->get(Environment::class);
@@ -34,7 +41,7 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            $di
+            $di,
         );
         ob_start();
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/']);
@@ -49,7 +56,7 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         );
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/json/Alex']));
@@ -57,13 +64,12 @@ class ApplicationTest extends TestCase
         self::assertSame('{"fio":"Alex"}', $output);
     }
 
-
     public function testDefaultMiddleware(): void
     {
         $app = new Application(
             dirname(__DIR__, 2),
             '/tests/Fixtures/routes/web-no-wildcard.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         );
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
@@ -76,7 +82,7 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         );
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
@@ -90,13 +96,13 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         );
-        self::assertEquals(PHP_SESSION_NONE, session_status());
+        self::assertSame(PHP_SESSION_NONE, session_status());
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/Alex']));
         $output = ob_get_clean();
-        self::assertEquals(PHP_SESSION_ACTIVE, session_status(), 'Session middleware is not active');
+        self::assertSame(PHP_SESSION_ACTIVE, session_status(), 'Session middleware is not active');
         self::assertSame('Hi Alex', $output);
     }
 
@@ -107,7 +113,7 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         )
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware);
@@ -130,7 +136,7 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            $diContainer
+            $diContainer,
         )
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
@@ -145,7 +151,7 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
         self::assertSame(
             'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Middleware 5 begin#Hi jons#Middleware 5 end#Middleware 4 end#Middleware 3 end#Middleware 0 end',
-            $output
+            $output,
         );
     }
 
@@ -160,7 +166,7 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         )
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
@@ -172,14 +178,14 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
         self::assertSame(
             'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Hi jons#Middleware 4 end#Middleware 3 end#Middleware 0 end',
-            $output
+            $output,
         );
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name-filtered/jons']));
         $output = ob_get_clean();
         self::assertSame(
             'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Middleware 5 begin#Hi jons#Middleware 5 end#Middleware 4 end#Middleware 3 end#Middleware 0 end',
-            $output
+            $output,
         );
     }
 
@@ -188,14 +194,14 @@ class ApplicationTest extends TestCase
         $app = new Application(
             dirname(__DIR__, 2),
             '/routes/web.php',
-            new ServiceContainer()
+            new ServiceContainer(),
         )->addMiddleware(Router::class);
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
         $output = ob_get_clean();
         self::assertSame(
-            '{"message":"\'Middleware Vasoft\\\\Joke\\\\Core\\\\Routing\\\\Router must implements MiddlewareInterface"}',
-            $output
+            '{"message":"\'Middleware Vasoft\\\Joke\\\Core\\\Routing\\\Router must implements MiddlewareInterface"}',
+            $output,
         );
     }
 }

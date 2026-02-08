@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Collections;
 
 /**
@@ -12,13 +14,13 @@ class PropsCollection extends ReadonlyPropsCollection
     /**
      * Устанавливает значение свойства.
      *
-     * @param string $key Имя свойства
-     * @param mixed $value Значение для сохранения (скаляр, массив или null)
-     * @return static
+     * @param string $key   Имя свойства
+     * @param mixed  $value Значение для сохранения (скаляр, массив или null)
      */
     public function set(string $key, mixed $value): static
     {
         $this->props[$key] = $value;
+
         return $this;
     }
 
@@ -26,24 +28,25 @@ class PropsCollection extends ReadonlyPropsCollection
      * Заменяет все текущие свойства новым набором.
      *
      * @param array<string, mixed> $props Новый набор свойств
-     * @return static
      */
     public function reset(array $props): static
     {
         $this->props = $props;
+
         return $this;
     }
 
     /**
      * Удаляет свойство по ключу.
+     *
      * @param string $key Имя удаляемого свойства
-     * @return static
      */
     public function unset(string $key): static
     {
         if (array_key_exists($key, $this->props)) {
             unset($this->props[$key]);
         }
+
         return $this;
     }
 }

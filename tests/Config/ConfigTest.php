@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Config;
 
 use Vasoft\Joke\Config\Config;
@@ -9,7 +11,12 @@ use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 
-class ConfigTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Config\Config
+ */
+final class ConfigTest extends TestCase
 {
     public function testGetBase(): void
     {
@@ -18,9 +25,9 @@ class ConfigTest extends TestCase
                 'ttl' => 1000,
                 'user' => [
                     'name' => 'Alex Tester',
-                    'age' => 23
+                    'age' => 23,
                 ],
-            ]
+            ],
         ];
 
         /** @var ConfigLoader $loader */
@@ -117,6 +124,7 @@ class ConfigTest extends TestCase
             ->willThrowException(new ConfigException('Test'));
 
         $config = new Config($loader);
+
         try {
             $config->get('extended');
         } catch (ConfigException $e) {
@@ -132,9 +140,9 @@ class ConfigTest extends TestCase
                 'ttl' => 1000,
                 'user' => [
                     'name' => 'Alex Tester',
-                    'age' => 23
+                    'age' => 23,
                 ],
-            ]
+            ],
         ];
 
         /** @var ConfigLoader $loader */
@@ -171,17 +179,12 @@ class ConfigTest extends TestCase
         $config->getOrFail('core.ttl');
     }
 
-    /**
-     * @return void
-     * #[AllowMockObjectsWithoutExpectations]
-     */
     public function testAccessLoader(): void
     {
         $loader = new ConfigLoader('/test', new Environment(new EnvironmentLoader('test')));
         $config = new Config($loader);
 
         self::assertSame(spl_object_id($loader), spl_object_id($config->getLoader()));
-
     }
 
     public function testGetOrFailCustomException(): void
@@ -198,10 +201,10 @@ class ConfigTest extends TestCase
 
         $config = new Config($loader);
         self::expectException(ConfigException::class);
-        self::expectExceptionMessage("Custom message: core.ttl");
+        self::expectExceptionMessage('Custom message: core.ttl');
         $config->getOrFail(
             'core.ttl',
-            static fn(string $key) => new ConfigException('Custom message: ' . $key)
+            static fn(string $key) => new ConfigException('Custom message: ' . $key),
         );
     }
 }

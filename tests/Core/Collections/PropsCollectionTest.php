@@ -1,11 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Collections;
 
 use Vasoft\Joke\Core\Collections\PropsCollection;
 use PHPUnit\Framework\TestCase;
 
-class PropsCollectionTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Collections\PropsCollection
+ */
+final class PropsCollectionTest extends TestCase
 {
     public function testReset(): void
     {
@@ -14,10 +21,10 @@ class PropsCollectionTest extends TestCase
             'int' => 1,
         ];
         $collection = new PropsCollection($data);
-        self::assertEquals($data, $collection->getAll());
+        self::assertSame($data, $collection->getAll());
         $newData = ['string' => 'someTest', 'int' => 2];
         $collection->reset($newData);
-        self::assertEquals($newData, $collection->getAll());
+        self::assertSame($newData, $collection->getAll());
     }
 
     public function testSetProperty(): void

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Middlewares;
 
 use Vasoft\Joke\Core\Exceptions\Http\CsrfMismatchException;
@@ -8,10 +10,14 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Request\HttpRequest;
 use Vasoft\Joke\Core\Response\ResponseStatus;
 
-class CsrfMiddlewareTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Middlewares\CsrfMiddleware
+ */
+final class CsrfMiddlewareTest extends TestCase
 {
-
-    public function testHandle()
+    public function testHandle(): void
     {
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware();
@@ -20,7 +26,7 @@ class CsrfMiddlewareTest extends TestCase
         self::assertNotEmpty($request->session->get(CsrfMiddleware::CSRF_TOKEN_NAME));
     }
 
-    public function testHandlePostSuccessHeader()
+    public function testHandlePostSuccessHeader(): void
     {
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware();
@@ -36,7 +42,7 @@ class CsrfMiddlewareTest extends TestCase
         self::assertSame('success', $middleware->handle($request, static fn() => 'success'));
     }
 
-    public function testHandlePostSuccessPost()
+    public function testHandlePostSuccessPost(): void
     {
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware();
@@ -51,7 +57,7 @@ class CsrfMiddlewareTest extends TestCase
         self::assertSame('success', $middleware->handle($request, static fn() => 'success'));
     }
 
-    public function testHandlePostSuccessGet()
+    public function testHandlePostSuccessGet(): void
     {
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware();
@@ -61,16 +67,17 @@ class CsrfMiddlewareTest extends TestCase
             get: [CsrfMiddleware::CSRF_TOKEN_NAME => $token],
             post: [CsrfMiddleware::CSRF_TOKEN_NAME => 'unknown2'],
             server: [
-            'REQUEST_METHOD' => 'POST',
-            'REQUEST_URI' => '/csrf',
-            'HTTP_' . str_replace('-', '_', strtoupper(CsrfMiddleware::CSRF_TOKEN_HEADER)) => 'unknown',
-        ]);
+                'REQUEST_METHOD' => 'POST',
+                'REQUEST_URI' => '/csrf',
+                'HTTP_' . str_replace('-', '_', strtoupper(CsrfMiddleware::CSRF_TOKEN_HEADER)) => 'unknown',
+            ],
+        );
 
         $request->session->set(CsrfMiddleware::CSRF_TOKEN_NAME, $token);
         self::assertSame('success', $middleware->handle($request, static fn() => 'success'));
     }
 
-    public function testHandlePostNoToken()
+    public function testHandlePostNoToken(): void
     {
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware();
@@ -80,10 +87,11 @@ class CsrfMiddlewareTest extends TestCase
         $middleware->handle($request, static fn() => null);
     }
 
-    public function testHandlePostNoTokenHttpStatus()
+    public function testHandlePostNoTokenHttpStatus(): void
     {
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware();
+
         try {
             $middleware->handle($request, static fn() => null);
         } catch (CsrfMismatchException $e) {

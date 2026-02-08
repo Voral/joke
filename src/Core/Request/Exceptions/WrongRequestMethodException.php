@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Request\Exceptions;
 
 use Vasoft\Joke\Core\Exceptions\JokeException;
@@ -12,7 +14,7 @@ class WrongRequestMethodException extends JokeException
         parent::__construct(
             sprintf('Wrong request method: %s', $method),
             $code,
-            $previous
+            $previous,
         );
     }
 

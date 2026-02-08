@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Middlewares;
 
 use PHPUnit\Framework\TestCase;
@@ -9,20 +11,24 @@ use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\ResponseStatus;
 use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
 
-class ExceptionMiddlewareTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Middlewares\ExceptionMiddleware
+ */
+final class ExceptionMiddlewareTest extends TestCase
 {
-
     public function testHandleSuccess(): void
     {
         $foo = static fn() => 'Success';
         $middleware = new ExceptionMiddleware();
         $output = $middleware->handle(new HttpRequest(), $foo);
-        self::assertEquals('Success', $output);
+        self::assertSame('Success', $output);
     }
 
     public function testHandleJokeException(): void
     {
-        $foo = static function () {
+        $foo = static function (): void {
             throw new NotFoundException('Route not found');
         };
         $middleware = new ExceptionMiddleware();
@@ -36,7 +42,7 @@ class ExceptionMiddlewareTest extends TestCase
 
     public function testHandlePHPException(): void
     {
-        $foo = static function () {
+        $foo = static function (): void {
             throw new \Exception('Some exception');
         };
         $middleware = new ExceptionMiddleware();

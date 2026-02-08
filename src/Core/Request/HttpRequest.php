@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Request;
 
 use Vasoft\Joke\Core\Collections\PropsCollection;
@@ -17,8 +19,6 @@ class HttpRequest extends Request
 {
     /**
      * Данные GET-параметров запроса.
-     *
-     * @var PropsCollection
      */
     public PropsCollection $get {
         get {
@@ -27,8 +27,6 @@ class HttpRequest extends Request
     }
     /**
      * Данные POST-параметров запроса.
-     *
-     * @var PropsCollection
      */
     public PropsCollection $post {
         get {
@@ -37,8 +35,6 @@ class HttpRequest extends Request
     }
     /**
      * Данные cookie запроса.
-     *
-     * @var PropsCollection
      */
     public PropsCollection $cookies {
         get {
@@ -47,8 +43,6 @@ class HttpRequest extends Request
     }
     /**
      * Информация о загруженных файлах.
-     *
-     * @var PropsCollection
      */
     public PropsCollection $files {
         get {
@@ -67,8 +61,6 @@ class HttpRequest extends Request
     }
     /**
      * Произвольные свойства, привязанные к запросу (например, параметры маршрута).
-     *
-     * @var PropsCollection
      */
     public PropsCollection $props {
         get {
@@ -77,8 +69,6 @@ class HttpRequest extends Request
     }
     /**
      * Хранилище данных сессии.
-     *
-     * @var Session
      */
     public Session $session {
         get {
@@ -89,14 +79,13 @@ class HttpRequest extends Request
      * Заголовки HTTP-запроса.
      *
      * Лениво инициализируется из серверных переменных при первом обращении.
-     *
-     * @var PropsCollection|null
      */
     public ?PropsCollection $headers = null {
         get {
-            if ($this->headers === null) {
+            if (null === $this->headers) {
                 $this->headers = new PropsCollection($this->server->getHeaders());
             }
+
             return $this->headers;
         }
     }
@@ -105,25 +94,22 @@ class HttpRequest extends Request
      *
      * Лениво определяется из SERVER['REQUEST_METHOD'] и преобразуется в HttpMethod enum.
      * Выбрасывает исключение при неизвестном методе.
-     *
-     * @var HttpMethod|null
      */
     public ?HttpMethod $method = null {
         get {
-            if ($this->method === null) {
+            if (null === $this->method) {
                 $method = strtoupper($this->server->get('REQUEST_METHOD', 'GET'));
                 $this->method = HttpMethod::tryFrom($method);
-                if ($this->method === null) {
+                if (null === $this->method) {
                     throw new WrongRequestMethodException($method);
                 }
             }
+
             return $this->method;
         }
     }
     /**
      * Кэшированный путь URI без query string.
-     *
-     * @var string|null
      */
     private ?string $path = null;
 
@@ -131,8 +117,6 @@ class HttpRequest extends Request
      * Разобранные JSON-данные из тела запроса.
      *
      * Заполняется автоматически, если Content-Type = application/json.
-     *
-     * @var array
      */
     public array $json = [] {
         get => $this->json;
@@ -145,12 +129,12 @@ class HttpRequest extends Request
      * - application/json → массив в свойство $json
      * - application/x-www-form-urlencoded → параметры в $post
      *
-     * @param array<string, mixed> $get GET-параметры
-     * @param array<string, mixed> $post POST-параметры
-     * @param array<string, mixed> $cookies Cookie
-     * @param array<string, mixed> $files Информация о загруженных файлах
-     * @param array<string, string> $server Серверные переменные
-     * @param string|null $rawBody Сырое тело запроса (например, из php://input)
+     * @param array<string, mixed>  $get     GET-параметры
+     * @param array<string, mixed>  $post    POST-параметры
+     * @param array<string, mixed>  $cookies Cookie
+     * @param array<string, mixed>  $files   Информация о загруженных файлах
+     * @param array<string, string> $server  Серверные переменные
+     * @param null|string           $rawBody Сырое тело запроса (например, из php://input)
      */
     public function __construct(
         array $get = [],
@@ -178,23 +162,21 @@ class HttpRequest extends Request
 
     /**
      * Проверяет, является ли Content-Type application/json.
-     *
-     * @return bool
      */
     private function isJson(): bool
     {
         $contentType = $this->server->getHeaders()['Content-Type'] ?? '';
+
         return str_starts_with(strtolower($contentType), 'application/json');
     }
 
     /**
      * Проверяет, является ли Content-Type application/x-www-form-urlencoded.
-     *
-     * @return bool
      */
     private function isUrlEncoded(): bool
     {
         $contentType = $this->server->getHeaders()['Content-Type'] ?? '';
+
         return str_starts_with(strtolower($contentType), 'application/x-www-form-urlencoded');
     }
 
@@ -204,11 +186,11 @@ class HttpRequest extends Request
      * Обычно используется для передачи параметров маршрута или контекстных данных.
      *
      * @param array<string, mixed> $props Ассоциативный массив свойств
-     * @return static
      */
     public function setProps(array $props): static
     {
         $this->props->reset($props);
+
         return $this;
     }
 
@@ -216,15 +198,14 @@ class HttpRequest extends Request
      * Возвращает путь URI без query string.
      *
      * Например, для /user/123?tab=profile вернёт /user/123.
-     *
-     * @return string
      */
     public function getPath(): string
     {
-        if ($this->path === null) {
+        if (null === $this->path) {
             $path = explode('?', $this->server->get('REQUEST_URI', '/'));
             $this->path = $path[0] ?? '/';
         }
+
         return $this->path;
     }
 
@@ -233,8 +214,6 @@ class HttpRequest extends Request
      *
      * Используется в точке входа (public/index.php) для создания запроса
      * на основе реальных данных текущего HTTP-запроса.
-     *
-     * @return static
      */
     public static function fromGlobals(): static
     {

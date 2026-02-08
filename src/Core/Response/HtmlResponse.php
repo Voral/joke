@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Response;
 
 /**
@@ -12,11 +14,8 @@ class HtmlResponse extends Response
 {
     /**
      * Тело HTML-ответа.
-     *
-     * @var string
      */
     protected string $body = '';
-
 
     /**
      * Конструктор HTML-ответа.
@@ -36,19 +35,16 @@ class HtmlResponse extends Response
      * Для объектов вызывается метод __toString(), если он реализован.
      *
      * @param mixed $body Данные для отправки в теле ответа
-     * @return static
      */
     public function setBody(mixed $body): static
     {
-        $this->body = (string)$body;
+        $this->body = (string) $body;
+
         return $this;
     }
 
-
     /**
      * Возвращает текущее тело ответа.
-     *
-     * @return string
      */
     public function getBody(): string
     {
@@ -60,8 +56,6 @@ class HtmlResponse extends Response
      *
      * Для HTML-ответа тело уже хранится в виде строки, поэтому метод
      * просто возвращает его без дополнительной обработки.
-     *
-     * @return string
      */
     public function getBodyAsString(): string
     {

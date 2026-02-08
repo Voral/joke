@@ -1,11 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Routing;
 
-use Closure;
-use ReflectionFunction;
-use ReflectionFunctionAbstract;
-use ReflectionParameter;
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
@@ -24,15 +22,14 @@ use Vasoft\Joke\Core\ServiceContainer;
  * @todo Реализовать кэширование результатов рефлексии для повышения производительности
  * @todo Добавить поддержку параметров со значениями по умолчанию
  */
-class ParameterResolver
-    implements ResolverInterface
+class ParameterResolver implements ResolverInterface
 {
     /**
      * Конструктор резолвера.
      *
      * @param ServiceContainer $serviceContainer DI-контейнер для разрешения сервисов
      */
-    public function __construct(private readonly ServiceContainer $serviceContainer) { }
+    public function __construct(private readonly ServiceContainer $serviceContainer) {}
 
     /**
      * Создаёт объект рефлексии для заданного callable.
@@ -40,24 +37,27 @@ class ParameterResolver
      * Поддерживает все формы callable: замыкания, строки вида 'Class::method',
      * массивы [Class::class, 'method'].
      *
-     * @param callable|string|array $callable Целевой callable для анализа
-     * @return ReflectionFunctionAbstract Объект рефлексии функции или метода
+     * @param array|callable|string $callable Целевой callable для анализа
+     *
+     * @return \ReflectionFunctionAbstract Объект рефлексии функции или метода
+     *
      * @throws ParameterResolveException
      */
-    private function getCallableReflection(callable|string|array $callable): ReflectionFunctionAbstract
+    private function getCallableReflection(array|callable|string $callable): \ReflectionFunctionAbstract
     {
         try {
-            if ($callable instanceof Closure) {
-                return new ReflectionFunction($callable);
+            if ($callable instanceof \Closure) {
+                return new \ReflectionFunction($callable);
             }
 
             if (is_string($callable)) {
                 if (str_contains($callable, '::')) {
                     [$class, $method] = explode('::', $callable, 2);
+
                     return new \ReflectionMethod($class, $method);
-                } else {
-                    return new ReflectionFunction($callable);
                 }
+
+                return new \ReflectionFunction($callable);
             }
 
             [$target, $method] = $callable;
@@ -65,6 +65,7 @@ class ParameterResolver
         } catch (\ReflectionException $e) {
             throw new ParameterResolveException($e->getMessage(), $e->getCode(), $e);
         }
+
         return $result;
     }
 
@@ -78,9 +79,11 @@ class ParameterResolver
      * - если имя не найдено в контексте, но тип — класс → запрашивает сервис из DI-контейнера
      * - иначе → выбрасывает исключение
      *
-     * @param array<ReflectionParameter> $parameters Список параметров для разрешения
-     * @param array<string, mixed> $context Контекстные переменные (например, параметры маршрута)
+     * @param array<\ReflectionParameter> $parameters Список параметров для разрешения
+     * @param array<string, mixed>        $context    Контекстные переменные (например, параметры маршрута)
+     *
      * @return array Массив разрешённых аргументов
+     *
      * @throws ParameterResolveException Если параметр не может быть разрешён
      *
      * @todo Декомпозировать метод
@@ -91,7 +94,7 @@ class ParameterResolver
         foreach ($parameters as $param) {
             $name = $param->getName();
             $type = $param->getType()?->getName();
-
+            // todo Приведение к float и int временное решение, надо учитывать юнион типы
             if (isset($context[$name])) {
                 if ($type && class_exists($type)) {
                     if (method_exists($type, 'tryFrom')) {
@@ -99,14 +102,19 @@ class ParameterResolver
                     } else {
                         throw new AutowiredException($name, $type);
                     }
+                } elseif ('float' === $type) {
+                    $args[] = (float) $context[$name];
+                } elseif ('int' === $type) {
+                    $args[] = (int) $context[$name];
                 } else {
                     $args[] = $context[$name];
                 }
+
                 continue;
             }
             if ($type && class_exists($type)) {
                 $service = $this->serviceContainer->get($type);
-                if ($service === null) {
+                if (null === $service) {
                     throw new AutowiredException($name, $type);
                 }
                 $args[] = $service;
@@ -114,21 +122,17 @@ class ParameterResolver
                 throw new AutowiredException($name, $type ?: 'scalar');
             }
         }
+
         return $args;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function resolveForCallable(callable|string|array $callable, array $context = []): array
+    public function resolveForCallable(array|callable|string $callable, array $context = []): array
     {
         $reflection = $this->getCallableReflection($callable);
+
         return $this->resolveProps($reflection->getParameters(), $context);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function resolveForConstructor(string $className, array $context = []): array
     {
         try {
@@ -138,9 +142,10 @@ class ParameterResolver
         }
         $constructor = $reflection->getConstructor();
 
-        if ($constructor === null) {
+        if (null === $constructor) {
             return [];
         }
+
         return $this->resolveProps($constructor->getParameters(), $context);
     }
 }

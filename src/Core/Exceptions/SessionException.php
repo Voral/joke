@@ -1,17 +1,17 @@
 <?php
 
-namespace Vasoft\Joke\Core\Exceptions;
+declare(strict_types=1);
 
-use Throwable;
+namespace Vasoft\Joke\Core\Exceptions;
 
 class SessionException extends JokeException
 {
-    public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null)
+    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
     {
         parent::__construct(
-            $message === '' ? 'Readonly session mode. Can\'t write' : $message,
+            '' === $message ? 'Readonly session mode. Can\'t write' : $message,
             $code,
-            $previous
+            $previous,
         );
     }
 }

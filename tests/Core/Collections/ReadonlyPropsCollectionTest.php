@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core\Collections;
 
 use Vasoft\Joke\Config\Exceptions\ConfigException;
@@ -7,7 +9,12 @@ use Vasoft\Joke\Core\Collections\PropsCollection;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Exceptions\JokeException;
 
-class ReadonlyPropsCollectionTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Collections\ReadonlyPropsCollection
+ */
+final class ReadonlyPropsCollectionTest extends TestCase
 {
     private static array $data = [
         'string' => 'string',
@@ -26,7 +33,7 @@ class ReadonlyPropsCollectionTest extends TestCase
 
     public function testDefaultValue(): void
     {
-        self::assertSame(null, self::$collection->get('notExists'));
+        self::assertNull(self::$collection->get('notExists'));
         self::assertSame('default Value', self::$collection->get('notExists', 'default Value'));
     }
 
@@ -41,10 +48,10 @@ class ReadonlyPropsCollectionTest extends TestCase
 
     public function testGetAll(): void
     {
-        self::assertEquals(self::$data, self::$collection->getAll());
+        self::assertSame(self::$data, self::$collection->getAll());
     }
 
-    public function testHas():void
+    public function testHas(): void
     {
         self::assertTrue(self::$collection->has('string'));
         self::assertFalse(self::$collection->has('integer'));
@@ -56,6 +63,7 @@ class ReadonlyPropsCollectionTest extends TestCase
         self::expectExceptionMessage('Property "unknown" does not exist.');
         self::$collection->getOrFail('unknown');
     }
+
     public function testGetOrFailSuccess(): void
     {
         self::assertSame(self::$data['string'], self::$collection->getOrFail('string'));
@@ -64,10 +72,14 @@ class ReadonlyPropsCollectionTest extends TestCase
         self::assertSame(self::$data['bool'], self::$collection->getOrFail('bool'));
         self::assertSame(self::$data['array'], self::$collection->getOrFail('array'));
     }
+
     public function testGetOrFailCustom(): void
     {
         self::expectException(JokeException::class);
         self::expectExceptionMessage('unknown does not exist.');
-        self::$collection->getOrFail('unknown',fn(string $key) => new ConfigException($key . ' does not exist.'));
+        self::$collection->getOrFail(
+            'unknown',
+            static fn(string $key) => new ConfigException($key . ' does not exist.'),
+        );
     }
 }

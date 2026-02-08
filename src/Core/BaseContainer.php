@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\DiContainerInterface;
@@ -37,8 +39,6 @@ abstract class BaseContainer implements DiContainerInterface
      * Флаг блокировки рекурсивного разрешения резолвера.
      *
      * Используется для предотвращения бесконечной рекурсии при создании резолвера.
-     *
-     * @var bool
      */
     private bool $lockResolver = false;
 
@@ -63,26 +63,19 @@ abstract class BaseContainer implements DiContainerInterface
         $this->registerSingleton(ResolverInterface::class, ParameterResolver::class);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getParameterResolver(): ResolverInterface
     {
         if (isset($this->singletons[ResolverInterface::class])) {
-            /** @var ResolverInterface $resolver */
-            $resolver = $this->singletons[ResolverInterface::class];
-            return $resolver;
+            // @var ResolverInterface $resolver
+            return $this->singletons[ResolverInterface::class];
         }
         $definition = $this->singletonsRegistry[ResolverInterface::class] ?? ResolverInterface::class;
         $this->singletons[ResolverInterface::class] = new $definition($this);
+
         return $this->singletons[ResolverInterface::class];
     }
 
-
-    /**
-     * @inheritDoc
-     */
-    public function registerSingleton(string $name, callable|string|object $service): void
+    public function registerSingleton(string $name, callable|object|string $service): void
     {
         $this->singletonsRegistry[$name] = $service;
         if (is_object($service) && !($service instanceof \Closure)) {
@@ -90,10 +83,7 @@ abstract class BaseContainer implements DiContainerInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function register(string $name, callable|string|object $service): void
+    public function register(string $name, callable|object|string $service): void
     {
         if (is_object($service) && !is_callable($service)) {
             $this->registerSingleton($name, $service);
@@ -102,15 +92,13 @@ abstract class BaseContainer implements DiContainerInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function get(string $name): ?object
     {
         $result = $this->getSingleton($name);
-        if ($result !== null) {
+        if (null !== $result) {
             return $result;
         }
+
         return $this->getService($name);
     }
 
@@ -118,7 +106,9 @@ abstract class BaseContainer implements DiContainerInterface
      * Создаёт новый экземпляр прототипа.
      *
      * @param string $name Имя сервиса
-     * @return object|null Экземпляр сервиса или null, если не зарегистрирован
+     *
+     * @return null|object Экземпляр сервиса или null, если не зарегистрирован
+     *
      * @throws ParameterResolveException При ошибках
      */
     private function getService(string $name): ?object
@@ -135,6 +125,7 @@ abstract class BaseContainer implements DiContainerInterface
         if (is_callable($this->serviceRegistry[$name])) {
             return $this->serviceRegistry[$name](...$args);
         }
+
         return new $this->serviceRegistry[$name](...$args);
     }
 
@@ -142,7 +133,9 @@ abstract class BaseContainer implements DiContainerInterface
      * Получает или создаёт синглтон.
      *
      * @param string $name Имя сервиса
-     * @return object|null Экземпляр сервиса или null, если не зарегистрирован
+     *
+     * @return null|object Экземпляр сервиса или null, если не зарегистрирован
+     *
      * @throws ParameterResolveException При ошибках рефлексии
      */
     private function getSingleton(string $name): ?object
@@ -169,6 +162,7 @@ abstract class BaseContainer implements DiContainerInterface
         } else {
             $this->singletons[$name] = new $definition(...$args);
         }
+
         return $this->singletons[$name];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Fixtures\Service;
 
 use Vasoft\Joke\Core\Routing\ParameterResolver;

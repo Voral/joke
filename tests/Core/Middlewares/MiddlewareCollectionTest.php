@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Core\Middlewares;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
@@ -9,16 +11,17 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Core\Middlewares\StdMiddleware;
 use Vasoft\Joke\Core\Request\HttpRequest;
 
-class MiddlewareCollectionTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversDefaultClass \Vasoft\Joke\Core\Middlewares\MiddlewareCollection
+ */
+final class MiddlewareCollectionTest extends TestCase
 {
-
     private function getMiddleware(int $id): MiddlewareInterface
     {
-        return new readonly class($id) implements MiddlewareInterface {
-
-            public function __construct(private int $id)
-            {
-            }
+        return new readonly class ($id) implements MiddlewareInterface {
+            public function __construct(private int $id) {}
 
             public function handle(HttpRequest $request, callable $next): mixed
             {
@@ -27,7 +30,7 @@ class MiddlewareCollectionTest extends TestCase
         };
     }
 
-    public function testAddMiddleware()
+    public function testAddMiddleware(): void
     {
         $testMiddleware1 = $this->getMiddleware(1);
         $testMiddleware2 = $this->getMiddleware(2);
@@ -49,12 +52,12 @@ class MiddlewareCollectionTest extends TestCase
         self::assertSame(
             $testMiddleware2,
             $forRun[0],
-            'Must return the reversed array. The test middleware must be first'
+            'Must return the reversed array. The test middleware must be first',
         );
         self::assertSame(
             ExceptionMiddleware::class,
             $forRun[1],
-            'Must return the reversed array. The ExceptionMiddleware middleware must be second'
+            'Must return the reversed array. The ExceptionMiddleware middleware must be second',
         );
 
         $testMiddleware3 = $this->getMiddleware(3);
@@ -74,7 +77,7 @@ class MiddlewareCollectionTest extends TestCase
         self::assertSame($testMiddleware3, $list[2]->middleware);
     }
 
-    public function testFilterMiddleware()
+    public function testFilterMiddleware(): void
     {
         $testMiddleware1 = $this->getMiddleware(1);
         $testMiddleware2 = $this->getMiddleware(2);

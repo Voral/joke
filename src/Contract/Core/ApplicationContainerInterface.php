@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Contract\Core;
 
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
@@ -13,18 +15,20 @@ interface ApplicationContainerInterface extends DiContainerInterface
 {
     /**
      * Возвращает маршрутизатор
-     * @return RouterInterface
+     *
      * @throws ParameterResolveException
      */
     public function getRouter(): RouterInterface;
 
     /**
      * Задает роутер
-     * @param callable|string|object $router Определение сервиса:
-     *        - строка с именем класса
-     *        - callable (фабрика)
-     *        - готовый объект
+     *
+     * @param callable|object|string $router Определение сервиса:
+     *                                       - строка с именем класса
+     *                                       - callable (фабрика)
+     *                                       - готовый объект
+     *
      * @return $this
      */
-    public function setRouter(callable|string|object $router): static;
+    public function setRouter(callable|object|string $router): static;
 }

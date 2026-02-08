@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\ApplicationContainerInterface;
@@ -26,20 +28,15 @@ class ServiceContainer extends BaseContainer implements ApplicationContainerInte
         $this->setRouter(Router::class);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getRouter(): RouterInterface
     {
         return $this->get(RouterInterface::class);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setRouter(callable|object|string $router): static
     {
         $this->registerSingleton(RouterInterface::class, Router::class);
+
         return $this;
     }
 }

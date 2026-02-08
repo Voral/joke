@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vasoft\Joke\Core\Routing\Exceptions;
 
 use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
@@ -12,10 +14,10 @@ class AutowiredException extends ParameterResolveException
             sprintf(
                 'Failed to autowire parameter "$%s": expected type "%s" cannot be resolved or is incompatible with the provided value.',
                 $paramName,
-                $type
+                $type,
             ),
             $code,
-            $previous
+            $previous,
         );
     }
 }
