@@ -61,7 +61,7 @@ class MiddlewareCollection
      *
      * @param array<MiddlewareDto> $middlewares
      *
-     * @return $this
+     * @return static
      */
     public function withMiddlewares(array $middlewares): static
     {

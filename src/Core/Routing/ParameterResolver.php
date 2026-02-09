@@ -93,7 +93,7 @@ class ParameterResolver implements ResolverInterface
         $args = [];
         foreach ($parameters as $param) {
             $name = $param->getName();
-            $type = $param->getType()?->getName();
+            $type = $this->getTypeName($param->getType());
             // todo Приведение к float и int временное решение, надо учитывать юнион типы
             if (isset($context[$name])) {
                 if ($type && class_exists($type)) {
@@ -124,6 +124,36 @@ class ParameterResolver implements ResolverInterface
         }
 
         return $args;
+    }
+
+    private function getTypeName(
+        ?\ReflectionType $type,
+    ): ?string {
+        $typeName = null;
+        if (null !== $type) {
+            if ($type instanceof \ReflectionNamedType) {
+                $typeName = $type->getName();
+            } elseif ($type instanceof \ReflectionUnionType) {
+                $types = [];
+                foreach ($type->getTypes() as $unionType) {
+                    if ($unionType instanceof \ReflectionNamedType) {
+                        $types[] = $unionType->getName();
+                    }
+                }
+                $typeName = implode('|', $types);
+            } elseif ($type instanceof \ReflectionIntersectionType) {
+                // Для пересечений типов
+                $types = [];
+                foreach ($type->getTypes() as $intersectionType) {
+                    if ($intersectionType instanceof \ReflectionNamedType) {
+                        $types[] = $intersectionType->getName();
+                    }
+                }
+                $typeName = implode('&', $types);
+            }
+        }
+
+        return $typeName;
     }
 
     public function resolveForCallable(array|callable|string $callable, array $context = []): array

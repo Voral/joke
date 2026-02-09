@@ -160,12 +160,12 @@ class Application
      * 4. Выполняет обработчик маршрута
      * 5. Отправляет ответ клиенту
      *
-     * @param Request $request Входящий HTTP-запрос
+     * @param HttpRequest $request Входящий HTTP-запрос
      *
      * @throws ParameterResolveException
      * @throws WrongMiddlewareException  Если middleware не реализует MiddlewareInterface
      */
-    public function handle(Request $request): void
+    public function handle(HttpRequest $request): void
     {
         $next = fn() => $this->handleRoute($request);
         $response = $this->processMiddlewares($request, $this->middlewares->getArrayForRun(), $next);
@@ -210,7 +210,7 @@ class Application
     private function handleRoute(HttpRequest $request): mixed
     {
         $this->serviceContainer->registerSingleton(HttpRequest::class, $request);
-        $route = $this->serviceContainer->getRouter()?->findRoute($request);
+        $route = $this->serviceContainer->getRouter()->findRoute($request);
         if (null === $route) {
             throw new NotFoundException('Route not found');
         }

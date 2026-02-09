@@ -96,18 +96,9 @@ class HttpRequest extends Request
      * Выбрасывает исключение при неизвестном методе.
      */
     public ?HttpMethod $method = null {
-        get {
-            if (null === $this->method) {
-                $method = strtoupper($this->server->get('REQUEST_METHOD', 'GET'));
-                $this->method = HttpMethod::tryFrom($method);
-                if (null === $this->method) {
-                    throw new WrongRequestMethodException($method);
-                }
-            }
-
-            return $this->method;
-        }
+        get => $this->method ??= $this->parseMethod();
     }
+
     /**
      * Кэшированный путь URI без query string.
      */
@@ -161,6 +152,22 @@ class HttpRequest extends Request
     }
 
     /**
+     * Возвращает метод запроса полученный из глобальной константы $_SERVER.
+     *
+     * @throws WrongRequestMethodException
+     */
+    private function parseMethod(): HttpMethod
+    {
+        $method = strtoupper($this->server->get('REQUEST_METHOD', 'GET'));
+        $methodParsed = HttpMethod::tryFrom($method);
+        if (null === $methodParsed) {
+            throw new WrongRequestMethodException($method);
+        }
+
+        return $methodParsed;
+    }
+
+    /**
      * Проверяет, является ли Content-Type application/json.
      */
     private function isJson(): bool
@@ -203,7 +210,7 @@ class HttpRequest extends Request
     {
         if (null === $this->path) {
             $path = explode('?', $this->server->get('REQUEST_URI', '/'));
-            $this->path = $path[0] ?? '/';
+            $this->path = $path[0];
         }
 
         return $this->path;
@@ -215,8 +222,8 @@ class HttpRequest extends Request
      * Используется в точке входа (public/index.php) для создания запроса
      * на основе реальных данных текущего HTTP-запроса.
      */
-    public static function fromGlobals(): static
+    public static function fromGlobals(): self
     {
-        return new static($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input'));
+        return new self($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input'));
     }
 }
