@@ -20,9 +20,9 @@ interface RouterInterface
      *
      * Создание нового ресурса или выполнение произвольного действия. Не идемпотентен. Меняет состояние
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -33,9 +33,9 @@ interface RouterInterface
      *
      * Поучение данных. Идемпотентен. Не должен менять состояние
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -46,9 +46,9 @@ interface RouterInterface
      *
      * Полная замена существующего ресурса. Идемпотентен. Меняет состояние ресурса.
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -59,9 +59,9 @@ interface RouterInterface
      *
      * Удаление существующего ресурса. Идемпотентен. Меняет состояние ресурса.
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -72,9 +72,9 @@ interface RouterInterface
      *
      * Частичное обновление существующего ресурса. Идемпотентен или нет - зависит от логики. Меняет состояние ресурса.
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -85,9 +85,9 @@ interface RouterInterface
      *
      * Поучение данных только в заголовках. Идемпотентен. Не должен менять состояние
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -96,9 +96,9 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на любой запрос
      *
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -107,10 +107,10 @@ interface RouterInterface
     /**
      * Регистрация маршрута отвечающего на запрос заданного перечня методов.
      *
-     * @param list<HttpMethod>      $methods Список допустимых методов
-     * @param string                $path    паттерн URI (например, '/users')
-     * @param array|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                $name    Опциональное имя маршрута
+     * @param list<HttpMethod>                                      $methods Список допустимых методов
+     * @param string                                                $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
@@ -152,6 +152,8 @@ interface RouterInterface
 
     /**
      * Назначение групп, которые автоматически добавятся, при загрузке маршрутов.
+     *
+     * @param list<string> $groups Список наименований групп
      *
      * @return $this
      */

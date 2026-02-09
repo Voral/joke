@@ -60,8 +60,6 @@ class MiddlewareCollection
      * позиция в списке как при первом добавлении.
      *
      * @param array<MiddlewareDto> $middlewares
-     *
-     * @return static
      */
     public function withMiddlewares(array $middlewares): static
     {

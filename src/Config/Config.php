@@ -20,7 +20,7 @@ class Config
     /**
      * Хранилище переменных конфигурации.
      *
-     * @var array<string,array>
+     * @var array<string,array<string,mixed>>
      */
     private array $props = [];
     /**
@@ -53,10 +53,10 @@ class Config
      * Поддерживает точечную нотацию (например, 'database.connections.mysql').
      * Если значение не найдено, возвращается значение по умолчанию.
      *
-     * @param string                           $key     Ключ конфигурации в формате 'config_name.property.subproperty'
-     * @param null|array|bool|float|int|string $default Значение по умолчанию, если ключ не найден
+     * @param string                                                     $key     Ключ конфигурации в формате 'config_name.property.subproperty'
+     * @param null|array<string,mixed>|bool|float|int|list<mixed>|string $default Значение по умолчанию, если ключ не найден
      *
-     * @return null|array|bool|float|int|string Значение конфигурации или значение по умолчанию
+     * @return null|array<string,mixed>|bool|float|int|list<mixed>|string Значение конфигурации или значение по умолчанию
      *
      * @throws ConfigException Если указан пустой ключ
      */
@@ -119,7 +119,7 @@ class Config
      * @param null|(callable(string): JokeException) $exceptionFactory Фабрика исключений. Если null, используется стандартное ConfigException.
      *                                                                 Должна принимать строковый ключ и возвращать JokeException.
      *
-     * @return null|array|bool|float|int|string Значение конфигурации
+     * @return null|array<string,mixed>|bool|float|int|list<mixed>|string Значение конфигурации
      *
      * @throws ConfigException|JokeException Если ключ не найден (используется либо кастомное, либо стандартное исключение)
      * @throws ConfigException               Если указан пустой ключ
@@ -159,6 +159,8 @@ class Config
      * - 'app' → ['app', []]
      * - 'database.connections' → ['database', ['connections']]
      * … *
+     *
+     * @return array{string,array<string>}
      *
      * @throws ConfigException Если передан пустой ключ
      */

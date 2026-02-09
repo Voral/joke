@@ -37,7 +37,7 @@ class ParameterResolver implements ResolverInterface
      * Поддерживает все формы callable: замыкания, строки вида 'Class::method',
      * массивы [Class::class, 'method'].
      *
-     * @param array|callable|string $callable Целевой callable для анализа
+     * @param array{class-string,non-empty-string}|callable|string $callable Целевой callable для анализа
      *
      * @return \ReflectionFunctionAbstract Объект рефлексии функции или метода
      *
@@ -82,7 +82,7 @@ class ParameterResolver implements ResolverInterface
      * @param array<\ReflectionParameter> $parameters Список параметров для разрешения
      * @param array<string, mixed>        $context    Контекстные переменные (например, параметры маршрута)
      *
-     * @return array Массив разрешённых аргументов
+     * @return list<mixed> Массив разрешённых аргументов
      *
      * @throws ParameterResolveException Если параметр не может быть разрешён
      *

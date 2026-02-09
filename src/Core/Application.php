@@ -15,7 +15,6 @@ use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
 use Vasoft\Joke\Core\Middlewares\SessionMiddleware;
 use Vasoft\Joke\Core\Middlewares\StdMiddleware;
 use Vasoft\Joke\Core\Request\HttpRequest;
-use Vasoft\Joke\Core\Request\Request;
 use Vasoft\Joke\Core\Response\HtmlResponse;
 use Vasoft\Joke\Core\Response\JsonResponse;
 use Vasoft\Joke\Core\Response\Response;

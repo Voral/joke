@@ -17,6 +17,8 @@ class JsonResponse extends Response
 {
     /**
      * Тело ответа в виде массива (или объекта, совместимого с json_encode).
+     *
+     * @var array<string,mixed>|list<mixed>
      */
     protected array $body = [];
 
@@ -37,7 +39,7 @@ class JsonResponse extends Response
      * Ожидается массив или объект, который может быть сериализован в JSON.
      * Несовместимые типы (например, ресурсы) вызовут JsonException при отправке.
      *
-     * @param array $body Данные для сериализации в JSON
+     * @param array<string,mixed>|list<mixed> $body Данные для сериализации в JSON
      */
     public function setBody($body): static
     {
@@ -48,6 +50,8 @@ class JsonResponse extends Response
 
     /**
      * Возвращает текущее тело ответа как массив.
+     *
+     * @return array<string,mixed>|list<mixed> $body Тело ответа
      */
     public function getBody(): array
     {

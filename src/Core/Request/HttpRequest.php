@@ -108,6 +108,8 @@ class HttpRequest extends Request
      * Разобранные JSON-данные из тела запроса.
      *
      * Заполняется автоматически, если Content-Type = application/json.
+     *
+     * @var array<string,mixed>|list<mixed>
      */
     public array $json = [] {
         get => $this->json;

@@ -42,7 +42,7 @@ abstract class Response
      * Конкретная реализация определяет допустимые типы входных данных
      * (например, строка для HtmlResponse, массив для JsonResponse).
      *
-     * @param null|array|bool|float|int|object|string $body Тело ответа
+     * @param null|array<string,mixed>|bool|float|int|list<mixed>|object|string $body Тело ответа
      */
     abstract public function setBody($body): static;
 

@@ -6,11 +6,11 @@ namespace Vasoft\Joke\Core\Routing;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
+use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
 use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
 use Vasoft\Joke\Core\Request\HttpMethod;
 use Vasoft\Joke\Core\Request\HttpRequest;
-use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
 use Vasoft\Joke\Core\ServiceContainer;
 
 /**
@@ -65,11 +65,11 @@ class Route implements RouteInterface
     /**
      * Конструктор маршрута.
      *
-     * @param ServiceContainer    $serviceContainer DI-контейнер для разрешения зависимостей
-     * @param string              $path             URI-паттерн маршрута (например, '/user/{id:int}')
-     * @param HttpMethod          $method           HTTP-метод
-     * @param array|object|string $handler          Обработчик маршрута (callable любого поддерживаемого типа)
-     * @param string              $name             Имя маршрута (опционально, для программного доступа)
+     * @param ServiceContainer                                           $serviceContainer DI-контейнер для разрешения зависимостей
+     * @param string                                                     $path             URI-паттерн маршрута (например, '/user/{id:int}')
+     * @param HttpMethod                                                 $method           HTTP-метод
+     * @param array{class-string|object, non-empty-string}|object|string $handler          Обработчик маршрута (callable любого поддерживаемого типа)
+     * @param string                                                     $name             Имя маршрута (опционально, для программного доступа)
      */
     public function __construct(
         private readonly ServiceContainer $serviceContainer,
@@ -181,7 +181,7 @@ class Route implements RouteInterface
      *
      * @return mixed Результат выполнения обработчика (строка, массив, Response и т.д.)
      *
-     * @throws AutowiredException
+     * @throws ParameterResolveException
      *
      * @todo Декомпозировать метод
      */
@@ -212,12 +212,13 @@ class Route implements RouteInterface
         }
         if (is_array($this->handler)) {
             [$target, $method] = $this->handler;
-            if (is_string($target)) {
-                $constructorArgs = $this->serviceContainer->getParameterResolver()
-                    ->resolveForConstructor($target, $request->props->getAll());
-
-                $target = new $target(...$constructorArgs);
+            if (is_object($target)) {
+                return $target->{$method}(...$args);
             }
+            $constructorArgs = $this->serviceContainer->getParameterResolver()
+                ->resolveForConstructor($target, $request->props->getAll());
+
+            $target = new $target(...$constructorArgs);
 
             return $target->{$method}(...$args);
         }

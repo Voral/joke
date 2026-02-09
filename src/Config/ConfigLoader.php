@@ -131,7 +131,7 @@ class ConfigLoader
      * Каждый PHP-файл в указанных директориях должен возвращать массив.
      * Имя конфигурации берётся из имени файла без расширения .php.
      *
-     * @return array<string, array> Ассоциативный массив вида ['config_name' => [...]]
+     * @return array<string, array<string,mixed>> Ассоциативный массив вида ['config_name' => [...]]
      *
      * @throws ConfigException если каталог относительный или не существует
      */
@@ -151,8 +151,8 @@ class ConfigLoader
     /**
      * Загружает конфигурационные файлы из указанной директории и добавляет их в результат.
      *
-     * @param string               $path    нормализованный путь к директории (с завершающим DIRECTORY_SEPARATOR)
-     * @param array<string, array> &$result Ссылка на массив для накопления результатов
+     * @param string                              $path    нормализованный путь к директории (с завершающим DIRECTORY_SEPARATOR)
+     * @param array<string, array<string, mixed>> &$result Ссылка на массив для накопления результатов
      */
     protected function loadFromPath(string $path, array &$result): void
     {
@@ -174,7 +174,7 @@ class ConfigLoader
      *
      * @param string $path абсолютный путь к PHP-файлу конфигурации
      *
-     * @return array данные конфигурации
+     * @return array<string,mixed> данные конфигурации
      */
     protected function loadFile(string $path): array
     {
@@ -196,7 +196,7 @@ class ConfigLoader
      *
      * @param string $name Имя конфигурации (без расширения .php).
      *
-     * @return array загруженная конфигурация
+     * @return array<string, mixed> загруженная конфигурация
      *
      * @throws ConfigException если файл конфигурации не найден ни в одном из ленивых путей или зарегистрирован не существующий путь
      */

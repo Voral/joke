@@ -25,7 +25,7 @@ class ReadonlyPropsCollection
      * @param string $key     Имя свойства
      * @param mixed  $default Значение по умолчанию, если ключ не существует
      *
-     * @return null|array|bool|float|int|string Значение свойства или значение по умолчанию
+     * @return null|array<int|string,mixed>|bool|float|int|list<mixed>|string Значение свойства или значение по умолчанию
      */
     public function get(string $key, mixed $default = null): array|bool|float|int|string|null
     {
@@ -63,7 +63,11 @@ class ReadonlyPropsCollection
      * @param string                                 $key              Имя параметра
      * @param null|(callable(string): JokeException) $exceptionFactory фабрика исключения
      *
+     * @return null|array<int|string,mixed>|bool|float|int|list<mixed>|string
+     *
      * @throws JokeException
+     *
+     * @noinspection PhpDocRedundantThrowsInspection
      */
     public function getOrFail(string $key, ?callable $exceptionFactory = null): array|bool|float|int|string|null
     {

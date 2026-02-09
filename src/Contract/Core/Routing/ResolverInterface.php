@@ -16,8 +16,10 @@ interface ResolverInterface
     /**
      * Связывание парамеров функций и методов.
      *
-     * @param array|callable|string $callable функция или метод
-     * @param array<string,mixed>   $context  Массив переменных контекста
+     * @param array{class-string,non-empty-string}|callable|string $callable функция или метод
+     * @param array<string,mixed>                                  $context  Массив переменных контекста
+     *
+     * @return list<mixed> Массив разрешенных параметров
      *
      * @throws ParameterResolveException
      */
@@ -28,6 +30,8 @@ interface ResolverInterface
      *
      * @param string              $className Имя класса
      * @param array<string,mixed> $context   Массив переменных контекста
+     *
+     * @return list<mixed> Массив разрешенных параметров
      *
      * @throws ParameterResolveException
      */

@@ -51,6 +51,12 @@ readonly class EnvironmentLoader
         return $vars;
     }
 
+    /**
+     * Считывание переменных и их значений в массив.
+     *
+     * @param string                                    $fileName Имя загружаемого файла
+     * @param array<string, null|bool|float|int|string> $vars     Ссылка на формируемый массив переменных
+     */
     private function parseFile(string $fileName, array &$vars): void
     {
         $path = $this->basePath . $fileName;
@@ -107,6 +113,15 @@ readonly class EnvironmentLoader
         };
     }
 
+    /**
+     * Возвращает список файлов, которые необходимо загрузить.
+     *
+     * @param string $envName   Имя загружаемого окружения
+     * @param string $localName Имя локального окружения
+     * @param string $testName  Имя тестового окружения
+     *
+     * @return list<string>
+     */
     private function getFileList(string $envName, string $localName, string $testName): array
     {
         $files = ['.env'];
