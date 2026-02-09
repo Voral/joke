@@ -6,7 +6,7 @@ namespace Vasoft\Joke\Core\Exceptions;
 
 use Vasoft\Joke\Core\Response\ResponseStatus;
 
-abstract class JokeException extends \Exception
+class JokeException extends \Exception
 {
     public function getResponseStatus(): ResponseStatus
     {

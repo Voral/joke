@@ -37,13 +37,13 @@ class ParameterResolver implements ResolverInterface
      * Поддерживает все формы callable: замыкания, строки вида 'Class::method',
      * массивы [Class::class, 'method'].
      *
-     * @param array{class-string,non-empty-string}|callable|string $callable Целевой callable для анализа
+     * @param array{class-string|object,non-empty-string}|object|string $callable Целевой callable для анализа
      *
      * @return \ReflectionFunctionAbstract Объект рефлексии функции или метода
      *
      * @throws ParameterResolveException
      */
-    private function getCallableReflection(array|callable|string $callable): \ReflectionFunctionAbstract
+    private function getCallableReflection(array|object|string $callable): \ReflectionFunctionAbstract
     {
         try {
             if ($callable instanceof \Closure) {
@@ -59,7 +59,9 @@ class ParameterResolver implements ResolverInterface
 
                 return new \ReflectionFunction($callable);
             }
-
+            if (!is_array($callable)) {
+                throw new ParameterResolveException('Not a valid callback');
+            }
             [$target, $method] = $callable;
             $result = new \ReflectionMethod($target, $method);
         } catch (\ReflectionException $e) {
@@ -156,7 +158,7 @@ class ParameterResolver implements ResolverInterface
         return $typeName;
     }
 
-    public function resolveForCallable(array|callable|string $callable, array $context = []): array
+    public function resolveForCallable(array|object|string $callable, array $context = []): array
     {
         $reflection = $this->getCallableReflection($callable);
 
@@ -165,11 +167,10 @@ class ParameterResolver implements ResolverInterface
 
     public function resolveForConstructor(string $className, array $context = []): array
     {
-        try {
-            $reflection = new \ReflectionClass($className);
-        } catch (\ReflectionException $e) {
-            throw new ParameterResolveException($e->getMessage(), $e->getCode(), $e);
+        if (!class_exists($className)) {
+            throw new AutowiredException($className, 'Class not found');
         }
+        $reflection = new \ReflectionClass($className);
         $constructor = $reflection->getConstructor();
 
         if (null === $constructor) {

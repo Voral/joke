@@ -20,104 +20,104 @@ interface RouterInterface
      *
      * Создание нового ресурса или выполнение произвольного действия. Не идемпотентен. Меняет состояние
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                                     $path    паттерн URI (например, '/users')
+     * @param array{class-string|object, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                     $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function post(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function post(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на GET запрос
      *
      * Поучение данных. Идемпотентен. Не должен менять состояние
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                              $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                              $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function get(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function get(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PUT запрос
      *
      * Полная замена существующего ресурса. Идемпотентен. Меняет состояние ресурса.
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                              $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                              $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function put(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function put(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на DELETE запрос
      *
      * Удаление существующего ресурса. Идемпотентен. Меняет состояние ресурса.
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                              $path    паттерн URI (например, '/users')
+     * @param array{class-string, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                              $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function delete(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function delete(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
      * Частичное обновление существующего ресурса. Идемпотентен или нет - зависит от логики. Меняет состояние ресурса.
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                                     $path    паттерн URI (например, '/users')
+     * @param array{class-string|object, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                     $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function patch(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function patch(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на PATH запрос
      *
      * Поучение данных только в заголовках. Идемпотентен. Не должен менять состояние
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                                     $path    паттерн URI (например, '/users')
+     * @param array{class-string|object, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                     $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function head(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function head(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на любой запрос
      *
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param string                                                     $path    паттерн URI (например, '/users')
+     * @param array{class-string|object, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                     $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
-    public function any(string $path, array|callable|string $handler, string $name = ''): RouteInterface;
+    public function any(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
      * Регистрация маршрута отвечающего на запрос заданного перечня методов.
      *
-     * @param list<HttpMethod>                                      $methods Список допустимых методов
-     * @param string                                                $path    паттерн URI (например, '/users')
-     * @param array{class-string, non-empty-string}|callable|string $handler Метод выполняющийся для данного маршрута
-     * @param string                                                $name    Опциональное имя маршрута
+     * @param list<HttpMethod>                                           $methods Список допустимых методов
+     * @param string                                                     $path    паттерн URI (например, '/users')
+     * @param array{class-string|object, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                     $name    Опциональное имя маршрута
      *
      * @return RouteInterface Зарегистрированный объект маршрута
      */
     public function match(
         array $methods,
         string $path,
-        array|callable|string $handler,
+        array|object|string $handler,
         string $name = '',
     ): RouteInterface;
 

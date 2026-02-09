@@ -211,7 +211,7 @@ class HttpRequest extends Request
     public function getPath(): string
     {
         if (null === $this->path) {
-            $path = explode('?', $this->server->get('REQUEST_URI', '/'));
+            $path = explode('?', (string) $this->server->get('REQUEST_URI', '/'));
             $this->path = $path[0];
         }
 
@@ -226,6 +226,6 @@ class HttpRequest extends Request
      */
     public static function fromGlobals(): self
     {
-        return new self($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input'));
+        return new self($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input') ?: null);
     }
 }

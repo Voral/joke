@@ -44,42 +44,42 @@ class Router implements RouterInterface
      */
     public function __construct(protected readonly ServiceContainer $serviceContainer) {}
 
-    public function post(string $path, array|callable|string $handler, string $name = ''): Route
+    public function post(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::POST], $path, $handler, $name);
     }
 
-    public function get(string $path, array|callable|string $handler, string $name = ''): Route
+    public function get(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::GET], $path, $handler, $name);
     }
 
-    public function put(string $path, array|callable|string $handler, string $name = ''): Route
+    public function put(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::PUT], $path, $handler, $name);
     }
 
-    public function delete(string $path, array|callable|string $handler, string $name = ''): Route
+    public function delete(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::DELETE], $path, $handler, $name);
     }
 
-    public function patch(string $path, array|callable|string $handler, string $name = ''): Route
+    public function patch(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::PATCH], $path, $handler, $name);
     }
 
-    public function head(string $path, array|callable|string $handler, string $name = ''): Route
+    public function head(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::HEAD], $path, $handler, $name);
     }
 
-    public function any(string $path, array|callable|string $handler, string $name = ''): Route
+    public function any(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match(HttpMethod::cases(), $path, $handler, $name);
     }
 
-    public function match(array $methods, string $path, array|callable|string $handler, string $name = ''): Route
+    public function match(array $methods, string $path, array|object|string $handler, string $name = ''): Route
     {
         if ('' === $name) {
             $name = $this->getRouteIndex($methods, $path);

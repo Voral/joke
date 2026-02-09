@@ -4,4 +4,4 @@ includes:
 parameters:
     excludePaths:
         - tests
-    level: 6
+    level: 7

@@ -30,9 +30,10 @@ abstract class BinaryResponse extends Response
     {
         if (
             !file_exists($filename)
-            || ($this->body = file_get_contents($filename)) === false) {
+            || ($body = file_get_contents($filename)) === false) {
             throw new NotFoundException('File not found');
         }
+        $this->body = $body;
         if ('' === $this->filename) {
             $this->filename = $filename;
         }
@@ -40,6 +41,11 @@ abstract class BinaryResponse extends Response
         return $this;
     }
 
+    /**
+     * @param string $body
+     *
+     * @return $this
+     */
     public function setBody($body): static
     {
         $this->body = $body;

@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Core\Routing;
 
 use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouteInterface;
+use Vasoft\Joke\Core\Exceptions\JokeException;
 use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Middlewares\MiddlewareCollection;
 use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
@@ -65,11 +66,11 @@ class Route implements RouteInterface
     /**
      * Конструктор маршрута.
      *
-     * @param ServiceContainer                                           $serviceContainer DI-контейнер для разрешения зависимостей
-     * @param string                                                     $path             URI-паттерн маршрута (например, '/user/{id:int}')
-     * @param HttpMethod                                                 $method           HTTP-метод
-     * @param array{class-string|object, non-empty-string}|object|string $handler          Обработчик маршрута (callable любого поддерживаемого типа)
-     * @param string                                                     $name             Имя маршрута (опционально, для программного доступа)
+     * @param ServiceContainer                                          $serviceContainer DI-контейнер для разрешения зависимостей
+     * @param string                                                    $path             URI-паттерн маршрута (например, '/user/{id:int}')
+     * @param HttpMethod                                                $method           HTTP-метод
+     * @param array{class-string|object,non-empty-string}|object|string $handler          Обработчик маршрута (callable любого поддерживаемого типа)
+     * @param string                                                    $name             Имя маршрута (опционально, для программного доступа)
      */
     public function __construct(
         private readonly ServiceContainer $serviceContainer,
@@ -101,12 +102,15 @@ class Route implements RouteInterface
      * Поддерживает параметры с правилами валидации: {name}, {id:int}, {slug:slug}.
      *
      * @return string Скомпилированный шаблон в формате '#^...$#i'
+     * @throws JokeException
      */
     protected function compilePattern(): string
     {
         $tokens = preg_split('/(\{[^}]+\})/', $this->path, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $regex = '';
-
+        if (false === $tokens) {
+            throw new JokeException('Route pattern is invalid');
+        }
         foreach ($tokens as $token) {
             if (str_starts_with($token, '{') && str_ends_with($token, '}')) {
                 $inner = substr($token, 1, -1);
@@ -196,11 +200,17 @@ class Route implements RouteInterface
                 $handler = [$controller, '__invoke'];
                 $args = $this->serviceContainer->getParameterResolver()
                     ->resolveForCallable($handler, $request->props->getAll());
+                if (!is_callable($controller)) {
+                    throw new ParameterResolveException('Not a callable handler');
+                }
 
                 return $controller(...$args);
             }
             $args = $this->serviceContainer->getParameterResolver()
                 ->resolveForCallable($this->handler, $request->props->getAll());
+            if (!is_callable($this->handler)) {
+                throw new ParameterResolveException('Not a callable handler');
+            }
 
             return ($this->handler)(...$args);
         }
@@ -222,9 +232,9 @@ class Route implements RouteInterface
 
             return $target->{$method}(...$args);
         }
-        $args = $this->serviceContainer->getParameterResolver()
-            ->resolveForCallable($this->handler, $request->props->getAll());
-
+        if (!is_string($this->handler)) {
+            throw new JokeException('Unsupported route handler.');
+        }
         [$class, $method] = explode('::', $this->handler, 2);
 
         return $class::$method(...$args);

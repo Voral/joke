@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Core;
 
 use Vasoft\Joke\Contract\Core\ApplicationContainerInterface;
 use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
+use Vasoft\Joke\Core\Exceptions\JokeException;
 use Vasoft\Joke\Core\Routing\Router;
 
 /**
@@ -28,9 +29,18 @@ class ServiceContainer extends BaseContainer implements ApplicationContainerInte
         $this->setRouter(Router::class);
     }
 
+    /**
+     * @throws Exceptions\ParameterResolveException
+     * @throws JokeException
+     */
     public function getRouter(): RouterInterface
     {
-        return $this->get(RouterInterface::class);
+        $result = $this->get(RouterInterface::class);
+        if (!$result instanceof RouterInterface) {
+            throw new JokeException('Router service is not available or not of correct type.');
+        }
+
+        return $result;
     }
 
     public function setRouter(callable|object|string $router): static
