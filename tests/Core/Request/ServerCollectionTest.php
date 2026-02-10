@@ -41,7 +41,7 @@ final class ServerCollectionTest extends TestCase
         $serverCollection = new ServerCollection([]);
         $headers = $serverCollection->getHeaders();
         self::assertSame('text/html', $headers['Content-Type'] ?? null);
-        self::assertSame(0, $headers['Content-Length'] ?? null);
+        self::assertSame('0', $headers['Content-Length'] ?? null);
         self::assertSame('', $headers['Content-Encoding'] ?? null);
         self::assertSame('', $headers['Content-Language'] ?? null);
         self::assertSame('', $headers['Content-MD5'] ?? null);

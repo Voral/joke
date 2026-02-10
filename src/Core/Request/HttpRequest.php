@@ -54,7 +54,7 @@ class HttpRequest extends Request
      *
      * @var ServerCollection
      */
-    public PropsCollection $server {
+    public ServerCollection $server {
         get {
             return $this->server;
         }
@@ -160,7 +160,7 @@ class HttpRequest extends Request
      */
     private function parseMethod(): HttpMethod
     {
-        $method = strtoupper($this->server->get('REQUEST_METHOD', 'GET'));
+        $method = strtoupper($this->server->getStringOrDefault('REQUEST_METHOD', 'GET'));
         $methodParsed = HttpMethod::tryFrom($method);
         if (null === $methodParsed) {
             throw new WrongRequestMethodException($method);
@@ -211,7 +211,7 @@ class HttpRequest extends Request
     public function getPath(): string
     {
         if (null === $this->path) {
-            $path = explode('?', (string) $this->server->get('REQUEST_URI', '/'));
+            $path = explode('?', $this->server->getStringOrDefault('REQUEST_URI', '/'));
             $this->path = $path[0];
         }
 
