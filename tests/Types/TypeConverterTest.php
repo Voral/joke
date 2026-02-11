@@ -95,11 +95,11 @@ final class TypeConverterTest extends TestCase
         $value = 123.125;
 
         self::expectException(ConfigException::class);
-        self::expectExceptionMessage(sprintf('test: %f0.2f', $value));
+        self::expectExceptionMessage(sprintf('test: %0.2f', $value));
         TypeConverter::toInt($value, 'test', 1, exceptionFactory: static fn(
             $key,
             $value,
-        ) => new ConfigException(sprintf('%s: %f0.2f', $key, $value)));
+        ) => new ConfigException(sprintf('%s: %0.2f', $key, $value)));
     }
 
     public function testToString(): void
