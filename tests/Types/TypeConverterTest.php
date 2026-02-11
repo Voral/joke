@@ -147,8 +147,8 @@ final class TypeConverterTest extends TestCase
 
     public function testToBool(): void
     {
-        self::assertTrue(TypeConverter::toBool(null, 'str', true));
-        self::assertTrue(TypeConverter::toBool('', 'str', true));
+        self::assertTrue(TypeConverter::toBool(null, 'str', false));
+        self::assertTrue(TypeConverter::toBool('', 'str', false));
         self::assertTrue(TypeConverter::toBool(true, 'str', false));
         self::assertFalse(TypeConverter::toBool(false, 'str', true));
         self::assertFalse(TypeConverter::toBool(0, 'str', true));
@@ -178,9 +178,6 @@ final class TypeConverterTest extends TestCase
         ];
     }
 
-    /**
-     * @throws ConfigException
-     */
     #[DataProvider('provideToBoolExceptionCases')]
     public function testToBoolException(mixed $value, string $type): void
     {

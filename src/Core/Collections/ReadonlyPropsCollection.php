@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Core\Collections;
 
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Core\Exceptions\JokeException;
+use Vasoft\Joke\Types\TypeConverter;
 
 /**
  * Коллекция для хранения данными в виде ключ-значение. Только для чтения.
@@ -22,14 +23,141 @@ class ReadonlyPropsCollection
     /**
      * Возвращает значение свойства по ключу.
      *
-     * @param string $key     Имя свойства
-     * @param mixed  $default Значение по умолчанию, если ключ не существует
+     * @param string                           $key     Имя свойства
+     * @param null|array|bool|float|int|string $default Значение по умолчанию, если ключ не существует
      *
      * @return null|array<int|string,mixed>|bool|float|int|list<mixed>|string Значение свойства или значение по умолчанию
      */
-    public function get(string $key, mixed $default = null): array|bool|float|int|string|null
+    public function get(string $key, array|bool|float|int|string|null $default = null): array|bool|float|int|string|null
     {
         return $this->props[$key] ?? $default;
+    }
+
+    /**
+     * Возвращает значение как массив.
+     *
+     * Поддерживает следующие преобразования:
+     * - массив → возвращается как есть
+     * - непустая строка → разбивается по запятым на элементы массива (с trim)
+     * - пустая строка или null → возвращается значение по умолчанию
+     *
+     * @param string                                       $key              Имя параметра
+     * @param array<int|string,mixed>                      $default          Значение по умолчанию, если ключ не существует или значение равно пустой строке или null
+     * @param non-empty-string                             $separator        Разделитель строки
+     * @param null|(callable(string,mixed): JokeException) $exceptionFactory фабрика исключения
+     *
+     * @return array<int|string, mixed> Преобразованное значение или значение по умолчанию
+     *
+     * @throws JokeException если значение не может быть преобразовано в массив
+     */
+    public function getArray(
+        string $key,
+        array $default = [],
+        string $separator = ',',
+        ?callable $exceptionFactory = null,
+    ): array {
+        $value = $this->get($key);
+
+        return TypeConverter::toArray($value, $key, $default, $separator, $exceptionFactory);
+    }
+
+    /**
+     * Возвращает значение как целое число.
+     *
+     * Поддерживает следующие преобразования:
+     * - int → возвращается как есть
+     * - строка с целым числом (включая отрицательные) → преобразуется в int
+     * - float, представляющий целое число (например, 3.0) → преобразуется в int
+     * - bool → true=1, false=0
+     * - null или пустая строка → возвращается значение по умолчанию
+     *
+     * @param string                                       $key              Имя параметра
+     * @param int                                          $default          Значение по умолчанию, если ключ не существует, значение равно null или пустая строка
+     * @param null|(callable(string,mixed): JokeException) $exceptionFactory фабрика исключения
+     *
+     * @throws JokeException если значение не может быть преобразовано в целое число
+     */
+    public function getInt(string $key, int $default, ?callable $exceptionFactory = null): int
+    {
+        $value = $this->get($key);
+
+        return TypeConverter::toInt($value, $key, $default, $exceptionFactory);
+    }
+
+    /**
+     * Возвращает значение как строку.
+     *
+     * Поддерживает следующие преобразования:
+     * - string → возвращается как есть
+     * - int/float → преобразуются в строку
+     * - bool → true='1', false='0'
+     * - null → возвращается значение по умолчанию
+     * - пустая строка → возвращается как есть
+     *
+     * @param string                                       $key              Имя параметра
+     * @param string                                       $default          Значение по умолчанию, если значение равно null или ключ не существует
+     * @param null|(callable(string,mixed): JokeException) $exceptionFactory фабрика исключения
+     *
+     * @return string Преобразованное значение или значение по умолчанию
+     *
+     * @throws JokeException если значение не может быть преобразовано в строку
+     */
+    public function getString(string $key, string $default, ?callable $exceptionFactory = null): string
+    {
+        $value = $this->get($key);
+
+        return TypeConverter::toString($value, $key, $default, $exceptionFactory);
+    }
+
+    /**
+     * Возвращает значение как логическое (boolean).
+     *
+     * Поддерживает следующие преобразования:
+     * - bool → возвращается как есть
+     * - строка: '1', 'true', 'yes', 'on', 'y' (регистронезависимо) → true;
+     *           '0', 'false', 'no', 'off', 'n', '' → false
+     * - int: 0 → false, любое другое число → true
+     *
+     * @param string                                       $key              Имя параметра
+     * @param bool                                         $default          Значение по умолчанию, если ключ не существует или значение равно null или пустая строка
+     * @param null|(callable(string,mixed): JokeException) $exceptionFactory фабрика исключения
+     *
+     * @return bool Преобразованное значение или значение по умолчанию
+     *
+     * @throws JokeException если строковое значение не распознано как булево
+     *                       или значение не может быть преобразовано в boolean
+     */
+    public function getBool(string $key, bool $default, ?callable $exceptionFactory = null): bool
+    {
+        $value = $this->get($key);
+
+        return TypeConverter::toBool($value, $key, $default, $exceptionFactory);
+    }
+
+    /**
+     * Возвращает значение как число с плавающей точкой.
+     *
+     * Поддерживает следующие преобразования:
+     * - float → возвращается как есть
+     * - int → преобразуется в float
+     * - числовая строка → преобразуется в float
+     * - bool → true=1.0, false=0.0
+     * - null или пустая строка → возвращается значение по умолчанию
+     *
+     * @param string                                       $key              Имя параметра
+     * @param float                                        $default          Значение по умолчанию, если ключ не найден, пустая строка или null
+     * @param null|(callable(string,mixed): JokeException) $exceptionFactory фабрика исключения
+     *
+     * @return float Преобразованное значение или значение по умолчанию
+     *
+     * @throws JokeException если строка не является числовой
+     *                       или значение не может быть преобразовано в float
+     */
+    public function getFloat(string $key, float $default, ?callable $exceptionFactory = null): float
+    {
+        $value = $this->get($key);
+
+        return TypeConverter::toFloat($value, $key, $default, $exceptionFactory);
     }
 
     /**
@@ -43,7 +171,7 @@ class ReadonlyPropsCollection
     }
 
     /**
-     * Проверяет существует ли заданный параметр в коллекции.
+     * Проверяет, существует ли заданный параметр в коллекции.
      *
      * @param string $key Имя параметра
      *
@@ -60,8 +188,8 @@ class ReadonlyPropsCollection
      * Можно переопределить исключение по умолчанию передав фабрику, которая принимает строковый
      * параметр "имя параметра" и возвращает исключение унаследованное от JokeException
      *
-     * @param string                                 $key              Имя параметра
-     * @param null|(callable(string): JokeException) $exceptionFactory фабрика исключения
+     * @param string                                 $key            Имя параметра
+     * @param null|(callable(string): JokeException) $missingFactory фабрика исключения
      *
      * @return null|array<int|string,mixed>|bool|float|int|list<mixed>|string
      *
@@ -69,10 +197,10 @@ class ReadonlyPropsCollection
      *
      * @noinspection PhpDocRedundantThrowsInspection
      */
-    public function getOrFail(string $key, ?callable $exceptionFactory = null): array|bool|float|int|string|null
+    public function getOrFail(string $key, ?callable $missingFactory = null): array|bool|float|int|string|null
     {
         if (!$this->has($key)) {
-            $factory = $exceptionFactory ?? static fn(string $key): JokeException => new ConfigException(
+            $factory = $missingFactory ?? static fn(string $key): JokeException => new ConfigException(
                 'Property "' . $key . '" does not exist.',
             );
 
