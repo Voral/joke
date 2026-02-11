@@ -23,7 +23,8 @@ final class TypeConverterTest extends TestCase
         self::assertSame(['values', 'keys'], TypeConverter::toArray(['values', 'keys'], 'example'));
         self::assertSame(['values'], TypeConverter::toArray('values', 'example'));
         self::assertSame(['values', 'keys'], TypeConverter::toArray('values,keys', 'example'));
-        self::assertSame(['values', 'keys'], TypeConverter::toArray('values|keys', 'example', separator: '|'));
+        self::assertSame([123], TypeConverter::toArray(123, 'example'));
+        self::assertSame([-14.4], TypeConverter::toArray(-14.4, 'example', separator: '|'));
     }
 
     public function testToArrayException(): void
