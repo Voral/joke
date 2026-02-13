@@ -77,17 +77,17 @@ class Application
     ) {
         $this->basePath = rtrim($basePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
         $environment = new Environment(new EnvironmentLoader($this->basePath));
-        $serviceContainer->registerSingleton('env', $environment);
         $serviceContainer->registerSingleton(Environment::class, $environment);
+        $serviceContainer->registerAlias('env', Environment::class);
 
         $configLoader = new ConfigLoader($this->basePath . 'config' . \DIRECTORY_SEPARATOR, $environment);
 
         $config = new Config($configLoader);
-        $serviceContainer->registerSingleton('config', $config);
         $serviceContainer->registerSingleton(Config::class, $config);
+        $serviceContainer->registerAlias('config', Config::class);
 
-        $serviceContainer->registerSingleton('env', $environment);
         $serviceContainer->registerSingleton(Environment::class, $environment);
+        $serviceContainer->registerAlias('env', Environment::class);
         $this->middlewares = new MiddlewareCollection()
             ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
         $this->routeMiddlewares = new MiddlewareCollection()
