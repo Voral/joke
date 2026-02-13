@@ -80,6 +80,9 @@ abstract class BaseContainer implements DiContainerInterface
      */
     public function register(string $name, callable|object|string $service): void
     {
+        if (str_contains($name, '\\') && !$this->isValidServiceName($name)) {
+            trigger_error("Service name '{$name}' is not a valid class or interface.", E_USER_WARNING);
+        }
         if (is_object($service)) {
             if (!is_callable($service)) {
                 $this->registerSingleton($name, $service);
@@ -95,6 +98,15 @@ abstract class BaseContainer implements DiContainerInterface
         } else {
             $this->serviceRegistry[$name] = $service;
         }
+    }
+
+    private function isValidServiceName(string $name): bool
+    {
+        if (!str_contains($name, '\\')) {
+            return true;
+        }
+
+        return interface_exists($name) || class_exists($name);
     }
 
     public function get(string $name): ?object
@@ -233,6 +245,9 @@ abstract class BaseContainer implements DiContainerInterface
      */
     public function registerAlias(string $alias, string $concrete): static
     {
+        if (str_contains($concrete, '\\') && !$this->isValidServiceName($concrete)) {
+            trigger_error("Service name '{$concrete}' is not a valid class or interface.", E_USER_WARNING);
+        }
         $this->aliases[$alias] = $concrete;
 
         return $this;
