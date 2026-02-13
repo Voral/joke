@@ -40,6 +40,9 @@ interface DiContainerInterface
      *
      * @param string                 $name    Имя сервиса
      * @param callable|object|string $service Определение сервиса
+     *
+     * @deprecated: Передача вызываемых объектов (с помощью __invoke) будет рассматриваться как синглтоны в версии 2.0.
+     * Используйте \Closure для фабрик.
      */
     public function register(string $name, callable|object|string $service): void;
 

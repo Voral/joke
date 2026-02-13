@@ -74,10 +74,24 @@ abstract class BaseContainer implements DiContainerInterface
         }
     }
 
+    /**
+     * @deprecated: Передача вызываемых объектов (с помощью __invoke) будет рассматриваться как синглтоны в версии 2.0.
+     *  Используйте \Closure для фабрик.
+     */
     public function register(string $name, callable|object|string $service): void
     {
-        if (is_object($service) && !is_callable($service)) {
-            $this->registerSingleton($name, $service);
+        if (is_object($service)) {
+            if (!is_callable($service)) {
+                $this->registerSingleton($name, $service);
+            } else {
+                @trigger_error(
+                    'Passing a callable object to register() is deprecated. '
+                    . 'In v2.0 it will be treated as a singleton. '
+                    . 'Use a Closure for factories: fn() => $obj().',
+                    E_USER_DEPRECATED,
+                );
+                $this->serviceRegistry[$name] = $service;
+            }
         } else {
             $this->serviceRegistry[$name] = $service;
         }
