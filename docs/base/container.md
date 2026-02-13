@@ -6,12 +6,12 @@ Joke включает встроенный контейнер внедрения
 
 ## Реализации
 
-Базовый функционал реализован в абстрактном классе `Vasoft\Joke\Core\BaseContainer`, который реализует интерфейс
-`Vasoft\Joke\Contract\Core\DiContainer`. При инициализации регистрирует сам себя в качестве одиночки, для возможности
+Базовый функционал реализован в абстрактном классе `Vasoft\Joke\Container\BaseContainer`, который реализует интерфейс
+`Vasoft\Joke\Contract\Container\DiContainer`. При инициализации регистрирует сам себя в качестве одиночки, для возможности
 использования в автосвязывании параметров.
 
-Контейнер уровня приложения реализован в `Vasoft\Joke\Core\BaseContainer`. Реализует интерфейс
-`Vasoft\Joke\Contract\Core\ApplicationContainer` и регистрирует маршрутизатор.
+Контейнер уровня приложения реализован в `Vasoft\Joke\Container\BaseContainer`. Реализует интерфейс
+`Vasoft\Joke\Contract\Container\ApplicationContainer` и регистрирует маршрутизатор.
 
 Так же вы можете использовать свои реализации реализуя соответствующие интерфейсы.
 
@@ -60,7 +60,7 @@ $logger = $container->get(LoggerInterface::class);
 ## Как работает автовайринг
 
 Когда контейнеру нужно создать объект или вызвать callable, он использует **`ParameterResolver`** (
-`Vasoft\Joke\Core\Routing\ParameterResolver`) для анализа параметров. Процесс состоит из двух этапов:
+`Vasoft\Joke\Container\ParameterResolver`) для анализа параметров. Процесс состоит из двух этапов:
 
 ### 1. Поиск в контексте
 
@@ -131,7 +131,7 @@ $container->registerSingleton(Cache::class, function (ServiceContainer $c) {
 Если параметр не может быть разрешён, выбрасывается:
 
 ```php
-Vasoft\Joke\Core\Routing\Exceptions\AutowiredException
+Vasoft\Joke\Container\Exceptions\AutowiredException
 ```
 
 Сообщение включает имя параметра и ожидаемый тип, например:

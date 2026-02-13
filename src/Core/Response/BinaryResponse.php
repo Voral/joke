@@ -4,73 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Response;
 
-use Vasoft\Joke\Core\Routing\Exceptions\NotFoundException;
+use Vasoft\Joke\Http\Response\BinaryResponse as NewBinaryResponse;
 
-abstract class BinaryResponse extends Response
-{
+use function Vasoft\Joke\triggerDeprecation;
+
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Response\BinaryResponse',
+    'Vasoft\Joke\Http\Response\BinaryResponse',
+);
+
+if (false) {
     /**
-     * Тело файла.
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Http\Response\BinaryResponse instead
      */
-    protected string $body = '';
-    public string $filename = '' {
-        set(string $value) => $this->filename = basename($value);
-        get => $this->filename;
-    }
-
-    /**
-     * Загрузка тела из файла.
-     *
-     * @param string $filename Полное имя файла
-     *
-     * @return $this
-     *
-     * @throws NotFoundException Если не удалось считать файл
-     */
-    public function load(string $filename): static
-    {
-        if (
-            !file_exists($filename)
-            || ($body = file_get_contents($filename)) === false) {
-            throw new NotFoundException('File not found');
-        }
-        $this->body = $body;
-        if ('' === $this->filename) {
-            $this->filename = $filename;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string $body
-     *
-     * @return $this
-     */
-    public function setBody($body): static
-    {
-        $this->body = $body;
-
-        return $this;
-    }
-
-    public function getBody(): string
-    {
-        return $this->body;
-    }
-
-    public function getBodyAsString(): string
-    {
-        return $this->body;
-    }
-
-    public function send(): static
-    {
-        $this->headers->setContentType($this->getContentType());
-        $this->headers->set('Content-Length', strlen($this->body));
-        $this->headers->set('Content-Disposition', sprintf('attachment; filename="%s"', $this->filename));
-
-        return parent::send();
-    }
-
-    abstract public function getContentType(): string;
+    abstract class BinaryResponse extends NewBinaryResponse {}
 }
+class_alias(NewBinaryResponse::class, __NAMESPACE__ . '\BinaryResponse');

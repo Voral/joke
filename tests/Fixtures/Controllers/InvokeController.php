@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Fixtures\Controllers;
 
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Container\ServiceContainer;
 
 readonly class InvokeController
 {

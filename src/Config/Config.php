@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Config;
 
 use Vasoft\Joke\Config\Exceptions\ConfigException;
-use Vasoft\Joke\Core\Exceptions\JokeException;
+use Vasoft\Joke\Exceptions\JokeException;
 
 /**
  * Контейнер конфигурации приложения.

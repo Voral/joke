@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Routing\Exceptions;
 
-use Vasoft\Joke\Core\Exceptions\JokeException;
-use Vasoft\Joke\Core\Response\ResponseStatus;
+use Vasoft\Joke\Routing\Exceptions\NotFoundException as NewNotFoundException;
 
-class NotFoundException extends JokeException
-{
-    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
-    {
-        parent::__construct(
-            $message,
-            $code,
-            $previous,
-        );
-    }
+use function Vasoft\Joke\triggerDeprecation;
 
-    public function getResponseStatus(): ResponseStatus
-    {
-        return ResponseStatus::NOT_FOUND;
-    }
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Routing\Exceptions\NotFoundException',
+    'Vasoft\Joke\Routing\Exceptions\NotFoundException',
+);
+
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Routing\Exceptions\NotFoundException instead
+     */
+    class NotFoundException extends NewNotFoundException {}
 }
+class_alias(NewNotFoundException::class, __NAMESPACE__ . '\NotFoundException');

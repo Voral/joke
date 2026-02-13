@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Contract\Core\Middlewares;
 
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Contract\Middleware\MiddlewareInterface as NewMiddlewareInterface;
 
-/**
- * Все Middleware в системе должны реализовывать этот интерфейс
- */
-interface MiddlewareInterface
-{
+use function Vasoft\Joke\triggerDeprecation;
+
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface',
+    'Vasoft\Joke\Contract\Middleware\MiddlewareInterface',
+);
+
+if (false) {
     /**
-     * @param HttpRequest $request входящий HTTP-запрос
-     * @param callable    $next    callable, представляющий следующее звено цепочки
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Contract\Middleware\MiddlewareInterface instead
      */
-    public function handle(HttpRequest $request, callable $next): mixed;
+    interface MiddlewareInterface extends NewMiddlewareInterface {}
 }
+class_alias(NewMiddlewareInterface::class, __NAMESPACE__ . '\MiddlewareInterface');

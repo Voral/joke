@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Routing;
 
-/**
- * Стандартные группы маршрутов.
- *
- * Используются для логической группировки маршрутов и привязки middleware
- * к определённым наборам маршрутов. Группа 'web' применяется автоматически
- * ко всем маршрутам, загружаемым из файла routes/web.php.
- */
-enum StdGroup: string
-{
-    /**
-     * Группа веб-маршрутов.
-     *
-     * Автоматически назначается всем маршрутам из routes/web.php.
-     * К этой группе привязаны middleware сессии и CSRF-защиты.
-     */
-    case WEB = 'web';
-}
+use Vasoft\Joke\Routing\StdGroup as NewStdGroup;
+
+use function Vasoft\Joke\triggerDeprecation;
+
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Routing\StdGroup',
+    'Vasoft\Joke\Routing\StdGroup',
+);
+
+class_alias(NewStdGroup::class, __NAMESPACE__ . '\StdGroup');

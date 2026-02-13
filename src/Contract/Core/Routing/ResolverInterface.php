@@ -4,36 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Contract\Core\Routing;
 
-use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
+use Vasoft\Joke\Contract\Container\ResolverInterface as NewResolverInterface;
 
-/**
- * Автоматическое связывание параметров.
- *
- * Используется для автоматического связывание параметров по сигнатуре. Анализируется сигнатура и формируется массив параметров.
- */
-interface ResolverInterface
-{
-    /**
-     * Связывание парамеров функций и методов.
-     *
-     * @param array{class-string|object,non-empty-string}|object|string $callable функция или метод
-     * @param array<string,mixed>                                       $context  Массив переменных контекста
-     *
-     * @return list<mixed> Массив разрешенных параметров
-     *
-     * @throws ParameterResolveException
-     */
-    public function resolveForCallable(array|object|string $callable, array $context = []): array;
+use function Vasoft\Joke\triggerDeprecation;
 
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Contract\Core\Routing\ResolverInterface',
+    'Vasoft\Joke\Contract\Container\ResolverInterface',
+);
+
+if (false) {
     /**
-     * Связывание парамеров конструкторов.
-     *
-     * @param class-string        $className Имя класса
-     * @param array<string,mixed> $context   Массив переменных контекста
-     *
-     * @return list<mixed> Массив разрешенных параметров
-     *
-     * @throws ParameterResolveException
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Contract\Container\ResolverInterface instead
      */
-    public function resolveForConstructor(string $className, array $context = []): array;
+    interface ResolverInterface extends NewResolverInterface {}
 }
+class_alias(NewResolverInterface::class, __NAMESPACE__ . '\ResolverInterface');

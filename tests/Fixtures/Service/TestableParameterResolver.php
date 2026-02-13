@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Fixtures\Service;
 
-use Vasoft\Joke\Core\Routing\ParameterResolver;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Container\ParameterResolver;
+use Vasoft\Joke\Container\ServiceContainer;
 
 class TestableParameterResolver extends ParameterResolver
 {

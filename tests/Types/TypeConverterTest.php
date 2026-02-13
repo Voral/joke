@@ -7,12 +7,12 @@ namespace Vasoft\Joke\Tests\Types;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
-use Vasoft\Joke\Types\TypeConverter;
+use Vasoft\Joke\Support\Types\TypeConverter;
 
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Types\TypeConverter
+ * @coversDefaultClass \Vasoft\Joke\Support\Types\TypeConverter
  */
 final class TypeConverterTest extends TestCase
 {

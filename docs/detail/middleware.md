@@ -5,7 +5,7 @@ Joke поставляется с набором встроенных middleware,
 
 ## ExceptionMiddleware
 
-- Класс: Vasoft\Joke\Core\Middlewares\ExceptionMiddleware
+- Класс: Vasoft\Joke\Middleware\ExceptionMiddleware
 - Уровень: глобальный
 - Имя: StdMiddleware::EXCEPTION->value
 
@@ -16,7 +16,7 @@ Joke поставляется с набором встроенных middleware,
 
 ## SessionMiddleware
 
-- Класс: Vasoft\Joke\Core\Middlewares\SessionMiddleware
+- Класс: Vasoft\Joke\Middleware\SessionMiddleware
 - Уровень: маршрутизатора
 - Имя: StdMiddleware::SESSION->value
 - Режим: блокирующий (сессия остаётся открытой на всё время обработки запроса)
@@ -28,7 +28,7 @@ Joke поставляется с набором встроенных middleware,
 
 ## ReadonlySessionMiddleware
 
-- Класс: Vasoft\Joke\Core\Middlewares\ReadonlySessionMiddleware
+- Класс: Vasoft\Joke\Middleware\ReadonlySessionMiddleware
 - Режим: неблокирующий (данные считываются, сессия немедленно закрывается)
 
 Предназначен для сценариев, где:
@@ -41,8 +41,8 @@ Joke поставляется с набором встроенных middleware,
 Чтобы заменить стандартный middleware сессии для всех маршрутов:
 
 ```php
-use Vasoft\Joke\Core\Routing\StdMiddleware;
-use Vasoft\Joke\Core\Middlewares\ReadonlySessionMiddleware;
+use Vasoft\Joke\Middleware\StdMiddleware;
+use Vasoft\Joke\Middleware\ReadonlySessionMiddleware;
 
 // В bootstrap/app.php 
 $app->addRouteMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSION->value);
@@ -51,8 +51,8 @@ $app->addRouteMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSIO
 Чтобы заменить стандартный middleware сессии для конкретного маршрута:
 
 ```php
-use Vasoft\Joke\Core\Routing\StdMiddleware;
-use Vasoft\Joke\Core\Middlewares\ReadonlySessionMiddleware;
+use Vasoft\Joke\Middleware\StdMiddleware;
+use Vasoft\Joke\Middleware\ReadonlySessionMiddleware;
 
 // В routes/web.php 
 $router->get('/informer', Informer::class)->addMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSION->value);
@@ -60,7 +60,7 @@ $router->get('/informer', Informer::class)->addMiddleware(ReadonlySessionMiddlew
 
 ## CsrfMiddleware
 
-- Класс: Vasoft\Joke\Core\Middlewares\CsrfMiddleware
+- Класс: Vasoft\Joke\Middleware\CsrfMiddleware
 - Уровень: маршрутизатора
 - Имя: StdMiddleware::CSRF->value
 - Применяется к: группе StdGroup::WEB->value (т.е. всем маршрутам из web.php)

@@ -3,34 +3,20 @@
 declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Middlewares;
+use Vasoft\Joke\Middleware\ExceptionMiddleware as NewExceptionMiddleware;
 
-use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Core\Exceptions\JokeException;
-use Vasoft\Joke\Core\Request\HttpRequest;
-use Vasoft\Joke\Core\Response\JsonResponse;
-use Vasoft\Joke\Core\Response\ResponseStatus;
+use function Vasoft\Joke\triggerDeprecation;
 
-/**
- * Перехватывает необработанные исключения и преобразует их в корректные HTTP-ответы.
- *
- * Обеспечивает, что пользователь никогда не увидит «голый» PHP-фатал.
- */
-readonly class ExceptionMiddleware implements MiddlewareInterface
-{
-    public function handle(HttpRequest $request, callable $next): mixed
-    {
-        try {
-            $response = $next();
-        } catch (JokeException $exception) {
-            return new JsonResponse()
-                ->setBody(['message' => $exception->getMessage()])
-                ->setStatus($exception->getResponseStatus());
-        } catch (\Exception $exception) {
-            return new JsonResponse()
-                ->setBody(['message' => $exception->getMessage()])
-                ->setStatus(ResponseStatus::INTERNAL_SERVER_ERROR);
-        }
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Middlewares\ExceptionMiddleware',
+    'Vasoft\Joke\Middleware\ExceptionMiddleware',
+);
 
-        return $response;
-    }
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\ExceptionMiddleware instead
+     */
+    class ExceptionMiddleware extends NewExceptionMiddleware {}
 }
+class_alias(NewExceptionMiddleware::class, __NAMESPACE__ . '\ExceptionMiddleware');

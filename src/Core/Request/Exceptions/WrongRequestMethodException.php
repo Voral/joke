@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Request\Exceptions;
 
-use Vasoft\Joke\Core\Exceptions\JokeException;
-use Vasoft\Joke\Core\Response\ResponseStatus;
+use Vasoft\Joke\Http\Exceptions\WrongRequestMethodException as NewWrongRequestMethodException;
 
-class WrongRequestMethodException extends JokeException
-{
-    public function __construct(string $method, int $code = 0, ?\Throwable $previous = null)
-    {
-        parent::__construct(
-            sprintf('Wrong request method: %s', $method),
-            $code,
-            $previous,
-        );
-    }
+use function Vasoft\Joke\triggerDeprecation;
 
-    public function getResponseStatus(): ResponseStatus
-    {
-        return ResponseStatus::METHOD_NOT_ALLOWED;
-    }
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Request\Exceptions\WrongRequestMethodException',
+    'Vasoft\Joke\Http\Exceptions\WrongRequestMethodException',
+);
+
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Http\Exceptions\WrongRequestMethodException instead
+     */
+    class WrongRequestMethodException extends NewWrongRequestMethodException {}
 }
+class_alias(NewWrongRequestMethodException::class, __NAMESPACE__ . '\WrongRequestMethodException');

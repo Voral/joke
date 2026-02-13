@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Middlewares;
 
-use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
+use Vasoft\Joke\Middleware\MiddlewareDto as NewMiddlewareDto;
 
-/**
- * Объект описывающий middleware в коллекции. Не пустое наименование является признаком единственного экземпляра.
- */
-class MiddlewareDto
-{
+use function Vasoft\Joke\triggerDeprecation;
+
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Middlewares\MiddlewareDto',
+    'Vasoft\Joke\Middleware\MiddlewareDto',
+);
+
+if (false) {
     /**
-     * @param MiddlewareInterface|string $middleware middleware
-     * @param string                     $name       Наименование middleware для одиночек
-     * @param array<string>              $groups     Привязка middleware к набору групп. (Имеет значение в middleware привязанных к маршруту)
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\MiddlewareDto instead
      */
-    public function __construct(
-        public MiddlewareInterface|string $middleware,
-        public readonly string $name = '',
-        public array $groups = [],
-    ) {}
+    class MiddlewareDto extends NewMiddlewareDto {}
 }
+class_alias(NewMiddlewareDto::class, __NAMESPACE__ . '\MiddlewareDto');

@@ -4,61 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Response;
 
-/**
- * HTTP-ответ в формате HTML.
- *
- * Автоматически устанавливает заголовок Content-Type: text/html.
- * Принимает любые данные и преобразует их в строку при установке тела ответа.
- */
-class HtmlResponse extends Response
-{
-    /**
-     * Тело HTML-ответа.
-     */
-    protected string $body = '';
+use Vasoft\Joke\Http\Response\HtmlResponse as NewHtmlResponse;
 
-    /**
-     * Конструктор HTML-ответа.
-     *
-     * Устанавливает Content-Type в 'text/html'.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->headers->setContentType('text/html');
-    }
+use function Vasoft\Joke\triggerDeprecation;
 
-    /**
-     * Устанавливает тело ответа.
-     *
-     * Любое переданное значение автоматически приводится к строке.
-     * Для объектов вызывается метод __toString(), если он реализован.
-     *
-     * @param mixed $body Данные для отправки в теле ответа
-     */
-    public function setBody(mixed $body): static
-    {
-        $this->body = (string) $body;
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Response\HtmlResponse',
+    'Vasoft\Joke\Http\Response\HtmlResponse',
+);
 
-        return $this;
-    }
-
+if (false) {
     /**
-     * Возвращает текущее тело ответа.
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Http\Response\HtmlResponse instead
      */
-    public function getBody(): string
-    {
-        return $this->body;
-    }
-
-    /**
-     * Возвращает строковое представление тела ответа.
-     *
-     * Для HTML-ответа тело уже хранится в виде строки, поэтому метод
-     * просто возвращает его без дополнительной обработки.
-     */
-    public function getBodyAsString(): string
-    {
-        return $this->body;
-    }
+    class HtmlResponse extends NewHtmlResponse {}
 }
+class_alias(NewHtmlResponse::class, __NAMESPACE__ . '\HtmlResponse');

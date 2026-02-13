@@ -13,8 +13,8 @@ URI-паттернов. Все маршруты определяются в фа
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Vasoft\Joke\Core\Application;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Application\Application;
+use Vasoft\Joke\Container\ServiceContainer;
 
 return new Application(
     dirname(__DIR__),  // каталог корня проекта
@@ -31,11 +31,11 @@ return new Application(
 
 ## Базовое использование
 
-Внутри файла маршрутов доступна переменная `$router` типа `Vasoft\Joke\Core\Routing\Router`. Простейший маршрут
+Внутри файла маршрутов доступна переменная `$router` типа `Vasoft\Joke\Routing\Router`. Простейший маршрут
 регистрируется так:
 
 ```php
-use Vasoft\Joke\Core\Routing\Router;
+use Vasoft\Joke\Routing\Router;
 
 /**
  * @var Router $router
@@ -67,7 +67,7 @@ $router->any($path, $handler);
 Так же возможно регистрация маршрута на заданный перечень HTTP методов
 
 ```php
-use Vasoft\Joke\Core\Request\HttpMethod;
+use Vasoft\Joke\Http\HttpMethod;
 
 $router->math([HttpMethod::GET,HttpMethod::POST], $handler);
 ```
@@ -78,8 +78,8 @@ $router->math([HttpMethod::GET,HttpMethod::POST], $handler);
 типизированные параметры, зарегистрированные в контейнере:
 
 ```php
-use Vasoft\Joke\Core\Routing\Router;
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Routing\Router;
+use Vasoft\Joke\Http\HttpRequest;
 
 /**
  * @var Router $router
@@ -200,7 +200,7 @@ $router->get('/hello', fn() => 'hi','hello')
 
 Маршруты подключаемые из конфигурационного файла веб-маршрутов автоматически добавляются в группу `web`.
 
-Фреймворк включает enum содержащий стандартные группы `Vasoft\Joke\Core\Routing\StdGroup`.
+Фреймворк включает enum содержащий стандартные группы `Vasoft\Joke\Routing\StdGroup`.
 
 ## Middleware на уровне маршрута
 
@@ -220,18 +220,18 @@ Middleware выполняются до вызова обработчика и м
 
 Фреймворк предоставляет интерфейсы для замены компонентов маршрутизации:
 
-- `Vasoft\Joke\Contract\Core\Routing\RouteInterface`
-- `Vasoft\Joke\Contract\Core\Routing\RouterInterface`
+- `Vasoft\Joke\Contract\Routing\RouteInterface`
+- `Vasoft\Joke\Contract\Routing\RouterInterface`
 
 Чтобы использовать собственную реализацию, зарегистрируйте её в DI контейнере:
 
 ```php
 // bootstrap/app.php
 
-use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
-use Vasoft\Joke\Core\Application;
-use Vasoft\Joke\Core\Routing\Router;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Contract\Routing\RouterInterface;
+use Vasoft\Joke\Application\Application;
+use Vasoft\Joke\Routing\Router;
+use Vasoft\Joke\Container\ServiceContainer;
 
 $container = new ServiceContainer();
 $container->registerSingleton(RouterInterface::class, MyRouter::class);

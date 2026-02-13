@@ -9,3 +9,11 @@ if (($_ENV['JK_ENV'] ?? $_SERVER['JK_ENV'] ?? getenv('JK_ENV')) !== 'testing') {
     fwrite(STDERR, "Ошибка: тесты должны запускаться в окружении 'testing'!\n");
     exit(1);
 }
+
+
+if (!function_exists('exampleClosureFunction')) {
+    function exampleClosureFunction(int $num, int $page): int
+    {
+        return $num + $page;
+    }
+}

@@ -4,26 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Middlewares;
 
-use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Middleware\ReadonlySessionMiddleware as NewReadonlySessionMiddleware;
 
-/**
- * Неблокирующая сессия. (данные считываются, сессия немедленно закрывается).
- *
- * Предназначен для сценариев, где:
- * - сессия нужна только для чтения (например, проверка авторизации)
- * - важна высокая параллельность (несколько AJAX-запросов от одного пользователя)
- */
-class ReadonlySessionMiddleware implements MiddlewareInterface
-{
-    public function handle(HttpRequest $request, callable $next): mixed
-    {
-        if (!$request->session->isStarted()) {
-            session_start();
-        }
-        $request->session->load();
-        session_write_close();
+use function Vasoft\Joke\triggerDeprecation;
 
-        return $next();
-    }
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Middlewares\ReadonlySessionMiddleware',
+    'Vasoft\Joke\Middleware\ReadonlySessionMiddleware',
+);
+
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\ReadonlySessionMiddleware instead
+     */
+    class ReadonlySessionMiddleware extends NewReadonlySessionMiddleware {}
 }
+class_alias(NewReadonlySessionMiddleware::class, __NAMESPACE__ . '\ReadonlySessionMiddleware');

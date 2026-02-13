@@ -4,31 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Contract\Core;
 
-use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
-use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
+use Vasoft\Joke\Contract\Container\ApplicationContainerInterface as NewApplicationContainerInterface;
 
-/**
- * DI контейнер приложения
- * Обязательно содержит маршрутизатор
- */
-interface ApplicationContainerInterface extends DiContainerInterface
-{
-    /**
-     * Возвращает маршрутизатор
-     *
-     * @throws ParameterResolveException
-     */
-    public function getRouter(): RouterInterface;
+use function Vasoft\Joke\triggerDeprecation;
 
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Contract\Core\ApplicationContainerInterface',
+    'Vasoft\Joke\Contract\Container\ApplicationContainerInterface',
+);
+
+if (false) {
     /**
-     * Задает роутер
-     *
-     * @param callable|object|string $router Определение сервиса:
-     *                                       - строка с именем класса
-     *                                       - callable (фабрика)
-     *                                       - готовый объект
-     *
-     * @return $this
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\MiddlewareDto instead
      */
-    public function setRouter(callable|object|string $router): static;
+    interface ApplicationContainerInterface extends NewApplicationContainerInterface {}
 }
+class_alias(NewApplicationContainerInterface::class, __NAMESPACE__ . '\ApplicationContainerInterface');

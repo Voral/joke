@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Routing\Exceptions;
 
-use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
+use Vasoft\Joke\Container\Exceptions\AutowiredException as NewAutowiredException;
 
-class AutowiredException extends ParameterResolveException
-{
-    public function __construct(string $paramName, string $type, int $code = 0, ?\Throwable $previous = null)
-    {
-        parent::__construct(
-            sprintf(
-                'Failed to autowire parameter "$%s": expected type "%s" cannot be resolved or is incompatible with the provided value.',
-                $paramName,
-                $type,
-            ),
-            $code,
-            $previous,
-        );
-    }
+use function Vasoft\Joke\triggerDeprecation;
+
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Routing\Exceptions\AutowiredException',
+    'Vasoft\Joke\Container\Exceptions\AutowiredException',
+);
+
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Container\Exceptions\AutowiredException instead
+     */
+    class AutowiredException extends NewAutowiredException {}
 }
+class_alias(NewAutowiredException::class, __NAMESPACE__ . '\AutowiredException');

@@ -3,19 +3,21 @@
 declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Exceptions\Http;
+use Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException as NewCsrfMismatchException;
 
-use Vasoft\Joke\Core\Exceptions\JokeException;
-use Vasoft\Joke\Core\Response\ResponseStatus;
+use function Vasoft\Joke\triggerDeprecation;
 
-class CsrfMismatchException extends JokeException
-{
-    public function __construct(int $code = 0, ?\Throwable $previous = null)
-    {
-        parent::__construct('CSRF token mismatch', $code, $previous);
-    }
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Exceptions\Http\CsrfMismatchException',
+    'Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException',
+);
 
-    public function getResponseStatus(): ResponseStatus
-    {
-        return ResponseStatus::FORBIDDEN;
-    }
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException instead
+     */
+    abstract class CsrfMismatchException extends NewCsrfMismatchException {}
 }
+class_alias(NewCsrfMismatchException::class, __NAMESPACE__ . '\CsrfMismatchException');
+

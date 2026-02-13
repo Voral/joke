@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Fixtures\Controllers;
 
-use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Container\Exceptions\AutowiredException;
+use Vasoft\Joke\Container\ServiceContainer;
 
 class SingleController
 {

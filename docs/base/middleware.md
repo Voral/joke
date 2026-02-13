@@ -57,10 +57,10 @@ $router->get('/hello', fn() => 'hi','hello')
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
-use Vasoft\Joke\Core\Application;
-use Vasoft\Joke\Core\Routing\Router;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Contract\Routing\RouterInterface;
+use Vasoft\Joke\Application\Application;
+use Vasoft\Joke\Routing\Router;
+use Vasoft\Joke\Container\ServiceContainer;
 
 return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer())
     ->addMiddleware(SomeMiddleware1::class,'myNamedMiddleware')
@@ -77,10 +77,10 @@ return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer(
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Vasoft\Joke\Contract\Core\Routing\RouterInterface;
-use Vasoft\Joke\Core\Application;
-use Vasoft\Joke\Core\Routing\Router;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Contract\Routing\RouterInterface;
+use Vasoft\Joke\Application\Application;
+use Vasoft\Joke\Routing\Router;
+use Vasoft\Joke\Container\ServiceContainer;
 
 return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer())
     ->addRouteMiddleware(SomeMiddleware1::class,'myNamedMiddleware1')
@@ -119,7 +119,7 @@ $router->get('/hello', fn() => 'hi')
 ### Стандартные именованные middleware
 
 Для обеспечения единственности и предсказуемости ключевых middleware фреймворк предоставляет перечисление
-`Vasoft\Joke\Core\Routing\StdMiddleware`
+`Vasoft\Joke\Middleware\StdMiddleware`
 
 Оно определяет зарезервированные имена для встроенных middleware:
 
@@ -138,7 +138,7 @@ enum StdMiddleware: string
 Пример: замена стандартного middleware сессии
 
 ```php
-use Vasoft\Joke\Core\Routing\StdMiddleware;
+use Vasoft\Joke\Middleware\StdMiddleware;
 $router->get('/custom', fn() => '...')
     ->addMiddleware(CustomSessionMiddleware::class, StdMiddleware::SESSION->value);
 ```
@@ -163,7 +163,7 @@ $router->get('/custom', fn() => '...')
 
 ## Контракт middleware
 
-Все middleware в Joke должны реализовывать интерфейс `Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface`.
+Все middleware в Joke должны реализовывать интерфейс `Vasoft\Joke\Contract\Middleware\MiddlewareInterface`.
 
 Этот контракт гарантирует единообразное поведение и совместимость с цепочкой middleware. Интерфейс определяет
 единственный метод:
@@ -172,11 +172,11 @@ $router->get('/custom', fn() => '...')
 public function handle(HttpRequest $request, callable $next): mixed;
 ```
 
-- $request — входящий HTTP-запрос (Vasoft\Joke\Core\Request\HttpRequest);
+- $request — входящий HTTP-запрос (Vasoft\Joke\Http\HttpRequest);
 - $next — callable без параметров, который при вызове возвращает результат выполнения следующего звена цепочки;
 - Метод должен вернуть значение:
     - скалярным/составным значением (например, строкой), которое будет объединено с другими частями ответа,
-    - экземпляром Vasoft\Joke\Core\Response\Response (или его наследником), который станет финальным HTTP-ответом.
+    - экземпляром Vasoft\Joke\Http\Response\Response (или его наследником), который станет финальным HTTP-ответом.
 
 Цепочка middleware строится как вложенная композиция: каждый middleware может модифицировать результат до и/или после
 вызова $next().
@@ -184,8 +184,8 @@ public function handle(HttpRequest $request, callable $next): mixed;
 Пример реализации
 
 ```php
-use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
+use Vasoft\Joke\Http\HttpRequest;
 
 class LoggingMiddleware implements MiddlewareInterface
 {
@@ -216,8 +216,8 @@ class LoggingMiddleware implements MiddlewareInterface
 Пример с прерыванием цепочки
 
 ```php
-use Vasoft\Joke\Core\Response\HtmlResponse;
-use Vasoft\Joke\Core\Response\ResponseStatus;
+use Vasoft\Joke\Http\Response\HtmlResponse;
+use Vasoft\Joke\Http\Response\ResponseStatus;
 
 public function handle(HttpRequest $request, callable $next): mixed
 {

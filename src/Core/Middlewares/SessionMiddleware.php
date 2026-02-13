@@ -4,26 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Middlewares;
 
-use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Middleware\SessionMiddleware as NewSessionMiddleware;
 
-/**
- * Блокирующая сессия (сессия остаётся открытой на всё время обработки запроса).
- *
- * Запускает сессию, загружает данные и сохраняет их после выполнения цепочки middleware и обработчика. Это поведение по
- * умолчанию для большинства веб-приложений.
- */
-class SessionMiddleware implements MiddlewareInterface
-{
-    public function handle(HttpRequest $request, callable $next): mixed
-    {
-        if (!$request->session->isStarted()) {
-            session_start();
-        }
-        $request->session->load();
-        $result = $next($request);
-        $request->session->save();
+use function Vasoft\Joke\triggerDeprecation;
 
-        return $result;
-    }
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Middlewares\SessionMiddleware',
+    'Vasoft\Joke\Middleware\SessionMiddleware',
+);
+
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\SessionMiddleware instead
+     */
+    class SessionMiddleware extends NewSessionMiddleware {}
 }
+class_alias(NewSessionMiddleware::class, __NAMESPACE__ . '\SessionMiddleware');

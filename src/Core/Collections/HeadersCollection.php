@@ -4,30 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Collections;
 
-/**
- * Коллекция HTTP-заголовков.
- *
- * Расширяет PropsCollection,
- * Специализированный метод для работы с Content-Type.
- */
-class HeadersCollection extends PropsCollection
-{
-    /**
-     * Возвращает значение заголовка Content-Type.
-     */
-    public ?string $contentType {
-        get => $this->props['Content-Type'] ?? null;
-    }
+use Vasoft\Joke\Collections\HeadersCollection as NewHeadersCollection;
 
-    /**
-     * Устанавливает значение заголовка Content-Type.
-     *
-     * @param string $value MIME-тип, например: 'text/html', 'application/json'
-     */
-    public function setContentType(string $value): static
-    {
-        $this->props['Content-Type'] = $value;
+use function Vasoft\Joke\triggerDeprecation;
 
-        return $this;
-    }
+require_once __DIR__ . '/../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Core\Collections\HeaderCollection',
+    'Vasoft\Joke\Collections\HeadersCollection',
+);
+
+if (false) {
+    /**
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Collections\HeadersCollection instead
+     */
+    class HeadersCollection extends NewHeadersCollection {}
 }
+class_alias(NewHeadersCollection::class, __NAMESPACE__ . '\HeadersCollection');

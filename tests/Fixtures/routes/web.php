@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Vasoft\Joke\Core\Middlewares\CsrfMiddleware;
-use Vasoft\Joke\Core\Response\HtmlResponse;
-use Vasoft\Joke\Core\Response\ResponseStatus;
+use Vasoft\Joke\Middleware\CsrfMiddleware;
+use Vasoft\Joke\Http\Response\HtmlResponse;
+use Vasoft\Joke\Http\Response\ResponseStatus;
 use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;
-use Vasoft\Joke\Core\Routing\Router;
+use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Tests\Fixtures\Controllers\SingleController;
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Http\HttpRequest;
 
 /**
  * @var Router $router

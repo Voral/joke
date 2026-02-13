@@ -4,146 +4,20 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Contract\Core\Routing;
 
-use Vasoft\Joke\Contract\Core\Middlewares\MiddlewareInterface;
-use Vasoft\Joke\Core\Middlewares\MiddlewareDto;
-use Vasoft\Joke\Core\Request\HttpMethod;
-use Vasoft\Joke\Core\Request\HttpRequest;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Contract\Routing\RouteInterface as NewRouteInterface;
 
-/**
- * Интерфейс отдельного маршрута в системе маршрутизации.
- *
- * Представляет собой неизменяемый (immutable) объект, описывающий соответствие между
- * HTTP-методом, URI-шаблоном и обработчиком запроса. Роут отвечает за:
- * - хранение исходного пути и HTTP-метода
- * - компиляцию пути в регулярное выражение для быстрого сопоставления
- * - проверку соответствия входящего запроса своему шаблону
- * - выполнение связанного обработчика с использованием DI-контейнера.
- *
- * Роуты могут быть именованными, что позволяет использовать их для генерации URL.
- * Поддерживается создание копии маршрута с другим HTTP-методом через метод withMethod(),
- * что полезно при регистрации одного пути для нескольких методов.
- */
-interface RouteInterface
-{
-    /**
-     * Скомпилированное регулярное выражение, соответствующее URI-шаблону маршрута.
-     *
-     * Используется для эффективного сопоставления входящего запроса с шаблоном пути.
-     * Значение генерируется лениво при первом обращении или во время компиляции.
-     * Может быть null, если компиляция ещё не выполнена.
-     */
-    public ?string $compiledPattern {
-        get;
-    }
+use function Vasoft\Joke\triggerDeprecation;
 
-    /**
-     * HTTP-метод, с которым ассоциирован данный маршрут.
-     *
-     * Определяет, какие типы запросов (GET, POST и т.д.) может обрабатывать этот маршрут.
-     */
-    public HttpMethod $method {
-        get;
-    }
+require_once __DIR__ . '/../../../DeprecatedClass.php';
+triggerDeprecation(
+    'Vasoft\Joke\Contract\Core\Routing\RouteInterface',
+    'Vasoft\Joke\Contract\Routing\RouteInterface',
+);
 
+if (false) {
     /**
-     * Конструктор маршрута.
-     *
-     * @param ServiceContainer                                   $serviceContainer DI-контейнер, используемый для разрешения
-     *                                                                             зависимостей при вызове обработчика
-     * @param string                                             $path             URI-шаблон маршрута (например, '/users/{id}')
-     * @param HttpMethod                                         $method           HTTP-метод, который будет обрабатываться
-     * @param array{class-string,non-empty-string}|object|string $handler          Обработчик запроса, возвращающий ответ. Может быть:
-     *                                                                             - замыканием или callable-функцией;
-     *                                                                             - строкой с именем класса, реализующего метод __invoke;
-     *                                                                             - массивом вида [класс, метод], где класс может быть указан
-     *                                                                             как строка (имя класса), объект или интерфейс,
-     *                                                                             а метод — строка с именем публичного метода.
-     * @param string                                             $name             необязательное имя маршрута, используемое
-     *                                                                             для обратной маршрутизации (генерации URL)
+     * @deprecated since 1.2.0, use \Vasoft\Joke\Contract\Routing\RouteInterface instead
      */
-    public function __construct(
-        ServiceContainer $serviceContainer,
-        string $path,
-        HttpMethod $method,
-        array|object|string $handler,
-        string $name = '',
-    );
-
-    /**
-     * Добавляет middleware к маршруту.
-     *
-     * @param MiddlewareInterface|string $middleware middleware
-     * @param string                     $name       Имя middleware (если задано, то возможен только единственный вариант)
-     *
-     * @return $this
-     */
-    public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static;
-
-    /**
-     * Создаёт новый экземпляр маршрута с тем же путём и обработчиком, но другим HTTP-методом.
-     *
-     * Используется, когда один URI-шаблон должен обрабатывать несколько HTTP-методов
-     * (например, GET и POST). Возвращает копию текущего маршрута с заменённым методом.
-     *
-     * @param HttpMethod $method новый HTTP-метод
-     *
-     * @return static новый экземпляр маршрута с указанным методом
-     */
-    public function withMethod(HttpMethod $method): static;
-
-    /**
-     * Проверяет, соответствует ли данный маршрут переданному HTTP-запросу.
-     *
-     * Выполняет сопоставление URI запроса с шаблоном маршрута (включая извлечение
-     * параметров и добавление в объект запроса, если они есть) и проверяет совпадение HTTP-метода.
-     *
-     * @param HttpRequest $request входящий HTTP-запрос
-     *
-     * @return bool true, если маршрут подходит для запроса, иначе false
-     */
-    public function matches(HttpRequest $request): bool;
-
-    /**
-     * Выполняет обработчик маршрута с переданным запросом.
-     *
-     * Перед вызовом обработчика DI-контейнер может быть использован для внедрения
-     * зависимостей (например, если обработчик — это метод контроллера).
-     * Возвращает результат выполнения обработчика.
-     *
-     * @param HttpRequest $request входящий HTTP-запрос
-     *
-     * @return mixed результат работы обработчика (например, строка, массив, Response-объект)
-     */
-    public function run(HttpRequest $request): mixed;
-
-    /**
-     * Возвращает список групп маршрута.
-     *
-     * @return array<string>
-     */
-    public function getGroups(): array;
-
-    /**
-     * Добавление маршрута в группу.
-     *
-     * @return $this
-     */
-    public function addGroup(string $groupName): static;
-
-    /**
-     * Добавление маршрута в список групп
-     *
-     * @param array<string> $groups
-     *
-     * @return $this
-     */
-    public function mergeGroup(array $groups): static;
-
-    /**
-     * Возвращает список middleware привязанных к маршруту.
-     *
-     * @return array<MiddlewareDto>
-     */
-    public function getMiddlewares(): array;
+    interface RouteInterface extends NewRouteInterface {}
 }
+class_alias(NewRouteInterface::class, __NAMESPACE__ . '\RouteInterface');
