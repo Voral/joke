@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Routing;
 
+use Vasoft\Joke\Contract\Core\DiContainerInterface;
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Core\Routing\Exceptions\AutowiredException;
@@ -27,9 +28,9 @@ class ParameterResolver implements ResolverInterface
     /**
      * Конструктор резолвера.
      *
-     * @param ServiceContainer $serviceContainer DI-контейнер для разрешения сервисов
+     * @param DiContainerInterface $serviceContainer DI-контейнер для разрешения сервисов
      */
-    public function __construct(private readonly ServiceContainer $serviceContainer) {}
+    public function __construct(private readonly DiContainerInterface $serviceContainer) {}
 
     /**
      * Создаёт объект рефлексии для заданного callable.
