@@ -18,3 +18,4 @@
 - [ ] Добавление метода abstract public function getContentType(): string; в абстрактный класс Response. ContentType в заголовки будет добавляться в методе Response::send()
 - [ ] Убрать пространство Core
 - [ ] Минимальная версия PHP 8.5
+- [ ] В DiContainer изменить поведение. Если сервис не найден бросать исключение (совместимость с PSR11)

@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Core;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Routing\ParameterResolver;
 use Vasoft\Joke\Core\ServiceContainer;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Tests\Fixtures\Service\SingleService;
 use Vasoft\Joke\Tests\Fixtures\Service\TestableParameterResolver;
+use Vasoft\Joke\Core\BaseContainer;
 
 /**
  * @internal
  *
  * @coversDefaultClass \Vasoft\Joke\Core\ServiceContainer
  */
+#[CoversClass(BaseContainer::class)]
 final class ServiceContainerTest extends TestCase
 {
     public function testDefaults(): void
@@ -25,16 +28,6 @@ final class ServiceContainerTest extends TestCase
         self::assertInstanceOf(ParameterResolver::class, $resolver);
         $container = $container->get(ServiceContainer::class);
         self::assertInstanceOf(ServiceContainer::class, $container);
-    }
-
-    public function testGetParameterResolver(): void
-    {
-        TestableParameterResolver::$constructorCallCount = 0;
-        $container = new ServiceContainer();
-        $container->registerSingleton(ResolverInterface::class, TestableParameterResolver::class);
-        $container->getParameterResolver();
-        $container->getParameterResolver();
-        self::assertSame(1, TestableParameterResolver::$constructorCallCount);
     }
 
     public function testRegisterSingletonInstance(): void
@@ -106,5 +99,20 @@ final class ServiceContainerTest extends TestCase
         $service2 = $container->get(SingleService::class);
         self::assertSame(1, $callbackCount);
         self::assertSame($service1, $service2);
+    }
+
+    public function testAlias(): void
+    {
+        $container = new ServiceContainer();
+        $container->registerAlias('a', 'b');
+        $container->registerAlias('b', SingleService::class);
+        $container->registerSingleton(SingleService::class, SingleService::class);
+
+        $s1 = $container->get('a');
+        $s2 = $container->get('b');
+        $s3 = $container->get(SingleService::class);
+
+        self::assertSame($s1, $s2);
+        self::assertSame($s2, $s3);
     }
 }

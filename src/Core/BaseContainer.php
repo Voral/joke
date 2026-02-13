@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Core;
 
+use Vasoft\Joke\Container\Exceptions\ContainerException;
 use Vasoft\Joke\Contract\Core\DiContainerInterface;
 use Vasoft\Joke\Contract\Core\Routing\ResolverInterface;
 use Vasoft\Joke\Core\Exceptions\ParameterResolveException;
@@ -35,12 +36,7 @@ abstract class BaseContainer implements DiContainerInterface
      * @var array<string, object>
      */
     private array $singletons = [];
-    /**
-     * Флаг блокировки рекурсивного разрешения резолвера.
-     *
-     * Используется для предотвращения бесконечной рекурсии при создании резолвера.
-     */
-    private bool $lockResolver = false;
+    private array $aliases = [];
 
     /**
      * Конструктор контейнера.
@@ -51,6 +47,7 @@ abstract class BaseContainer implements DiContainerInterface
     {
         $this->initDefault();
         $this->singletons[static::class] = $this;
+        $this->singletons[DiContainerInterface::class] = $this;
     }
 
     /**
@@ -60,19 +57,13 @@ abstract class BaseContainer implements DiContainerInterface
      */
     protected function initDefault(): void
     {
-        $this->registerSingleton(ResolverInterface::class, ParameterResolver::class);
+        $this->registerSingleton(ResolverInterface::class, new ParameterResolver($this));
     }
 
     public function getParameterResolver(): ResolverInterface
     {
-        if (isset($this->singletons[ResolverInterface::class])) {
-            // @var ResolverInterface $resolver
-            return $this->singletons[ResolverInterface::class];
-        }
-        $definition = $this->singletonsRegistry[ResolverInterface::class] ?? ResolverInterface::class;
-        $this->singletons[ResolverInterface::class] = new $definition($this);
-
-        return $this->singletons[ResolverInterface::class];
+        /** @var ResolverInterface $resolver */
+        return $this->getSingleton(ResolverInterface::class);
     }
 
     public function registerSingleton(string $name, callable|object|string $service): void
@@ -98,8 +89,15 @@ abstract class BaseContainer implements DiContainerInterface
         if (null !== $result) {
             return $result;
         }
+        $result = $this->getService($name);
+        if (null === $result) {
+            @trigger_error(
+                "Service '{$name}' not found. In v2.0 this will throw an exception.",
+                E_USER_DEPRECATED,
+            );
+        }
 
-        return $this->getService($name);
+        return $result;
     }
 
     /**
@@ -113,20 +111,25 @@ abstract class BaseContainer implements DiContainerInterface
      */
     private function getService(string $name): ?object
     {
-        if (!isset($this->serviceRegistry[$name])) {
+        ['definition' => $definition] = $this->resolveEntry($name, $this->serviceRegistry);
+        if (null === $definition) {
             return null;
         }
-        $resolver = $this->getParameterResolver();
-        if (is_callable($this->serviceRegistry[$name])) {
-            $args = $resolver->resolveForCallable($this->serviceRegistry[$name]);
-        } else {
-            $args = $resolver->resolveForConstructor($this->serviceRegistry[$name]);
-        }
-        if (is_callable($this->serviceRegistry[$name])) {
-            return $this->serviceRegistry[$name](...$args);
-        }
 
-        return new $this->serviceRegistry[$name](...$args);
+        return $this->buildFromDefinition($definition);
+    }
+
+    private function buildFromDefinition(callable|string $definition): object
+    {
+        $resolver = $this->getParameterResolver();
+        if (is_callable($definition)) {
+            $args = $resolver->resolveForCallable($definition);
+
+            return $definition(...$args);
+        }
+        $args = $resolver->resolveForConstructor($definition);
+
+        return new $definition(...$args);
     }
 
     /**
@@ -143,26 +146,81 @@ abstract class BaseContainer implements DiContainerInterface
         if (isset($this->singletons[$name])) {
             return $this->singletons[$name];
         }
-        if (!isset($this->singletonsRegistry[$name])) {
+        ['definition' => $definition, 'canonicalName' => $canonicalName] = $this->resolveEntry(
+            $name,
+            $this->singletonsRegistry,
+        );
+        if (null !== $canonicalName && $name !== $canonicalName && isset($this->singletons[$canonicalName])) {
+            $this->singletons[$name] = $this->singletons[$canonicalName];
+
+            return $this->singletons[$name];
+        }
+        if (null === $definition) {
             return null;
         }
-        $definition = $this->singletonsRegistry[$name];
-        $args = [];
-        if (!$this->lockResolver) {
-            $resolver = $this->getParameterResolver();
-            if (is_callable($definition)) {
-                $args = $resolver->resolveForCallable($definition);
-            } else {
-                $args = $resolver->resolveForConstructor($definition);
-            }
-        }
-
-        if (is_callable($this->singletonsRegistry[$name])) {
-            $this->singletons[$name] = $definition(...$args);
-        } else {
-            $this->singletons[$name] = new $definition(...$args);
+        $entity = $this->buildFromDefinition($definition);
+        $this->singletons[$name] = $entity;
+        if ($name !== $canonicalName) {
+            $this->singletons[$canonicalName] = $entity;
         }
 
         return $this->singletons[$name];
+    }
+
+    /**
+     * Разрешает имя сервиса до определения и канонического имени.
+     *
+     * Выполняет поиск напрямую в реестре. Если не найдено — следует по цепочке алиасов.
+     * Прекращает обход при первом совпадении в реестре.
+     *
+     * Защищён от циклических алиасов через массив $visited.
+     *
+     * @param string $name     Запрашиваемое имя (может быть алиасом)
+     * @param array  $registry Реестр сервисов (прототипов или синглтонов)
+     *
+     * @return array{definition: null|callable|string, canonicalName: null|string}
+     *
+     * @throws ContainerException если обнаружена циклическая зависимость алиасов
+     */
+    private function resolveEntry(string $name, array $registry): array
+    {
+        $visited = [];
+        $current = $name;
+        if (array_key_exists($name, $registry)) {
+            return ['definition' => $registry[$name], 'canonicalName' => $name];
+        }
+
+        while (isset($this->aliases[$current])) {
+            if (isset($visited[$current])) {
+                throw new ContainerException('Circular alias detected:' . implode('-', array_keys($visited)));
+            }
+            $visited[$current] = true;
+            $current = $this->aliases[$current];
+            if (array_key_exists($current, $registry)) {
+                return ['definition' => $registry[$current], 'canonicalName' => $current];
+            }
+        }
+
+        return ['definition' => null, 'canonicalName' => null];
+    }
+
+    /**
+     * Регистрирует алиас для имени сервиса.
+     *
+     * Поддерживает цепочки алиасов (например: 'a' → 'b' → Service::class).
+     * При разрешении запроса по алиасу контейнер рекурсивно следует по цепочке,
+     * пока не найдёт зарегистрированный сервис или не достигнет конца.
+     *
+     * Циклические зависимости (например: 'a' → 'b', 'b' → 'a') приводят к выбросу
+     * {@see ContainerException}.
+     *
+     * @param string $alias    Псевдоним, под которым будет доступен сервис
+     * @param string $concrete Имя сервиса, интерфейса или другого алиаса
+     */
+    public function registerAlias(string $alias, string $concrete): static
+    {
+        $this->aliases[$alias] = $concrete;
+
+        return $this;
     }
 }
