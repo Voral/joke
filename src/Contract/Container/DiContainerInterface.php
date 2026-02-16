@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Contract\Container;
 
 use Vasoft\Joke\Container\Exceptions\ContainerException;
-use Vasoft\Joke\Contract\Container\ResolverInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 
 interface DiContainerInterface

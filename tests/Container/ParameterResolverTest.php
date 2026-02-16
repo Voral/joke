@@ -10,7 +10,6 @@ use Vasoft\Joke\Container\Exceptions\AutowiredException;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Container\ServiceContainer;
-
 use Vasoft\Joke\Tests\Fixtures\FakeExample;
 use Vasoft\Joke\Tests\Fixtures\Service\SingleService;
 

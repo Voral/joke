@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Exceptions\Http;
+
 use Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException as NewCsrfMismatchException;
 
 use function Vasoft\Joke\triggerDeprecation;
@@ -20,4 +21,3 @@ if (false) {
     abstract class CsrfMismatchException extends NewCsrfMismatchException {}
 }
 class_alias(NewCsrfMismatchException::class, __NAMESPACE__ . '\CsrfMismatchException');
-

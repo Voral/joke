@@ -6,7 +6,6 @@ namespace Vasoft\Joke\Http\Response;
 
 use Vasoft\Joke\Collections\HeadersCollection;
 
-
 /**
  * Абстрактный базовый класс HTTP-ответа.
  *

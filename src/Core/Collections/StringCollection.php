@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Collections;
+
 use Vasoft\Joke\Collections\StringCollection as NewStringCollection;
 
 use function Vasoft\Joke\triggerDeprecation;

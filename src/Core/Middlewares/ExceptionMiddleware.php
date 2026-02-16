@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Vasoft\Joke\Core\Middlewares;
+
 use Vasoft\Joke\Middleware\ExceptionMiddleware as NewExceptionMiddleware;
 
 use function Vasoft\Joke\triggerDeprecation;
