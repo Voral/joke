@@ -89,13 +89,25 @@
 
 ```php
 <?php
+/** @var \Vasoft\Joke\Config\Environment $env */
+
 use Vasoft\Joke\Application\KernelConfig;
+use Vasoft\Joke\Logging\Handlers\StreamHandler;
+use Vasoft\Joke\Logging\LogLevel;
+use Vendor\Project\Providers;
+use Vasoft\Joke\Logging\Logger;
+
+$loggerHandlers = [
+    new StreamHandler($env->getBasePath().'error.log'),
+    new StreamHandler($env->getBasePath().'info.log', LogLevel::INFO, LogLevel::INFO),
+];
 
 return new KernelConfig()
-    ->addProvider(\Vendor\Project\Providers\CustomProvider::class)
-    ->addDeferredProvider(\Vendor\Project\Providers\ExampleProvider::class)
+    ->addProvider(Providers\CustomProvider::class)
+    ->addDeferredProvider(Providers\ExampleProvider::class)
     ->setBaseConfigPath('config')
-    ->addLazyConfigPath('config/lazy');
+    ->addLazyConfigPath('config/lazy')
+    ->setLogger(static fn() => new Logger($loggerHandlers]));
 ```
 
 #### 2.2. Базовые конфигурации (Eager Loading)

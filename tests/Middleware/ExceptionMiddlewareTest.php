@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Tests\Middleware;
 
 use PHPUnit\Framework\TestCase;
+use Vasoft\Joke\Container\ServiceContainer;
+use Vasoft\Joke\Contract\Logging\LoggerInterface;
+use Vasoft\Joke\Logging\NullLogger;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\JsonResponse;
@@ -18,10 +21,19 @@ use Vasoft\Joke\Routing\Exceptions\NotFoundException;
  */
 final class ExceptionMiddlewareTest extends TestCase
 {
+    private static ServiceContainer $container;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$container = new ServiceContainer();
+        self::$container->registerSingleton(LoggerInterface::class, NullLogger::class);
+        self::$container->registerAlias('logger', LoggerInterface::class);
+    }
+
     public function testHandleSuccess(): void
     {
         $foo = static fn() => 'Success';
-        $middleware = new ExceptionMiddleware();
+        $middleware = new ExceptionMiddleware(self::$container);
         $output = $middleware->handle(new HttpRequest(), $foo);
         self::assertSame('Success', $output);
     }
@@ -31,7 +43,7 @@ final class ExceptionMiddlewareTest extends TestCase
         $foo = static function (): void {
             throw new NotFoundException('Route not found');
         };
-        $middleware = new ExceptionMiddleware();
+        $middleware = new ExceptionMiddleware(self::$container);
         $output = $middleware->handle(new HttpRequest(), $foo);
         self::assertInstanceOf(JsonResponse::class, $output);
         self::assertSame(ResponseStatus::NOT_FOUND, $output->status);
@@ -45,7 +57,7 @@ final class ExceptionMiddlewareTest extends TestCase
         $foo = static function (): void {
             throw new \Exception('Some exception');
         };
-        $middleware = new ExceptionMiddleware();
+        $middleware = new ExceptionMiddleware(self::$container);
         $output = $middleware->handle(new HttpRequest(), $foo);
         self::assertInstanceOf(JsonResponse::class, $output);
         self::assertSame(ResponseStatus::INTERNAL_SERVER_ERROR, $output->status);

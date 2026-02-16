@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Application;
 
 use Vasoft\Joke\Config\AbstractConfig;
+use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Container\BaseContainer;
+use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Contract\Provider\ServiceProviderInterface;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
+use Vasoft\Joke\Logging\Handlers\StreamHandler;
+use Vasoft\Joke\Logging\Logger;
 use Vasoft\Joke\Routing\RouterServiceProvider;
 
 /**
@@ -22,6 +27,7 @@ use Vasoft\Joke\Routing\RouterServiceProvider;
  */
 class KernelConfig extends AbstractConfig
 {
+    private LoggerInterface|\Closure|null $logger = null;
     /**
      * Список классов обычных сервис-провайдеров.
      * Провайдеры из этого списка инициируются сразу при старте приложения.
@@ -33,6 +39,38 @@ class KernelConfig extends AbstractConfig
         KernelServiceProvider::class => true,
         RouterServiceProvider::class => true,
     ];
+
+    public function setLogger(\Closure|LoggerInterface $logger): static
+    {
+        $this->guard();
+        $this->logger = $logger;
+
+        return $this;
+    }
+
+    /**
+     * Регистрирует логгер в DI-контейнере.
+     *
+     * Если логгер не был задан явно через {@see setLogger()}, создаётся экземпляр по умолчанию, записывающий сообщения
+     * в файл `var/log/error.log`.
+     *
+     * Логгер регистрируется как синглтон под интерфейсом {@see LoggerInterface} и алиасом `'logger'`
+     * для удобства получения из контейнера.
+     *
+     * @param BaseContainer $container DI-контейнер приложения
+     */
+    public function registerLogger(BaseContainer $container): void
+    {
+        if (null === $this->logger) {
+            /** @var Environment $env */
+            $env = $container->get(Environment::class);
+            $this->logger = static fn(): Logger => new Logger([
+                new StreamHandler($env->getBasePath() . 'var/log/error.log'),
+            ]);
+        }
+        $container->registerSingleton(LoggerInterface::class, $this->logger);
+        $container->registerAlias('logger', LoggerInterface::class);
+    }
 
     /**
      *  Список классов отложенных (ленивых) сервис-провайдеров.

@@ -8,6 +8,7 @@ use Vasoft\Joke\Config\ConfigManager;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
+use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Middleware\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
 use Vasoft\Joke\Http\HttpRequest;
@@ -98,40 +99,67 @@ class Application
         $serviceContainer->registerSingleton(Environment::class, $environment);
         $serviceContainer->registerAlias('env', Environment::class);
 
-        $kernelConfig = $this->initKernelConfig();
+        $kernelConfig = $this->initKernelConfig($environment);
+        $kernelConfig->registerLogger($this->serviceContainer);
 
-        $configManager = new ConfigManager(
-            $this->serviceContainer,
-            $kernelConfig->getBaseConfigPath(),
-            $kernelConfig->getLazyConfigPath(),
-        )
-            ->registerProviders($kernelConfig->getProviders())
-            ->registerProviders($kernelConfig->getDeferredProviders());
-        $serviceContainer->registerSingleton(ConfigManager::class, $configManager);
-        $serviceContainer->registerAlias('config', ConfigManager::class);
+        try {
+            $configManager = new ConfigManager(
+                $this->serviceContainer,
+                $kernelConfig->getBaseConfigPath(),
+                $kernelConfig->getLazyConfigPath(),
+            )
+                ->registerProviders($kernelConfig->getProviders())
+                ->registerProviders($kernelConfig->getDeferredProviders());
+            $serviceContainer->registerSingleton(ConfigManager::class, $configManager);
+            $serviceContainer->registerAlias('config', ConfigManager::class);
 
-        $providerManager = ProviderManagerBuilder::build(
-            $this->serviceContainer,
-            $kernelConfig->getProviders(),
-            $kernelConfig->getDeferredProviders(),
-        );
-        $providerManager->register();
-        $providerManager->boot();
-        $this->middlewares = $this->serviceContainer->get('middleware.global');
-        $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
+            $providerManager = ProviderManagerBuilder::build(
+                $this->serviceContainer,
+                $kernelConfig->getProviders(),
+                $kernelConfig->getDeferredProviders(),
+            );
+            $providerManager->register();
+            $providerManager->boot();
+            $this->middlewares = $this->serviceContainer->get('middleware.global');
+            $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
+        } catch (\Throwable $exception) {
+            $this->serviceContainer->get('logger')->error($exception);
+        }
     }
 
-    private function initKernelConfig(): KernelConfig
+    /**
+     * Инициализирует конфигурацию ядра приложения.
+     *
+     * Загружает пользовательскую конфигурацию из файла `bootstrap/kernel.php`, если он существует.
+     * Внутри этого файла доступна переменная `$env` типа {@see Environment}, содержащая данные окружения приложения.
+     *
+     * Файл `kernel.php` должен возвращать экземпляр {@see KernelConfig}. Если файл отсутствует,
+     * создаётся конфигурация по умолчанию.
+     *
+     * После загрузки конфигурация "замораживается" (становится неизменяемой)
+     * и регистрируется в DI-контейнере как синглтон.
+     *
+     * @param Environment $env Окружение приложения, передаётся в `kernel.php` через замыкание
+     *
+     * @return KernelConfig Инициализированная и замороженная конфигурация ядра
+     *
+     * @throws ConfigException Если файл `kernel.php` существует, но не возвращает корректный объект
+     */
+    private function initKernelConfig(Environment $env): KernelConfig
     {
         $file = $this->basePath . '/bootstrap/kernel.php';
         if (file_exists($file)) {
-            $config = require $file;
-            if (!$config instanceof KernelConfig) {
-                throw new ConfigException('kernel.php must return a KernelConfig instance.');
+            try {
+                $config = (static function () use ($env, $file): KernelConfig {
+                    return require $file;
+                })();
+            } catch (\Throwable $exception) {
+                throw new ConfigException('kernel.php must return a KernelConfig instance.', previous: $exception);
             }
         } else {
             $config = new KernelConfig();
         }
+        $config->freeze();
         $this->serviceContainer->registerSingleton(KernelConfig::class, $config);
 
         return $config;
@@ -227,9 +255,10 @@ class Application
      *
      * @return mixed Результат выполнения обработчика маршрута
      *
+     * @throws NotFoundException
      * @throws ParameterResolveException
      * @throws WrongMiddlewareException
-     * @throws NotFoundException
+     * @throws JokeException
      */
     private function handleRoute(HttpRequest $request): mixed
     {

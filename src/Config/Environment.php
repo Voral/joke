@@ -53,7 +53,7 @@ class Environment
         get => $this->name;
     }
 
-    public string $basePath = '';
+    private string $basePath = '';
 
     public function __construct(EnvironmentLoader $loader)
     {

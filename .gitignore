@@ -2,3 +2,4 @@
 .idea
 /reports/
 /var
+/tests/**/var

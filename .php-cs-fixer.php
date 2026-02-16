@@ -26,6 +26,7 @@ return
             '@PhpCsFixer:risky' => true,
             '@PER-CS3x0' => true,
             '@PER-CS3x0:risky' => true,
+            'fopen_flags' => false,
             'blank_line_before_statement' => [
                 'statements' => [
                     'continue',

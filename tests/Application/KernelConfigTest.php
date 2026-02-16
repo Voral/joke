@@ -9,8 +9,10 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Application\KernelConfig;
 use Vasoft\Joke\Application\KernelServiceProvider;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
+use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ServiceProviderInterface;
 use Vasoft\Joke\Routing\RouterServiceProvider;
+use Vasoft\Joke\Tests\Fixtures\Logger\FakeLogger;
 
 /**
  * @internal
@@ -58,7 +60,6 @@ final class KernelConfigTest extends TestCase
         yield ['setLazyConfigPath', 'getLazyConfigPath', 'configTest'];
     }
 
-
     #[DataProvider('provideFrozenCases')]
     public function testFrozen(string $setter, mixed $value): void
     {
@@ -76,5 +77,17 @@ final class KernelConfigTest extends TestCase
         yield ['setProviders', ['Provider']];
         yield ['setLazyConfigPath', 'lazy'];
         yield ['setBaseConfigPath', 'config'];
+        yield ['setLogger', new FakeLogger()];
+    }
+
+    public function testSetLogger(): void
+    {
+        $logger = new FakeLogger();
+        $config = new KernelConfig();
+        $config->setLogger($logger);
+        $container = new ServiceContainer();
+        $config->registerLogger($container);
+
+        self::assertSame($logger, $container->get('logger'));
     }
 }

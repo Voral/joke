@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Application;
 
+use Vasoft\Joke\Config\EnvironmentLoader;
+use Vasoft\Joke\Logging\Logger;
+use Vasoft\Joke\Logging\LogLevel;
+use Vasoft\Joke\Tests\Fixtures\Logger\FakeLogger;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Vasoft\Joke\Application\KernelConfig;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
@@ -14,6 +18,7 @@ use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Support\Normalizers\Path;
 use Vasoft\Joke\Tests\Fixtures\Middlewares\SingleMiddleware;
 
 /**
@@ -263,5 +268,43 @@ final class ApplicationTest extends TestCase
         $container = new ServiceContainer();
         new Application(self::$basePath, '', $container);
         self::assertSame('custom_lazy', $container->get(KernelConfig::class)->getLazyConfigPath());
+    }
+
+    #[RunInSeparateProcess]
+    public function testExceptionOnBootstrap(): void
+    {
+        $pathNormalizer = new Path(__DIR__);
+        $logger = new FakeLogger();
+        $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
+
+        $container = self::createStub(ServiceContainer::class);
+        $container
+            ->method('get')
+            ->willReturnCallback(static function ($name) use ($environment, $pathNormalizer, $logger): mixed {
+                return match ($name) {
+                    Environment::class, 'env' => $environment,
+                    Path::class, 'normalizer.path' => $pathNormalizer,
+                    Logger::class, 'logger' => $logger,
+                };
+            });
+        $container
+            ->method('registerAlias')
+            ->willReturnCallback(static function ($alias, $entity) use ($container): ServiceContainer {
+                if ('config' === $alias) {
+                    throw new \Exception('Test exception');
+                }
+
+                return $container;
+            });
+
+        new Application(self::$basePath, '', $container);
+        $log = $logger->getRecords();
+
+        self::assertCount(1, $log);
+        self::assertArrayHasKey('level', $log[0]);
+        self::assertArrayHasKey('message', $log[0]);
+        self::assertSame(LogLevel::ERROR, $log[0]['level']);
+        self::assertInstanceOf(\Exception::class, $log[0]['message']);
+        self::assertSame('Test exception', $log[0]['message']->getMessage());
     }
 }
