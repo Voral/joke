@@ -8,6 +8,7 @@ use Vasoft\Joke\Collections\HeadersCollection;
 use Vasoft\Joke\Collections\PropsCollection;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Contract\Container\ApplicationContainerInterface;
+use Vasoft\Joke\Contract\Container\ContainerInspectionInterface;
 use Vasoft\Joke\Contract\Container\DiContainerInterface;
 use Vasoft\Joke\Contract\Container\ResolverInterface;
 use Vasoft\Joke\Container\Exceptions\ContainerException;
@@ -33,7 +34,7 @@ use Vasoft\Joke\Session\SessionCollection;
  * Управляет жизненным циклом сервисов, поддерживает синглтоны и прототипы,
  * автоматически разрешает зависимости через рефлексию.
  */
-abstract class BaseContainer implements DiContainerInterface
+abstract class BaseContainer implements ContainerInspectionInterface
 {
     /**
      * Регистр прототипов (новый экземпляр при каждом запросе).
@@ -291,5 +292,10 @@ abstract class BaseContainer implements DiContainerInterface
         $this->aliases[$alias] = $concrete;
 
         return $this;
+    }
+
+    public function has(string $name): bool
+    {
+        return isset($this->definitions[$name]) || isset($this->instances[$name]);
     }
 }
