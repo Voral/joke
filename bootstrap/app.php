@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 require __DIR__ . '/../vendor/autoload.php';
 
-use Vasoft\Joke\Core\Application;
-use Vasoft\Joke\Core\ServiceContainer;
+use Vasoft\Joke\Application\Application;
+use Vasoft\Joke\Container\ServiceContainer;
 
-//@todo Продумать где производить настройку и какие параметры
+// @todo Продумать где производить настройку и какие параметры
 session_set_cookie_params([
     'samesite' => 'Lax',
     'secure' => $_SERVER['HTTPS'] ?? false,
@@ -16,4 +18,3 @@ session_set_cookie_params([
 ]);
 
 return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer());
-

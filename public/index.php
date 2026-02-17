@@ -1,7 +1,7 @@
 <?php
 
-use Vasoft\Joke\Core\Application;
-use Vasoft\Joke\Core\Request\HttpRequest;
+use Vasoft\Joke\Application\Application;
+use Vasoft\Joke\Http\HttpRequest;
 
 /** @var Application $app */
 $app = require_once __DIR__ . '/../bootstrap/app.php';
