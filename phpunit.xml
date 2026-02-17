@@ -29,6 +29,10 @@
             <directory suffix=".php">./src</directory>
         </include>
         <exclude>
+            <file>src/DeprecatedClass.php</file>
+            <directory>src/Core</directory>
+            <directory>src/Contract/Core</directory>
+            <directory>src/Types</directory>
             <directory>vendor</directory>
             <directory>tests</directory>
         </exclude>
