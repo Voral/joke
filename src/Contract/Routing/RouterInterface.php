@@ -81,7 +81,7 @@ interface RouterInterface
     public function patch(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
-     * Регистрация маршрута отвечающего на PATH запрос
+     * Регистрация маршрута отвечающего на HEAD запрос
      *
      * Поучение данных только в заголовках. Идемпотентен. Не должен менять состояние
      *

@@ -181,7 +181,7 @@ public function handle(HttpRequest $request, callable $next): mixed;
 Цепочка middleware строится как вложенная композиция: каждый middleware может модифицировать результат до и/или после
 вызова $next().
 
-Пример реализации
+Пример реализации:
 
 ```php
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
@@ -213,7 +213,7 @@ class LoggingMiddleware implements MiddlewareInterface
 [MW 0] Начало > [MW 1] Начало > Ответ контроллера < [MW 1] Конец < [MW 0] Конец`
 ```
 
-Пример с прерыванием цепочки
+Пример с прерыванием цепочки:
 
 ```php
 use Vasoft\Joke\Http\Response\HtmlResponse;
