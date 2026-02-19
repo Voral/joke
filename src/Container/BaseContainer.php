@@ -296,6 +296,6 @@ abstract class BaseContainer implements ContainerInspectionInterface
 
     public function has(string $name): bool
     {
-        return isset($this->definitions[$name]) || isset($this->instances[$name]);
+        return isset($this->definitions[$name]) || isset($this->instances[$name]) || isset($this->aliases[$name]);
     }
 }
