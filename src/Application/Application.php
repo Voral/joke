@@ -18,6 +18,8 @@ use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\JsonResponse;
 use Vasoft\Joke\Http\Response\Response;
+use Vasoft\Joke\Provider\CoreServiceProvider;
+use Vasoft\Joke\Provider\ProviderManagerBuilder;
 use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Routing\StdGroup;
 use Vasoft\Joke\Config\Environment;
@@ -82,18 +84,24 @@ class Application
         $serviceContainer->registerAlias('env', Environment::class);
 
         $configLoader = new ConfigLoader($this->basePath . 'config' . \DIRECTORY_SEPARATOR, $environment);
-
         $config = new Config($configLoader);
         $serviceContainer->registerSingleton(Config::class, $config);
         $serviceContainer->registerAlias('config', Config::class);
 
-        $serviceContainer->registerSingleton(Environment::class, $environment);
-        $serviceContainer->registerAlias('env', Environment::class);
-        $this->middlewares = new MiddlewareCollection()
-            ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
-        $this->routeMiddlewares = new MiddlewareCollection()
-            ->addMiddleware(SessionMiddleware::class, StdMiddleware::SESSION->value)
-            ->addMiddleware(CsrfMiddleware::class, StdMiddleware::CSRF->value, [StdGroup::WEB->value]);
+        $providers = array_merge(
+            [CoreServiceProvider::class],
+            $config->get('app.providers', []),
+        );
+        $providerManager = ProviderManagerBuilder::build(
+            $this->serviceContainer,
+            $providers,
+            $config->get('app.deferredProviders', []),
+        );
+        $providerManager->register();
+        $providerManager->boot();
+        $this->middlewares = $this->serviceContainer->get('middleware.global');
+        $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
+
         $this->loadRoutes();
     }
 
