@@ -10,6 +10,7 @@ use Vasoft\Joke\Config\ConfigLoader;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
+use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * @internal
@@ -181,7 +182,7 @@ final class ConfigTest extends TestCase
 
     public function testAccessLoader(): void
     {
-        $loader = new ConfigLoader('/test', new Environment(new EnvironmentLoader('test')));
+        $loader = new ConfigLoader('/test', new Environment(new EnvironmentLoader('test')), new Path('/'));
         $config = new Config($loader);
 
         self::assertSame(spl_object_id($loader), spl_object_id($config->getLoader()));

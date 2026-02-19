@@ -23,6 +23,7 @@ use Vasoft\Joke\Routing\StdGroup;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
+use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Основной класс приложения Joke.
@@ -76,12 +77,16 @@ class Application
         public readonly string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
-        $this->basePath = rtrim($basePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
-        $environment = new Environment(new EnvironmentLoader($this->basePath));
+        $pathNormalizer = new Path($basePath);
+        $this->basePath = $pathNormalizer->basePath;
+        $serviceContainer->registerSingleton(Path::class, $pathNormalizer);
+        $serviceContainer->registerAlias('pathNormalizer', Path::class);
+
+        $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
         $serviceContainer->registerSingleton(Environment::class, $environment);
         $serviceContainer->registerAlias('env', Environment::class);
 
-        $configLoader = new ConfigLoader($this->basePath . 'config' . \DIRECTORY_SEPARATOR, $environment);
+        $configLoader = new ConfigLoader('config', $environment, $pathNormalizer);
         $config = new Config($configLoader);
         $serviceContainer->registerSingleton(Config::class, $config);
         $serviceContainer->registerAlias('config', Config::class);
@@ -100,7 +105,7 @@ class Application
         $this->middlewares = $this->serviceContainer->get('middleware.global');
         $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
 
-        $this->loadRoutes();
+        $this->loadRoutes($pathNormalizer);
     }
 
     /**
@@ -138,18 +143,6 @@ class Application
         $this->routeMiddlewares->addMiddleware($middleware, $name, $groups);
 
         return $this;
-    }
-
-    /**
-     * Преобразует относительный путь в абсолютный.
-     *
-     * @param string $relativePath Относительный путь
-     *
-     * @return string Абсолютный путь или false, если путь не существует
-     */
-    private function getFullPath(string $relativePath): string
-    {
-        return realpath($this->basePath . ltrim($relativePath, \DIRECTORY_SEPARATOR));
     }
 
     /**
@@ -287,12 +280,14 @@ class Application
      * Автоматически назначает всем загружаемым маршрутам группу 'web'.
      *
      * @throws ParameterResolveException
+     *
+     * @deprecated
      */
-    private function loadRoutes(): void
+    private function loadRoutes(Path $pathNormalizer): void
     {
         $router = $this->serviceContainer->getRouter();
         $router->addAutoGroups([StdGroup::WEB->value]);
-        $file = $this->getFullPath($this->routeConfigWeb);
+        $file = $pathNormalizer->normalizeFile($this->routeConfigWeb);
         if (file_exists($file)) {
             require $file;
         }

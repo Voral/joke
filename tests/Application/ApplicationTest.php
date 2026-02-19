@@ -26,7 +26,7 @@ final class ApplicationTest extends TestCase
         $di = new ServiceContainer();
         new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             $di,
         );
         $byAlias = $di->get('env');
@@ -40,7 +40,7 @@ final class ApplicationTest extends TestCase
         $di = new ServiceContainer();
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             $di,
         );
         ob_start();
@@ -55,7 +55,7 @@ final class ApplicationTest extends TestCase
     {
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             new ServiceContainer(),
         );
         ob_start();
@@ -81,7 +81,7 @@ final class ApplicationTest extends TestCase
     {
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             new ServiceContainer(),
         );
         ob_start();
@@ -95,7 +95,7 @@ final class ApplicationTest extends TestCase
     {
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             new ServiceContainer(),
         );
         self::assertSame(PHP_SESSION_NONE, session_status());
@@ -112,7 +112,7 @@ final class ApplicationTest extends TestCase
         $middleware->index = 3;
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             new ServiceContainer(),
         )
             ->addMiddleware(SingleMiddleware::class)
@@ -135,7 +135,7 @@ final class ApplicationTest extends TestCase
         $diContainer = new ServiceContainer();
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             $diContainer,
         )
             ->addMiddleware(SingleMiddleware::class)
@@ -165,7 +165,7 @@ final class ApplicationTest extends TestCase
         $routeMiddleware2->index = 5;
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             new ServiceContainer(),
         )
             ->addMiddleware(SingleMiddleware::class)
@@ -193,7 +193,7 @@ final class ApplicationTest extends TestCase
     {
         $app = new Application(
             dirname(__DIR__, 2),
-            '/routes/web.php',
+            'routes/web.php',
             new ServiceContainer(),
         )->addMiddleware(Router::class);
         ob_start();

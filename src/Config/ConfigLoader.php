@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Config;
 
 use Vasoft\Joke\Config\Exceptions\ConfigException;
+use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Загрузчик конфигурационных файлов.
@@ -15,9 +16,6 @@ use Vasoft\Joke\Config\Exceptions\ConfigException;
  *
  * Каждый конфигурационный файл должен возвращать массив.
  * Имя конфигурации определяется по имени файла без расширения .php.
- *
- * Класс оперирует во всех публичных методах абсолютными путями, попытка добавить относительный путь
- * вызовет исключение в момент обращения к этому пути
  *
  * В конфигурационных файлах доступна переменная $env типа Environment
  *  для безопасного доступа к переменным окружения.
@@ -44,13 +42,17 @@ class ConfigLoader
     /**
      * Конструктор загрузчика конфигураций.
      *
-     * @param string        $basePath  абсолютный путь к основной директории с базовыми конфигурациями
-     * @param Environment   $env       Экземпляр окружения для доступа из конфигурационных файлов
-     * @param array<string> $lazyPaths массив абсолютных путей к директориям с ленивыми конфигурациями
+     * Все пути необходимо передавать либо абсолютными, либо относительно корня проекта
+     *
+     * @param string        $basePath       путь к основной директории с базовыми конфигурациями
+     * @param Environment   $env            Экземпляр окружения для доступа из конфигурационных файлов
+     * @param Path          $pathNormalizer Нормализатор путей
+     * @param array<string> $lazyPaths      массив путей к директориям с ленивыми конфигурациями
      */
     public function __construct(
         string $basePath,
         private readonly Environment $env,
+        private readonly Path $pathNormalizer,
         array $lazyPaths = [],
     ) {
         $this->addBasePath($basePath);
@@ -61,14 +63,15 @@ class ConfigLoader
      * Добавляет путь к директории с базовыми конфигурациями.
      *
      * Базовые конфигурации загружаются сразу при вызове метода load().
+     * Все пути необходимо передавать либо абсолютными, либо относительно корня проекта
      *
-     * @param string $path Абсолютный путь к директории, добавление относительного вызовет ошибку в момент загрузки
+     * @param string $path Путь к директории с конфигурацией
      *
      * @return $this
      */
     public function addBasePath(string $path): static
     {
-        $normalized = $this->normalizePath($path);
+        $normalized = $this->pathNormalizer->normalizeDir($path);
         $this->basePaths[$normalized] = false;
 
         return $this;
@@ -78,51 +81,18 @@ class ConfigLoader
      * Добавляет путь к директории с ленивыми конфигурациями.
      *
      * Ленивые конфигурации загружаются только по запросу через метод loadLazy().
+     * Все пути необходимо передавать либо абсолютными, либо относительно корня проекта
      *
-     * @param string $path Абсолютный путь к директории, добавление относительного вызовет ошибку в момент загрузки
+     * @param string $path Путь к директории с конфигурацией
      *
      * @return $this
      */
     public function addLazyPath(string $path): static
     {
-        $normalized = $this->normalizePath($path);
+        $normalized = $this->pathNormalizer->normalizeDir($path);
         $this->lazyPaths[$normalized] = false;
 
         return $this;
-    }
-
-    /**
-     * Нормализация добавляемого пути.
-     *
-     * Проверяет, что путь является абсолютным и возвращает нормализованное значение
-     * (с завершающим DIRECTORY_SEPARATOR).
-     *
-     * @param string $path Путь к директории
-     *
-     * @return string Нормализованный путь
-     */
-    private function normalizePath(string $path): string
-    {
-        return rtrim($path, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * Проверяет, является ли путь абсолютным и существует ли.
-     *
-     * @param string $path      путь
-     * @param string $scopeName имя типа каталога Базовый (Base) или Ленивый (Lazy)
-     *
-     * @throws ConfigException Если путь относительный или каталог не существует
-     */
-    private function assertPath(string $path, string $scopeName): void
-    {
-        if (!str_starts_with($path, \DIRECTORY_SEPARATOR)
-            && !preg_match('~^[A-Z]:~i', $path)) {
-            throw new ConfigException("Path must be absolute: {$path}");
-        }
-        if (!is_dir($path)) {
-            throw new ConfigException("{$scopeName} config path does not exist: {$path}");
-        }
     }
 
     /**
@@ -139,7 +109,9 @@ class ConfigLoader
     {
         $result = [];
         foreach ($this->basePaths as $path => &$validated) {
-            $this->assertPath($path, 'Base');
+            if (!is_dir($path)) {
+                throw new ConfigException("Base config path does not exist: {$path}");
+            }
             $this->loadFromPath($path, $result);
             $validated = true;
         }
@@ -205,7 +177,9 @@ class ConfigLoader
         $dirs = array_reverse($this->lazyPaths);
         foreach ($dirs as $path => &$validated) {
             if (!$validated) {
-                $this->assertPath($path, 'Lazy');
+                if (!is_dir($path)) {
+                    throw new ConfigException("Lazy config path does not exist: {$path}");
+                }
                 $validated = true;
             }
             $fileName = $path . $name . '.php';

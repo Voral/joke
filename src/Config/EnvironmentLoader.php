@@ -23,13 +23,7 @@ namespace Vasoft\Joke\Config;
  */
 readonly class EnvironmentLoader
 {
-    private string $basePath;
-
-    public function __construct(
-        string $basePath,
-    ) {
-        $this->basePath = rtrim($basePath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
-    }
+    public function __construct(private string $basePath) {}
 
     /**
      * Загружает переменные окружения из соответствующих .env-файлов.
