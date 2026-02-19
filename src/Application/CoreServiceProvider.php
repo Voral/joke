@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vasoft\Joke\Provider;
+namespace Vasoft\Joke\Application;
 
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Middleware\CsrfMiddleware;

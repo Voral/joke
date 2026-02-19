@@ -13,12 +13,10 @@ use Vasoft\Joke\Middleware\ExceptionMiddleware;
 use Vasoft\Joke\Middleware\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
 use Vasoft\Joke\Middleware\SessionMiddleware;
-use Vasoft\Joke\Middleware\StdMiddleware;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\JsonResponse;
 use Vasoft\Joke\Http\Response\Response;
-use Vasoft\Joke\Provider\CoreServiceProvider;
 use Vasoft\Joke\Provider\ProviderManagerBuilder;
 use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Routing\StdGroup;
@@ -151,11 +149,7 @@ class Application
      */
     private function getFullPath(string $relativePath): string
     {
-        return realpath(
-            rtrim($this->basePath, \DIRECTORY_SEPARATOR)
-            . \DIRECTORY_SEPARATOR
-            . ltrim($relativePath, \DIRECTORY_SEPARATOR),
-        );
+        return realpath($this->basePath . ltrim($relativePath, \DIRECTORY_SEPARATOR));
     }
 
     /**
