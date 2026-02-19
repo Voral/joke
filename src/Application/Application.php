@@ -6,20 +6,21 @@ namespace Vasoft\Joke\Application;
 
 use Vasoft\Joke\Config\Config;
 use Vasoft\Joke\Config\ConfigLoader;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
-use Vasoft\Joke\Middleware\CsrfMiddleware;
-use Vasoft\Joke\Middleware\ExceptionMiddleware;
 use Vasoft\Joke\Middleware\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
-use Vasoft\Joke\Middleware\SessionMiddleware;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\JsonResponse;
 use Vasoft\Joke\Http\Response\Response;
+use Vasoft\Joke\Provider\Exceptions\MultipleProvideException;
+use Vasoft\Joke\Provider\Exceptions\ProviderException;
+use Vasoft\Joke\Provider\Exceptions\ServiceNotFoundException;
 use Vasoft\Joke\Provider\ProviderManagerBuilder;
 use Vasoft\Joke\Routing\Exceptions\NotFoundException;
-use Vasoft\Joke\Routing\StdGroup;
+use Vasoft\Joke\Routing\RouterServiceProvider;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
@@ -65,22 +66,26 @@ class Application
      * - SessionMiddleware и CsrfMiddleware (уровень маршрутизатора, группа 'web')
      *
      * @param string           $basePath         Базовый путь приложения (обычно корень проекта)
-     * @param string           $routeConfigWeb   Путь к файлу web-маршрутов относительно базового пути
+     * @param string           $routeConfigWeb   Параметр будет удален в версии 2.0
      * @param ServiceContainer $serviceContainer DI-контейнер
      *
      * @throws ParameterResolveException
+     * @throws ConfigException
+     * @throws MultipleProvideException
+     * @throws ProviderException
+     * @throws ServiceNotFoundException
      *
      * @todo Нормализовать пути
      */
     public function __construct(
         string $basePath,
-        public readonly string $routeConfigWeb,
+        string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
         $pathNormalizer = new Path($basePath);
         $this->basePath = $pathNormalizer->basePath;
         $serviceContainer->registerSingleton(Path::class, $pathNormalizer);
-        $serviceContainer->registerAlias('pathNormalizer', Path::class);
+        $serviceContainer->registerAlias('normalizer.path', Path::class);
 
         $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
         $serviceContainer->registerSingleton(Environment::class, $environment);
@@ -92,7 +97,10 @@ class Application
         $serviceContainer->registerAlias('config', Config::class);
 
         $providers = array_merge(
-            [CoreServiceProvider::class],
+            [
+                CoreServiceProvider::class,
+                RouterServiceProvider::class,
+            ],
             $config->get('app.providers', []),
         );
         $providerManager = ProviderManagerBuilder::build(
@@ -104,8 +112,6 @@ class Application
         $providerManager->boot();
         $this->middlewares = $this->serviceContainer->get('middleware.global');
         $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
-
-        $this->loadRoutes($pathNormalizer);
     }
 
     /**
@@ -272,25 +278,5 @@ class Application
         $instance = new $middleware(...$args);
 
         return $instance instanceof MiddlewareInterface ? $instance : null;
-    }
-
-    /**
-     * Загружает маршруты из конфигурационного файла.
-     *
-     * Автоматически назначает всем загружаемым маршрутам группу 'web'.
-     *
-     * @throws ParameterResolveException
-     *
-     * @deprecated
-     */
-    private function loadRoutes(Path $pathNormalizer): void
-    {
-        $router = $this->serviceContainer->getRouter();
-        $router->addAutoGroups([StdGroup::WEB->value]);
-        $file = $pathNormalizer->normalizeFile($this->routeConfigWeb);
-        if (file_exists($file)) {
-            require $file;
-        }
-        $router->cleanAutoGroups();
     }
 }

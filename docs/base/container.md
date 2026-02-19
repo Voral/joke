@@ -178,7 +178,7 @@ $container = new ServiceContainer();
 $container->registerSingleton(LoggerInterface::class, FileLogger::class);
 $container->registerSingleton(UserRepository::class, DbUserRepository::class);
 
-return new Application(__DIR__ . '/..', 'routes/web.php', $container);
+return new Application(__DIR__ . '/..', '', $container);
 ```
 
 Теперь в любом обработчике:

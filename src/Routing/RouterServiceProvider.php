@@ -7,6 +7,7 @@ namespace Vasoft\Joke\Routing;
 use Vasoft\Joke\Config\Config;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Provider\AbstractProvider;
+use Vasoft\Joke\Support\Normalizers\Path;
 
 class RouterServiceProvider extends AbstractProvider
 {
@@ -23,9 +24,11 @@ class RouterServiceProvider extends AbstractProvider
     {
         /** @var Config $config */
         $config = $this->serviceContainer->get('config');
+        /** @var Path $pathNormalize */
+        $pathNormalize = $this->serviceContainer->get('normalizer.path');
         $router = $this->serviceContainer->getRouter();
         $router->addAutoGroups([StdGroup::WEB->value]);
-        $file = $this->getFullPath($this->routeConfigWeb);
+        $file = $pathNormalize->normalizeFile($config->get('app.fileRoutes', 'routes/web.php'));
         if (file_exists($file)) {
             require $file;
         }

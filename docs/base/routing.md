@@ -5,23 +5,15 @@ URI-паттернов. Все маршруты определяются в фа
 
 ## Конфигурация маршрутов
 
-По умолчанию настройка маршрутов производится в конфигурационных файлах в каталоге `routes`. Путь к файлу маршрутов
-указывается при создании приложения в `bootstrap/app.php`:
+По умолчанию настройка маршрутов производится в конфигурационных файлах в каталоге `routes/web.php`. Путь к файлу
+маршрутов можно переопределить в конфигурационном файле приложения `config/app.php`:
 
 ```php
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-
-use Vasoft\Joke\Application\Application;
-use Vasoft\Joke\Container\ServiceContainer;
-
-return new Application(
-    dirname(__DIR__),  // каталог корня проекта
-    'routes/web.php',  // Указываем файл Web-маршрутов относительно корня проекта 
-    new ServiceContainer()
-);
-
+return [
+    'fileRoues' => 'routes/my-app.php',
+];
 ```
 
 > ВАЖНО!  
@@ -119,11 +111,13 @@ $router->get('/order/{userId}/{id}', function(int $userId, int $id) {
 //...
 });
 ```
+
 Параметры автоматически передаются в обработчик в соответствии с именами и типами.
 
 ### Автоматическая десериализация
 
-Если параметр имеет тип, поддерживающий tryFrom() (например, enum), фреймворк попытается преобразовать значение в объект:
+Если параметр имеет тип, поддерживающий tryFrom() (например, enum), фреймворк попытается преобразовать значение в
+объект:
 
 ```php
 $router->get('/order/{status}/', function(OrderStatus $status) {
@@ -156,6 +150,7 @@ $router->get('/{*}', fn() => 'Страница не найдена');
 ```
 
 Этот паттерн:
+
 - совпадает с **любым URI**, включая `/user/123/profile` или `/api/v1/data.json`,
 - должен использоваться **в конце списка маршрутов**, чтобы не перекрывать более конкретные правила,
 - автоматически передаётся в обработчик под именем **`$path`** как строка:
@@ -201,6 +196,7 @@ $router->get('/hello', fn() => 'hi','hello')
     ->addMiddleware(CustomMiddlware1::class)
     ->addMiddleware(CustomMiddlware2::class,'myNamesMiddleware');
 ```
+
 Middleware выполняются до вызова обработчика и могут модифицировать запрос или прерывать выполнение.
 > ВНИМАНИЕ!  
 > Именованные посредники уровня маршрута могут переопределять именованные посредники уровня маршрутизатора. Т.е.
@@ -225,7 +221,7 @@ use Vasoft\Joke\Container\ServiceContainer;
 
 $container = new ServiceContainer();
 $container->registerSingleton(RouterInterface::class, MyRouter::class);
-return new Application(dirname(__DIR__), 'routes/web.php', $container);
+return new Application(dirname(__DIR__), '', $container);
 ```
 
 Это позволяет полностью кастомизировать поведение маршрутизатора без изменения ядра.

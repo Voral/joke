@@ -62,7 +62,7 @@ use Vasoft\Joke\Application\Application;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Container\ServiceContainer;
 
-return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer())
+return new Application(dirname(__DIR__), '', new ServiceContainer())
     ->addMiddleware(SomeMiddleware1::class,'myNamedMiddleware')
     ->addMiddleware(SomeMiddleware2::class);
 ```
@@ -82,7 +82,7 @@ use Vasoft\Joke\Application\Application;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Container\ServiceContainer;
 
-return new Application(dirname(__DIR__), 'routes/web.php', new ServiceContainer())
+return new Application(dirname(__DIR__), '', new ServiceContainer())
     ->addRouteMiddleware(SomeMiddleware1::class,'myNamedMiddleware1')
     ->addRouteMiddleware(SomeMiddleware2::class)
     ->addRouteMiddleware(SomeMiddleware3::class,'myNamedMiddleware2',['example','internal']);
@@ -132,7 +132,7 @@ enum StdMiddleware: string
 }
 ```
 
-> Эти имена используются автоматически при подключении веб-маршрутов (routes/web.php). Если вы регистрируете собственный
+> Эти имена используются автоматически при подключении веб-маршрутов. Если вы регистрируете собственный
 > middleware с тем же именем (например, 'session'), он заменит стандартный — но сохранит его позицию в цепочке.
 
 Пример: замена стандартного middleware сессии
@@ -156,7 +156,7 @@ $router->get('/custom', fn() => '...')
     - `SessionMiddleware` с именем `StdMiddleware::SESSION->value` — управляет сессией (по умолчанию в блокирующем
       режиме);
     - `CsrfMiddleware` с именем `StdMiddleware::CSRF->value`, применяемый только к маршрутам из группы
-      `StdGroup::WEB->value` (то есть ко всем маршрутам, загружаемым из routes/web.php).
+      `StdGroup::WEB->value` (то есть ко всем маршрутам, загружаемым из файла маршрутов).
 
 Эти middleware обеспечивают базовую безопасность и стабильность веб-приложений «из коробки». При необходимости их можно
 заменить, зарегистрировав собственный middleware с тем же именем.

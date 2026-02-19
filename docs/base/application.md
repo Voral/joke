@@ -11,7 +11,7 @@
    ```php
    return new Application(
        dirname(__DIR__),    // базовый путь проекта
-       'routes/web.php',    // файл маршрутов
+       '',                  // Устаревший параметр будет удален в версии 2.0
        new ServiceContainer()
    );
    ```
@@ -26,7 +26,7 @@
 
 3. **Обработка запроса**  
    Приложение выполняет следующие шаги:
-    - Загружает маршруты из `routes/web.php`,
+    - Загружает маршруты из файла маршрутов (по умолчанию `routes/web.php`),
     - Выполняет **глобальные middleware** (до определения маршрута),
     - Находит подходящий маршрут,
     - Выполняет **middleware маршрутизатора** и **middleware маршрута**,
@@ -46,7 +46,7 @@
 - `SessionMiddleware` (имя: `session`) — управляет сессией в **блокирующем режиме**,
 - `CsrfMiddleware` (имя: `csrf`) — применяется **только к маршрутам из группы `web`**.
 
-> Все маршруты, определённые в `routes/web.php`, автоматически получают группу `web`.
+> Все маршруты, определённые в файле маршрутов, автоматически получают группу `web`.
 
 ## Обработка ответа
 
@@ -132,11 +132,8 @@ session_set_cookie_params([
 $container = new ServiceContainer();
 $container->registerSingleton(Logger::class, FileLogger::class);
 
-return new Application(
-    dirname(__DIR__),
-    'routes/web.php',
-    $container
-)->addMiddleware(CorsMiddleware::class)
+return new Application(dirname(__DIR__), '', $container)
+ ->addMiddleware(CorsMiddleware::class)
  ->addRouteMiddleware(AuthMiddleware::class, 'auth', ['admin']);
 ```
 

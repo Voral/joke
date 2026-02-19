@@ -116,7 +116,7 @@ $container->registerSingleton(
     MyCustomParameterResolver::class
 );
 
-return new Application(dirname(__DIR__), 'routes/web.php', $container);
+return new Application(dirname(__DIR__), '', $container);
 ```
 
 >  Убедитесь, что ваш резолвер:

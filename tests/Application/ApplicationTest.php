@@ -67,8 +67,8 @@ final class ApplicationTest extends TestCase
     public function testDefaultMiddleware(): void
     {
         $app = new Application(
-            dirname(__DIR__, 2),
-            '/tests/Fixtures/routes/web-no-wildcard.php',
+            dirname(__DIR__) . \DIRECTORY_SEPARATOR . '/Fixtures/no-wildcard',
+            '/tests/Fixtures/no-wildcard/routes/web.php',
             new ServiceContainer(),
         );
         ob_start();

@@ -55,7 +55,8 @@ use Vasoft\Joke\Middleware\StdMiddleware;
 use Vasoft\Joke\Middleware\ReadonlySessionMiddleware;
 
 // В routes/web.php 
-$router->get('/informer', Informer::class)->addMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSION->value);
+$router->get('/informer', Informer::class)
+  ->addMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSION->value);
 ```
 
 ## CsrfMiddleware
