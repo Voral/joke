@@ -1,9 +1,13 @@
 <?php
 
+/** @var Environment $env */
 declare(strict_types=1);
 
-return [
-    'providers' => [],
-    'deferredProviders' => [],
-    'fileRoues' => 'routes/web.php',
-];
+use Vasoft\Joke\Application\ApplicationConfig;
+use Vasoft\Joke\Config\Environment;
+
+return new ApplicationConfig()
+    ->setFileRoues('routes/web.php');
+
+
+return static fn(): ApplicationConfig => new ApplicationConfig()->setFileRoues('routes/web.php');

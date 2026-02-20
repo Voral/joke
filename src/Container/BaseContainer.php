@@ -122,7 +122,7 @@ abstract class BaseContainer implements ContainerInspectionInterface
      */
     public function register(string $name, callable|object|string $service): void
     {
-        if (str_contains($name, '\\') && !$this->isValidServiceName($name)) {
+        if (!$this->isValidServiceName($name)) {
             trigger_error("Service name '{$name}' is not a valid class or interface.", E_USER_WARNING);
         }
         if (is_object($service)) {
@@ -259,7 +259,7 @@ abstract class BaseContainer implements ContainerInspectionInterface
         }
         while (isset($this->aliases[$current])) {
             if (isset($visited[$current])) {
-                throw new ContainerException('Circular alias detected:' . implode('-', array_keys($visited)));
+                throw new ContainerException('Circular alias detected: ' . implode('-', array_keys($visited)) . '.');
             }
             $visited[$current] = true;
             $current = $this->aliases[$current];
@@ -286,7 +286,7 @@ abstract class BaseContainer implements ContainerInspectionInterface
      */
     public function registerAlias(string $alias, string $concrete): static
     {
-        if (str_contains($concrete, '\\') && !$this->isValidServiceName($concrete)) {
+        if (!$this->isValidServiceName($concrete)) {
             trigger_error("Service name '{$concrete}' is not a valid class or interface.", E_USER_WARNING);
         }
         $this->aliases[$alias] = $concrete;
@@ -296,6 +296,6 @@ abstract class BaseContainer implements ContainerInspectionInterface
 
     public function has(string $name): bool
     {
-        return isset($this->definitions[$name]) || isset($this->instances[$name]) || isset($this->aliases[$name]);
+        return isset($this->definitions[$name]) || isset($this->singletons[$name]) || isset($this->aliases[$name]);
     }
 }

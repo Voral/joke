@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Container;
 
+use phpmock\phpunit\PHPMock;
+use Vasoft\Joke\Container\Exceptions\ContainerException;
 use Vasoft\Joke\Contract\Container\ResolverInterface;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Container\ServiceContainer;
@@ -18,6 +20,8 @@ use Vasoft\Joke\Tests\Fixtures\Service\TestableParameterResolver;
  */
 final class BaseContainerTest extends TestCase
 {
+    use PHPMock;
+
     public function testDefaults(): void
     {
         $container = new ServiceContainer();
@@ -111,5 +115,37 @@ final class BaseContainerTest extends TestCase
 
         self::assertSame($s1, $s2);
         self::assertSame($s2, $s3);
+    }
+
+    public function testRegisterAliasWarning(): void
+    {
+        $triggerError = self::getFunctionMock('Vasoft\Joke\Container', 'trigger_error');
+        $triggerError->expects(self::once())->with(
+            "Service name 'Custom\\Example' is not a valid class or interface.",
+            E_USER_WARNING,
+        );
+        $container = new ServiceContainer();
+        $container->registerAlias('a', 'Custom\Example');
+    }
+    public function testCircularAlias(): void
+    {
+        $container = new ServiceContainer();
+        $container->registerAlias('a', 'b');
+        $container->registerAlias('b', 'a');
+
+        self::expectException(ContainerException::class);
+        self::expectExceptionMessage('Circular alias detected: a-b.');
+        $container->get('a');
+
+    }
+    public function testRegisterWarning(): void
+    {
+        $triggerError = self::getFunctionMock('Vasoft\Joke\Container', 'trigger_error');
+        $triggerError->expects(self::once())->with(
+            "Service name 'Custom\\Example' is not a valid class or interface.",
+            E_USER_WARNING,
+        );
+        $container = new ServiceContainer();
+        $container->register('Custom\Example', 'new Custom\Example()');
     }
 }

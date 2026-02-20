@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Tests\Application;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use Vasoft\Joke\Application\KernelConfig;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Contract\Routing\RouterInterface;
 use Vasoft\Joke\Application\Application;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +23,48 @@ use Vasoft\Joke\Tests\Fixtures\Middlewares\SingleMiddleware;
  */
 final class ApplicationTest extends TestCase
 {
+    public static string $basePath = '';
+    public static string $bootstrapPath = '';
+
+    public static function setUpBeforeClass(): void
+    {
+        $name = 'Config' . random_int(1, 100);
+        $base = dirname(__DIR__) . \DIRECTORY_SEPARATOR . 'Fixtures' . \DIRECTORY_SEPARATOR;
+        self::$basePath = $base . $name . \DIRECTORY_SEPARATOR;
+        self::$bootstrapPath = self::$basePath . 'bootstrap' . \DIRECTORY_SEPARATOR;
+        mkdir(self::$bootstrapPath, recursive: true);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        self::cleanDir(self::$basePath);
+    }
+
+    private static function cleanDir(string $dir): void
+    {
+        if (!file_exists($dir)) {
+            return;
+        }
+        $files = scandir($dir);
+        if (is_array($files)) {
+            $items = array_diff($files, ['.', '..']);
+            foreach ($items as $item) {
+                $path = $dir . \DIRECTORY_SEPARATOR . $item;
+                if (is_dir($path)) {
+                    self::cleanDir($path);
+                } else {
+                    unlink($path);
+                }
+            }
+        }
+        rmdir($dir);
+    }
+
+    protected function writeKernelBootstrap(string $content): void
+    {
+        file_put_contents(self::$bootstrapPath . 'kernel.php', '<?php return ' . $content);
+    }
+
     public function testLoadingEnvironment(): void
     {
         $di = new ServiceContainer();
@@ -203,5 +247,21 @@ final class ApplicationTest extends TestCase
             '{"message":"\'Middleware Vasoft\\\Joke\\\Routing\\\Router must implements MiddlewareInterface"}',
             $output,
         );
+    }
+
+    public function testKernelBootstrapWrong(): void
+    {
+        self::writeKernelBootstrap('new \Vasoft\Joke\Tests\Fixtures\Config\SingleConfig();');
+        self::expectException(ConfigException::class);
+        self::expectExceptionMessage('kernel.php must return a KernelConfig instance.');
+        new Application(self::$basePath, '', new ServiceContainer());
+    }
+
+    public function testKernelBootstrapSuccess(): void
+    {
+        self::writeKernelBootstrap('new \Vasoft\Joke\Application\KernelConfig()->setLazyConfigPath("custom_lazy");');
+        $container = new ServiceContainer();
+        new Application(self::$basePath, '', $container);
+        self::assertSame('custom_lazy', $container->get(KernelConfig::class)->getLazyConfigPath());
     }
 }

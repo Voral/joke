@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Application;
 
-use Vasoft\Joke\Config\Config;
-use Vasoft\Joke\Config\ConfigLoader;
+use Vasoft\Joke\Config\ConfigManager;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
@@ -20,7 +19,6 @@ use Vasoft\Joke\Provider\Exceptions\ProviderException;
 use Vasoft\Joke\Provider\Exceptions\ServiceNotFoundException;
 use Vasoft\Joke\Provider\ProviderManagerBuilder;
 use Vasoft\Joke\Routing\Exceptions\NotFoundException;
-use Vasoft\Joke\Routing\RouterServiceProvider;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
@@ -82,6 +80,15 @@ class Application
         string $routeConfigWeb,
         public readonly ServiceContainer $serviceContainer,
     ) {
+        if ('' !== $routeConfigWeb) { // Проверяем, передано ли значение отличное от пустой строки (или дефолта)
+            KernelServiceProvider::$legacyPathRouteFile = $routeConfigWeb;
+            @trigger_error(
+                'The argument $routeConfigWeb in ' . self::class . '::__construct() is deprecated '
+                . 'and will be removed in version 2.0. '
+                . 'Please configure the routes file path in ApplicationConfig instead.',
+                E_USER_DEPRECATED,
+            );
+        }
         $pathNormalizer = new Path($basePath);
         $this->basePath = $pathNormalizer->basePath;
         $serviceContainer->registerSingleton(Path::class, $pathNormalizer);
@@ -91,27 +98,43 @@ class Application
         $serviceContainer->registerSingleton(Environment::class, $environment);
         $serviceContainer->registerAlias('env', Environment::class);
 
-        $configLoader = new ConfigLoader('config', $environment, $pathNormalizer);
-        $config = new Config($configLoader);
-        $serviceContainer->registerSingleton(Config::class, $config);
-        $serviceContainer->registerAlias('config', Config::class);
+        $kernelConfig = $this->initKernelConfig();
 
-        $providers = array_merge(
-            [
-                CoreServiceProvider::class,
-                RouterServiceProvider::class,
-            ],
-            $config->get('app.providers', []),
-        );
+        $configManager = new ConfigManager(
+            $this->serviceContainer,
+            $kernelConfig->getBaseConfigPath(),
+            $kernelConfig->getLazyConfigPath(),
+        )
+            ->registerProviders($kernelConfig->getProviders())
+            ->registerProviders($kernelConfig->getDeferredProviders());
+        $serviceContainer->registerSingleton(ConfigManager::class, $configManager);
+        $serviceContainer->registerAlias('config', ConfigManager::class);
+
         $providerManager = ProviderManagerBuilder::build(
             $this->serviceContainer,
-            $providers,
-            $config->get('app.deferredProviders', []),
+            $kernelConfig->getProviders(),
+            $kernelConfig->getDeferredProviders(),
         );
         $providerManager->register();
         $providerManager->boot();
         $this->middlewares = $this->serviceContainer->get('middleware.global');
         $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
+    }
+
+    private function initKernelConfig(): KernelConfig
+    {
+        $file = $this->basePath . '/bootstrap/kernel.php';
+        if (file_exists($file)) {
+            $config = require $file;
+            if (!$config instanceof KernelConfig) {
+                throw new ConfigException('kernel.php must return a KernelConfig instance.');
+            }
+        } else {
+            $config = new KernelConfig();
+        }
+        $this->serviceContainer->registerSingleton(KernelConfig::class, $config);
+
+        return $config;
     }
 
     /**
