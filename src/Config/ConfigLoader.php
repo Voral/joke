@@ -151,7 +151,6 @@ class ConfigLoader
     protected function loadFile(string $path): array
     {
         $env = $this->env;
-        $config = $this->serviceContainer->get('config.app');
         /** @phpstan-ignore-next-line */
         $loader = static function () use ($env, $path) {
             return require $path;
