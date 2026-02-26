@@ -128,4 +128,12 @@ readonly class EnvironmentLoader
 
         return $files;
     }
+
+    /**
+     * Возвращает базовый путь к проекту.
+     */
+    public function getBasePath(): string
+    {
+        return $this->basePath;
+    }
 }
