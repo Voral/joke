@@ -27,18 +27,18 @@ class KernelConfig extends AbstractConfig
      * Провайдеры из этого списка инициируются сразу при старте приложения.
      * Включает провайдеры ядра и маршрутизации по умолчанию.
      *
-     * @var list<class-string<ServiceProviderInterface>>
+     * @var array<class-string<ServiceProviderInterface>,true>
      */
     private array $providers = [
-        KernelServiceProvider::class,
-        RouterServiceProvider::class,
+        KernelServiceProvider::class => true,
+        RouterServiceProvider::class => true,
     ];
 
     /**
      *  Список классов отложенных (ленивых) сервис-провайдеров.
      *  Провайдеры из этого списка могут быть инициированы только при обращении к предоставляемым ими сервисам.
      *
-     * @var list<class-string<ServiceProviderInterface>>
+     * @var array<class-string<ServiceProviderInterface>,true>
      */
     private array $deferredProviders = [];
     /**
@@ -62,7 +62,7 @@ class KernelConfig extends AbstractConfig
     public function addProvider(string $class): self
     {
         $this->guard();
-        $this->providers[] = $class;
+        $this->providers[$class] = true;
 
         return $this;
     }
@@ -79,7 +79,10 @@ class KernelConfig extends AbstractConfig
     public function setProviders(array $classes): self
     {
         $this->guard();
-        $this->providers = $classes;
+        $this->providers = [];
+        foreach ($classes as $class) {
+            $this->addProvider($class);
+        }
 
         return $this;
     }
@@ -96,7 +99,7 @@ class KernelConfig extends AbstractConfig
     public function addDeferredProvider(string $class): self
     {
         $this->guard();
-        $this->deferredProviders[] = $class;
+        $this->deferredProviders[$class] = true;
 
         return $this;
     }
@@ -113,7 +116,10 @@ class KernelConfig extends AbstractConfig
     public function setDeferredProviders(array $classes): self
     {
         $this->guard();
-        $this->deferredProviders = $classes;
+        $this->deferredProviders = [];
+        foreach ($classes as $class) {
+            $this->addDeferredProvider($class);
+        }
 
         return $this;
     }
@@ -125,7 +131,7 @@ class KernelConfig extends AbstractConfig
      */
     public function getProviders(): array
     {
-        return $this->providers;
+        return array_keys($this->providers);
     }
 
     /**
@@ -135,11 +141,13 @@ class KernelConfig extends AbstractConfig
      */
     public function getDeferredProviders(): array
     {
-        return $this->deferredProviders;
+        return array_keys($this->deferredProviders);
     }
 
     /**
      * Устанавливает путь к директории с базовыми конфигурациями. Абсолютный или относительно корня проекта.
+     *
+     * @param string $baseConfigPath Путь к директории
      *
      * @throws ConfigException Если конфигурация заблокирована для изменений
      */
@@ -161,6 +169,8 @@ class KernelConfig extends AbstractConfig
 
     /**
      * Устанавливает путь к директории с ленивыми конфигурациями. Абсолютный или относительно корня проекта.
+     *
+     * @param string $lazyConfigPath Путь к директории
      *
      * @throws ConfigException Если конфигурация заблокирована для изменений
      */
