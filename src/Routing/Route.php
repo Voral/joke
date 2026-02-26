@@ -102,16 +102,11 @@ class Route implements RouteInterface
      * Поддерживает параметры с правилами валидации: {name}, {id:int}, {slug:slug}.
      *
      * @return string Скомпилированный шаблон в формате '#^...$#i'
-     *
-     * @throws JokeException
      */
     protected function compilePattern(): string
     {
         $tokens = preg_split('/(\{[^}]+\})/', $this->path, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $regex = '';
-        if (false === $tokens) {
-            throw new JokeException('Route pattern is invalid');
-        }
         foreach ($tokens as $token) {
             if (str_starts_with($token, '{') && str_ends_with($token, '}')) {
                 $inner = substr($token, 1, -1);

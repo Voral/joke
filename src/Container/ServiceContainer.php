@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Container;
 
+use Vasoft\Joke\Container\Exceptions\ContainerException;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Contract\Container\ApplicationContainerInterface;
 use Vasoft\Joke\Contract\Routing\RouterInterface;
@@ -38,7 +39,7 @@ class ServiceContainer extends BaseContainer implements ApplicationContainerInte
     {
         $result = $this->get(RouterInterface::class);
         if (!$result instanceof RouterInterface) {
-            throw new JokeException('Router service is not available or not of correct type.');
+            throw new ContainerException('Router service is not available or not of correct type.');
         }
 
         return $result;
@@ -46,8 +47,7 @@ class ServiceContainer extends BaseContainer implements ApplicationContainerInte
 
     public function setRouter(callable|object|string $router): static
     {
-        $this->registerSingleton(RouterInterface::class, Router::class);
-
+        $this->registerSingleton(RouterInterface::class, $router);
         return $this;
     }
 }

@@ -208,6 +208,18 @@ final class TypeConverterTest extends TestCase
         ) => new ConfigException(sprintf('%s: %s', $key, implode(',', $value))));
     }
 
+    public function testToBoolStringExceptionCustom(): void
+    {
+        $value = 'example';
+
+        self::expectException(ConfigException::class);
+        self::expectExceptionMessage('str: example');
+        TypeConverter::toBool($value, 'str', false, exceptionFactory: static fn(
+            $key,
+            $value,
+        ) => new ConfigException(sprintf('%s: %s', $key, $value)));
+    }
+
     public function testToFloat(): void
     {
         self::assertEqualsWithDelta(3.1, TypeConverter::toFloat('', 'example', 3.1), 0.0001);
