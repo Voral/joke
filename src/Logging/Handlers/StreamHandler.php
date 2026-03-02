@@ -49,7 +49,7 @@ class StreamHandler implements LogHandlerInterface
      * хендлер будет использовать его для повторной интерполяции — это позволяет применять специфичный формат
      * независимо от глобального форматтера логгера.
      *
-     * @param resource|string                $stream      Путь к файлу или уже открытый поток (например, `php://stderr`)
+     * @param string                         $stream      Путь к файлу или URI потока (например, 'php://stderr', 'php://stdout')
      * @param LogLevel                       $minLogLevel Один из граничных уровней диапазона (по умолчанию — DEBUG)
      * @param LogLevel                       $maxLogLevel Второй граничный уровень диапазона (по умолчанию — EMERGENCY)
      * @param int                            $maxFileSize Максимальный размер файла в байтах перед ротацией (по умолчанию — 10 МБ)
@@ -58,28 +58,22 @@ class StreamHandler implements LogHandlerInterface
      * @throws LogException Если не удаётся создать директорию, открыть поток или передан недопустимый тип `$stream`
      */
     public function __construct(
-        $stream,
+        string $stream,
         LogLevel $minLogLevel = LogLevel::DEBUG,
         LogLevel $maxLogLevel = LogLevel::EMERGENCY,
         int $maxFileSize = 10_000_000,
         private readonly ?MessageFormatterInterface $formatter = null,
     ) {
-        if (is_string($stream)) {
-            $dir = dirname($stream);
-            if (!is_dir($dir) && !mkdir($dir, 0o775, true) && !is_dir($dir)) {
-                throw new LogException("Unable to create directory '{$dir}'.");
-            }
-            if (file_exists($stream) && filesize($stream) > $maxFileSize) {
-                rename($stream, $stream . '.old');
-            }
-            $this->stream = fopen($stream, 'ab');
-            if (false === $this->stream) {
-                throw new LogException("Unable to open '{$stream}'.");
-            }
-        } elseif (is_resource($stream)) {
-            $this->stream = $stream;
-        } else {
-            throw new LogException('Stream must be a string or a resource.');
+        $dir = dirname($stream);
+        if (!is_dir($dir) && !mkdir($dir, 0o775, true) && !is_dir($dir)) {
+            throw new LogException("Unable to create directory '{$dir}'.");
+        }
+        if (file_exists($stream) && filesize($stream) > $maxFileSize) {
+            rename($stream, $stream . '.old');
+        }
+        $this->stream = fopen($stream, 'ab');
+        if (false === $this->stream) {
+            throw new LogException("Unable to open '{$stream}'.");
         }
         $min = $minLogLevel->severity();
         $max = $maxLogLevel->severity();
