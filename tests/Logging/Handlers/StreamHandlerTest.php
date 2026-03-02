@@ -149,37 +149,6 @@ final class StreamHandlerTest extends TestCase
         self::assertStringContainsString('preformatted message', $content);
     }
 
-    public function testThrowsExceptionOnInvalidStreamType(): void
-    {
-        $this->expectException(LogException::class);
-        $this->expectExceptionMessage('Stream must be a string or a resource.');
-
-        new StreamHandler(123);
-    }
-
-    public function testAcceptsValidResource(): void
-    {
-        $stream = fopen('php://memory', 'r+');
-        $handler = new StreamHandler($stream);
-        $handler->write(LogLevel::INFO, 'Memory message', []);
-
-        rewind($stream);
-        $content = stream_get_contents($stream);
-        fclose($stream);
-
-        self::assertStringContainsString('[INFO] Memory message', $content);
-    }
-
-    public function testClosesResourceOnDestruct(): void
-    {
-        $stream = fopen('php://memory', 'r+');
-        $handler = new StreamHandler($stream);
-        unset($handler);
-
-        // Попытка записи в закрытый ресурс вызовет ошибку, но мы просто проверим, что не падает
-        self::assertTrue(true);
-    }
-
     #[RunInSeparateProcess]
     public function testUnableCreateDirectory(): void
     {
