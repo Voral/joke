@@ -32,8 +32,8 @@ class DefaultMessageFormatter implements MessageFormatterInterface
      * - Массивы в контексте: сериализуются.
      * - Прочие объекты → пустая строка.
      *
-     * @param object|string $message Исходное сообщение
-     * @param array         $context Контекст для подстановки
+     * @param object|string       $message Исходное сообщение
+     * @param array<string,mixed> $context Контекст для подстановки
      *
      * @return string Интерполированное сообщение
      */
@@ -61,8 +61,8 @@ class DefaultMessageFormatter implements MessageFormatterInterface
      * Используется для безопасной сериализации контекста при логировании. При превышении глубины вложенности
      * вставляется маркер `[...]`.
      *
-     * @param array $arr   Массив для преобразования
-     * @param int   $depth Текущая глубина рекурсии (уменьшается на каждом уровне)
+     * @param array<string,mixed> $arr   Массив для преобразования
+     * @param int                 $depth Текущая глубина рекурсии (уменьшается на каждом уровне)
      *
      * @return string Строковое представление массива
      */

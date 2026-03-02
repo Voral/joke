@@ -18,8 +18,8 @@ interface MessageFormatterInterface
     /**
      * Преобразует сообщение и контекст в готовую строку.
      *
-     * @param object|string $message Исходное сообщение: строка, объект с __toString() или экземпляр \Throwable
-     * @param array         $context Контекст для подстановки или обогащения
+     * @param object|string       $message Исходное сообщение: строка, объект с __toString() или экземпляр \Throwable
+     * @param array<mixed|string> $context Контекст для подстановки или обогащения
      *
      * @return string Готовое к записи сообщение
      */

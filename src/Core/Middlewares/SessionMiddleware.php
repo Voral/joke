@@ -14,6 +14,7 @@ triggerDeprecation(
     'Vasoft\Joke\Middleware\SessionMiddleware',
 );
 
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\SessionMiddleware instead

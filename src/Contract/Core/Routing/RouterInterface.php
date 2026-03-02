@@ -14,6 +14,7 @@ triggerDeprecation(
     'Vasoft\Joke\Contract\Routing\RouterInterface',
 );
 
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use \Vasoft\Joke\Contract\Routing\RouterInterface instead

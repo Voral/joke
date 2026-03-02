@@ -12,9 +12,9 @@ require_once __DIR__ . '/../DeprecatedClass.php';
 triggerDeprecation(
     'Vasoft\Joke\Core\BaseContainer',
     'Vasoft\Joke\Container\BaseContainer',
-    '1.2.0',
 );
 
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use \Vasoft\Joke\Application\Application instead

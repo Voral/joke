@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Middleware;
 
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Container\ServiceContainer;
+use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Http\HttpRequest;
@@ -50,13 +51,13 @@ class ExceptionMiddleware implements MiddlewareInterface
         try {
             $response = $next();
         } catch (JokeException $exception) {
-            $this->container->get('logger')->error($exception);
+            $this->container->get(LoggerInterface::class)->error($exception);
 
             return new JsonResponse()
                 ->setBody(['message' => $exception->getMessage()])
                 ->setStatus($exception->getResponseStatus());
         } catch (\Exception $exception) {
-            $this->container->get('logger')->error($exception);
+            $this->container->get(LoggerInterface::class)->error($exception);
 
             return new JsonResponse()
                 ->setBody(['message' => $exception->getMessage()])

@@ -41,7 +41,7 @@ readonly class ProviderManagerBuilder
         array $providers,
         array $deferredProviders,
     ): ProviderManager {
-        return new static($container)->process($providers, $deferredProviders);
+        return new self($container)->process($providers, $deferredProviders);
     }
 
     /**

@@ -97,7 +97,7 @@ interface LoggerInterface
     /**
      * Записывает сообщение с произвольным уровнем логирования.
      *
-     * @param mixed               $level   Уровень логирования
+     * @param LogLevel            $level   Уровень логирования
      * @param object|string       $message Строка или объект с методом __toString
      * @param array<string,mixed> $context Контекст вызова
      */

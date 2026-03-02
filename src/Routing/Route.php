@@ -105,6 +105,7 @@ class Route implements RouteInterface
      */
     protected function compilePattern(): string
     {
+        /** @var list<string> $tokens */
         $tokens = preg_split('/(\{[^}]+\})/', $this->path, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $regex = '';
         foreach ($tokens as $token) {

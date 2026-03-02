@@ -13,7 +13,7 @@ triggerDeprecation(
     'Vasoft\Joke\Core\ServiceContainer',
     'Vasoft\Joke\Container\ServiceContainer',
 );
-
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use Vasoft\Joke\Container\ServiceContainer instead

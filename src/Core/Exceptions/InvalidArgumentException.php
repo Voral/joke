@@ -14,6 +14,7 @@ triggerDeprecation(
     'Vasoft\Joke\Exceptions\InvalidArgumentException',
 );
 
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use \Vasoft\Joke\Exceptions\InvalidArgumentException instead

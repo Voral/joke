@@ -14,6 +14,7 @@ triggerDeprecation(
     'Vasoft\Joke\Contract\Container\DiContainerInterface',
 );
 
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use \Vasoft\Joke\Middleware\MiddlewareDto instead

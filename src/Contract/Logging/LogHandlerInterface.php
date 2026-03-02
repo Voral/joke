@@ -22,9 +22,9 @@ interface LogHandlerInterface
     /**
      * Записывает лог-сообщение с указанным уровнем серьёзности.
      *
-     * @param LogLevel $level   Уровень логирования (например, ERROR, DEBUG)
-     * @param string   $message Готовое к записи сообщение (уже интерполированное)
-     * @param array    $context Дополнительные данные (может содержать 'exception' => \Throwable)
+     * @param LogLevel            $level   Уровень логирования (например, ERROR, DEBUG)
+     * @param string              $message Готовое к записи сообщение (уже интерполированное)
+     * @param array<string,mixed> $context Дополнительные данные (может содержать 'exception' => \Throwable)
      */
     public function write(LogLevel $level, string $message, array $context = []): void;
 }

@@ -27,7 +27,7 @@ class PropsCollection extends ReadonlyPropsCollection
     /**
      * Заменяет все текущие свойства новым набором.
      *
-     * @param array<string, mixed> $props Новый набор свойств
+     * @param array<int|string, mixed> $props Новый набор свойств
      */
     public function reset(array $props): static
     {

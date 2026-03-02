@@ -24,7 +24,7 @@ class RouterServiceProvider extends AbstractProvider
     public function boot(): void
     {
         /** @var Path $pathNormalize */
-        $pathNormalize = $this->serviceContainer->get('normalizer.path');
+        $pathNormalize = $this->serviceContainer->get(Path::class);
         $router = $this->serviceContainer->getRouter();
         $router->addAutoGroups([StdGroup::WEB->value]);
         $file = $pathNormalize->normalizeFile($this->applicationConfig->getFileRoues());

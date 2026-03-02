@@ -29,8 +29,8 @@ class CsrfMiddleware implements MiddlewareInterface
 
     public function handle(HttpRequest $request, callable $next): mixed
     {
-        $token = $request->session->get(self::CSRF_TOKEN_NAME);
-        if (!$token) {
+        $token = $request->session->getString(self::CSRF_TOKEN_NAME, '');
+        if ('' === $token) {
             $token = bin2hex(random_bytes(32));
             $request->session->set(self::CSRF_TOKEN_NAME, $token);
         }
@@ -39,10 +39,9 @@ class CsrfMiddleware implements MiddlewareInterface
         }
 
         $tokenFromRequest = trim(
-            $request->get->get(self::CSRF_TOKEN_NAME)
-            ?? $request->post->get(self::CSRF_TOKEN_NAME)
-            ?? $request->headers->get(self::CSRF_TOKEN_HEADER)
-            ?? '',
+            $request->get->getString(self::CSRF_TOKEN_NAME, '')
+                ?: $request->post->getString(self::CSRF_TOKEN_NAME, '')
+                ?: $request->headers->getString(self::CSRF_TOKEN_HEADER, ''),
         );
 
         if (!hash_equals($token, $tokenFromRequest)) {

@@ -14,6 +14,7 @@ triggerDeprecation(
     'Vasoft\Joke\Collections\PropsCollection',
 );
 
+/** @phpstan-ignore  if.alwaysFalse */
 if (false) {
     /**
      * @deprecated since 1.2.0, use \Vasoft\Joke\Collections\PropsCollection instead

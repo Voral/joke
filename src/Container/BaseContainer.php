@@ -39,13 +39,13 @@ abstract class BaseContainer implements ContainerInspectionInterface
     /**
      * Регистр прототипов (новый экземпляр при каждом запросе).
      *
-     * @var array<string, callable|string>
+     * @var array<string, callable|class-string>
      */
     private array $serviceRegistry = [];
     /**
      * Регистр определений синглтонов.
      *
-     * @var array<string, callable|string>
+     * @var array<string, callable|class-string>
      */
     private array $singletonsRegistry = [];
     /**
@@ -56,7 +56,8 @@ abstract class BaseContainer implements ContainerInspectionInterface
     private array $singletons = [];
     /**
      * Соответствие алиасов классам
-     * @var array<string,class-string>
+     *
+     * @var array<string, string>
      */
     private array $aliases = [];
 
@@ -200,6 +201,13 @@ abstract class BaseContainer implements ContainerInspectionInterface
         return $this->buildFromDefinition($definition);
     }
 
+    /**
+     * @param callable|class-string $definition
+     *
+     * @return callable|mixed|object
+     *
+     * @throws ParameterResolveException
+     */
     private function buildFromDefinition(callable|string $definition): object
     {
         $resolver = $this->getParameterResolver();
@@ -256,10 +264,10 @@ abstract class BaseContainer implements ContainerInspectionInterface
      *
      * Защищён от циклических алиасов через массив $visited.
      *
-     * @param string $name     Запрашиваемое имя (может быть алиасом)
-     * @param array  $registry Реестр сервисов (прототипов или синглтонов)
+     * @param string                               $name     Запрашиваемое имя (может быть алиасом)
+     * @param array<string, callable|class-string> $registry Реестр сервисов (прототипов или синглтонов)
      *
-     * @return array{definition: null|callable|string, canonicalName: null|string}
+     * @return array{definition: null|callable|class-string, canonicalName: null|string}
      *
      * @throws ContainerException если обнаружена циклическая зависимость алиасов
      */

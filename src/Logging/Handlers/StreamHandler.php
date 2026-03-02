@@ -71,10 +71,11 @@ class StreamHandler implements LogHandlerInterface
         if (file_exists($stream) && filesize($stream) > $maxFileSize) {
             rename($stream, $stream . '.old');
         }
-        $this->stream = fopen($stream, 'ab');
-        if (false === $this->stream) {
+        $resource = fopen($stream, 'ab');
+        if (false === $resource) {
             throw new LogException("Unable to open '{$stream}'.");
         }
+        $this->stream = $resource;
         $min = $minLogLevel->severity();
         $max = $maxLogLevel->severity();
         $this->minSeverity = min($min, $max);
