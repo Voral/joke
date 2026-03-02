@@ -41,6 +41,6 @@ class RouterServiceProvider extends AbstractProvider
 
     public function requires(): array
     {
-        return ['config'];
+        return [];
     }
 }
