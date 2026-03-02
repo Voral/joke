@@ -13,6 +13,8 @@ interface ContainerInspectionInterface extends DiContainerInterface
 {
     /**
      * Проверяет наличие сервиса в контейнере без его создания.
+     *
+     * @param string $name Имя сервиса или алиас
      */
     public function has(string $name): bool;
 }

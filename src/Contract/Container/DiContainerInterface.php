@@ -21,7 +21,7 @@ interface DiContainerInterface
      * Регистрирует сервис как синглтон.
      *
      * Сервис будет создан один раз при первом обращении и переиспользоваться во всех последующих вызовах.
-     * При замене ResolverInterface убедитесь, что передаёте текущий контейнер ($this) в конструктор резолвера
+     * При замене ResolverInterface убедитесь, что передаёте текущий контейнер ($this) в конструктор резолвера.
      *
      * @param string                 $name    Имя сервиса (обычно интерфейс или абстрактный класс)
      * @param callable|object|string $service Определение сервиса:
@@ -40,7 +40,7 @@ interface DiContainerInterface
      * @param string                 $name    Имя сервиса
      * @param callable|object|string $service Определение сервиса
      *
-     * @deprecated: Передача вызываемых объектов (с помощью __invoke) будет рассматриваться как синглтоны в версии 2.0.
+     * @deprecated Передача вызываемых объектов (с помощью __invoke) будет рассматриваться как синглтоны в версии 2.0.
      * Используйте \Closure для фабрик.
      */
     public function register(string $name, callable|object|string $service): void;
@@ -66,14 +66,27 @@ interface DiContainerInterface
      * Возвращает null, если сервис не зарегистрирован.
      * В v2.0 будет бросать исключение вместо возврата null.
      *
-     * @param string $name Имя сервиса
+     * @template T of object
      *
-     * @return null|object Экземпляр сервиса или null, если не найден
+     * @param class-string<T> $name Имя сервиса
+     *
+     * @return null|T Экземпляр сервиса или null, если не найден
      *
      * @throws ParameterResolveException Если не удаётся разрешить зависимости
-     *
-     * @todo В v2.0 будет бросать исключение вместо возврата null.
-     *       Сейчас генерирует E_USER_DEPRECATED при отсутствии сервиса.
+     * @throws ContainerException        В случае ошибок уровня контейнера
      */
     public function get(string $name): ?object;
+
+    /**
+     * Получает экземпляр сервиса по алиасу.
+     *
+     * Тип возвращаемого значения не гарантирован.
+     *
+     * @param string $alias Алиас сервиса
+     *
+     * @return null|object Тип не гарантирован
+     *
+     * @throws ContainerException Если алиас не зарегистрирован
+     */
+    public function getByAlias(string $alias): ?object;
 }

@@ -7,21 +7,25 @@ Joke включает встроенный контейнер внедрения
 ## Реализации
 
 Базовый функционал реализован в абстрактном классе `Vasoft\Joke\Container\BaseContainer`, который реализует интерфейс
-`Vasoft\Joke\Contract\Container\DiContainer`. При инициализации регистрирует сам себя в качестве одиночки, для возможности
-использования в автосвязывании параметров.
+`Vasoft\Joke\Contract\Container\ContainerInspectionInterface` (расширяющий `DiContainerInterface`).
 
-Контейнер уровня приложения реализован в `Vasoft\Joke\Container\BaseContainer`. Реализует интерфейс
-`Vasoft\Joke\Contract\Container\ApplicationContainer` и регистрирует маршрутизатор.
+При инициализации контейнер регистрирует сам себя в качестве синглтона, что позволяет использовать его для
+автосвязывания параметров типа `DiContainerInterface` или конкретного класса контейнера.
 
-Так же вы можете использовать свои реализации реализуя соответствующие интерфейсы.
+Контейнер уровня приложения наследуется от `BaseContainer` и дополнительно регистрирует маршрутизатор и другие сервисы
+фреймворка.
+
+Вы также можете создавать собственные реализации, реализуя соответствующие интерфейсы (`DiContainerInterface`,
+`ContainerInspectionInterface`).
 
 ## Основные возможности
 
 - **Автоматическое внедрение** через конструктор и callable,
 - **Поддержка синглтонов** и прототипов,
+- **Поддержка алиасов** для имен сервисов,
 - **Интеграция с контекстом запроса** (например, параметры маршрута),
 - **Автоматическая десериализация** через `tryFrom()` (включая enum),
-- **Ленивая инициализация** с кэшированием экземпляров.
+- **Ленивая инициализация** с кэшированием экземпляров синглтонов.
 
 ## Регистрация сервисов
 
@@ -33,9 +37,9 @@ $container->registerSingleton(LoggerInterface::class, FileLogger::class);
 
 Поддерживаются:
 
-- **Строки с именем класса** → создаётся один раз,
-- **Callable (фабрики)** → вызывается один раз,
-- **Готовые объекты** → используются напрямую.
+- **Строки с именем класса** → создаётся один раз при первом обращении,
+- **Callable (фабрики)** → вызывается один раз, результат кэшируется,
+- **Готовые объекты** → используются напрямую и сохраняются в кэш.
 
 ### Прототипы (новый экземпляр при каждом вызове)
 
@@ -45,22 +49,51 @@ $container->register(EmailSender::class, SmtpEmailSender::class);
 
 Каждый вызов `$container->get(EmailSender::class)` создаёт новый объект.
 
-> Если вы передаёте **готовый объект** в `register()`, он автоматически сохраняется как синглтон — это предотвращает
-> случайную утечку состояния.
+> **Важно:** Если вы передаёте **готовый объект** (не Closure) в метод `register()`, он автоматически регистрируется как
+> синглтон.
+> Это предотвращает случайную утечку состояния и изменение поведения объекта-прототипа.
+>
+> Для фабрик, возвращающих объекты, используйте `\Closure`:
+> ```php
+> $container->register('factory', fn() => new MyObject());
+> ```
+
+### Алиасы
+
+Вы можете зарегистрировать псевдоним для существующего сервиса:
+
+```php
+$container->registerAlias('logger', LoggerInterface::class);
+```
+
+Теперь запрос по имени `'logger'` будет перенаправлен к `LoggerInterface::class`. Поддерживаются цепочки алиасов.
 
 ## Получение сервисов
+
+### По имени класса (рекомендуемый способ)
 
 ```php
 $logger = $container->get(LoggerInterface::class);
 ```
 
-- Возвращает `null`, если сервис не зарегистрирован.
-- Не выбрасывает исключение — это позволяет реализовывать опциональные зависимости.
+- Использует статический анализ типов (PHPStan понимает конкретный тип возвращаемого объекта).
+- Возвращает `null`, если сервис не зарегистрирован (с генерацией `E_USER_DEPRECATED`).
+- В версии 2.0 будет выбрасывать исключение вместо возврата `null`.
+
+### По алиасу
+
+```php
+$logger = $container->getByAlias('logger');
+```
+
+- Используется для получения сервисов, зарегистрированных под строковым ключом.
+- Тип возвращаемого значения не гарантирован статическим анализатором.
+- Выбрасывает `ContainerException`, если алиас не зарегистрирован.
 
 ## Как работает автовайринг
 
-Когда контейнеру нужно создать объект или вызвать callable, он использует **`ParameterResolver`** (
-`Vasoft\Joke\Container\ParameterResolver`) для анализа параметров. Процесс состоит из двух этапов:
+Когда контейнеру нужно создать объект или вызвать callable, он использует **`ParameterResolver`**
+(`Vasoft\Joke\Container\ParameterResolver`) для анализа параметров. Процесс состоит из двух этапов:
 
 ### 1. Поиск в контексте
 
@@ -69,7 +102,7 @@ $logger = $container->get(LoggerInterface::class);
 
 - Если тип параметра — **скалярный** (int, string и т.д.) → значение берётся как есть.
 - Если тип — **класс с методом `tryFrom()`** (например, enum) → вызывается `MyEnum::tryFrom($value)`.
-- Если тип — **класс без `tryFrom()`** → выбрасывается `AutowiredException`.
+- Если тип — **класс без `tryFrom()`** → выбрасывается `ParameterResolveException`.
 
 ### 2. Поиск в DI-контейнере
 
@@ -80,7 +113,7 @@ function handle(UserRepository $users) { ... }
 // → $users = $container->get(UserRepository::class)
 ```
 
-Если сервис не зарегистрирован — выбрасывается `AutowiredException`.
+Если сервис не зарегистрирован и не может быть создан автоматически — выбрасывается `ParameterResolveException`.
 
 > ❗ Порядок важен: **контекст > DI-контейнер**. Это позволяет переопределять зависимости на уровне маршрута.
 
@@ -95,7 +128,7 @@ $router->get('/user/{id:int}', function (int $id, UserRepository $users) {
 ```
 
 - `$id` берётся из URI и преобразуется в `int`,
-- `$users` — из DI-контейнера.
+- `$users` разрешается через DI-контейнер.
 
 ### Использование enum с `tryFrom`
 
@@ -111,18 +144,19 @@ $router->get('/order/{status}', function (OrderStatus $status) {
 });
 ```
 
-Если в URI будет `/order/invalid`, `tryFrom` вернёт `null`, и фреймворк выбросит `AutowiredException`.
+Если в URI будет недопустимое значение (например, `/order/invalid`), `tryFrom` вернёт `null`,
+и фреймворк выбросит `ParameterResolveException`.
 
 ### Фабрика с доступом к контейнеру
 
 ```php
-$container->registerSingleton(Cache::class, function (ServiceContainer $c) {
+$container->registerSingleton(Cache::class, function (DiContainerInterface $c) {
     $config = $c->get(Config::class);
     return new RedisCache($config->host);
 });
 ```
 
-Фабрика сама получает контейнер через автовайринг.
+Фабрика сама получает зависимости через автовайринг.
 
 ---
 
@@ -131,13 +165,12 @@ $container->registerSingleton(Cache::class, function (ServiceContainer $c) {
 Если параметр не может быть разрешён, выбрасывается:
 
 ```php
-Vasoft\Joke\Container\Exceptions\AutowiredException
+Vasoft\Joke\Container\Exceptions\ParameterResolveException
 ```
 
 Сообщение включает имя параметра и ожидаемый тип, например:
 
->
-`Failed to autowire parameter "$status": expected type "OrderStatus" cannot be resolved or is incompatible with the provided value.`
+> `Failed to resolve parameter "$status": type "OrderStatus" cannot be resolved from context or container.`
 
 Это помогает быстро находить причины ошибок при разработке.
 
@@ -145,14 +178,14 @@ Vasoft\Joke\Container\Exceptions\AutowiredException
 
 ## Встроенные сервисы
 
-При создании контейнер автоматически регистрирует:
+При создании контейнер автоматически регистрирует базовые сервисы и алиасы для обратной совместимости, включая:
 
-| Интерфейс           | Реализация          |
-|---------------------|---------------------|
-| `ResolverInterface` | `ParameterResolver` |
-| `RouterInterface`   | `Router`            |
+| Интерфейс              | Реализация                   |
+|------------------------|------------------------------|
+| `ResolverInterface`    | `ParameterResolver`          |
+| `DiContainerInterface` | Текущий экземпляр контейнера |
 
-Вы можете заменить их, перерегистрировав интерфейс:
+Вы можете заменить реализации, перерегистрировав интерфейс:
 
 ```php
 $container->registerSingleton(RouterInterface::class, MyRouter::class);
@@ -162,11 +195,14 @@ $container->registerSingleton(RouterInterface::class, MyRouter::class);
 
 ## Особенности и ограничения
 
-- **Циклические зависимости** не поддерживаются.
-- **Примитивные типы без контекста** (например, `function(int $x)`) не могут быть разрешены — всегда требуют значения из
-  контекста.
-- **Параметры по умолчанию** пока не поддерживаются (см. `@todo` в коде).
-- **Рефлексия не кэшируется** — в будущем планируется оптимизация.
+- **Циклические зависимости** между сервисами не поддерживаются (вызывают `ContainerException`).
+- **Циклические алиасы** обнаруживаются и вызывают ошибку.
+- **Примитивные типы без контекста** (например, `function(int $x)`) не могут быть разрешены автоматически — они требуют
+  наличия значения в контексте выполнения (маршрут, запрос).
+- **Параметры со значениями по умолчанию** в сигнатуре метода пока не учитываются резолвером, если значение не найдено в
+  контексте или контейнере.
+- **Рефлексия** используется при каждом создании прототипа (кэширование метаданных рефлексии планируется в будущих
+  версиях).
 
 ---
 
@@ -174,6 +210,12 @@ $container->registerSingleton(RouterInterface::class, MyRouter::class);
 
 ```php
 // bootstrap/app.php
+use Vasoft\Joke\Container\ServiceContainer;
+use Psr\Log\LoggerInterface;
+use App\Logger\FileLogger;
+use App\Repository\UserRepository;
+use App\Repository\DbUserRepository;
+
 $container = new ServiceContainer();
 $container->registerSingleton(LoggerInterface::class, FileLogger::class);
 $container->registerSingleton(UserRepository::class, DbUserRepository::class);
@@ -181,7 +223,7 @@ $container->registerSingleton(UserRepository::class, DbUserRepository::class);
 return new Application(__DIR__ . '/..', '', $container);
 ```
 
-Теперь в любом обработчике:
+Теперь в любом обработчике маршрута или контроллере:
 
 ```php
 $router->get('/profile', function (UserRepository $users, LoggerInterface $log) {
@@ -190,4 +232,4 @@ $router->get('/profile', function (UserRepository $users, LoggerInterface $log) 
 });
 ```
 
-Всё работает «из коробки» — без ручной передачи зависимостей.
+Все зависимости будут автоматически внедрены «из коробки» — без ручной передачи объектов.

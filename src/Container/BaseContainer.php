@@ -54,6 +54,10 @@ abstract class BaseContainer implements ContainerInspectionInterface
      * @var array<string, object>
      */
     private array $singletons = [];
+    /**
+     * Соответствие алиасов классам
+     * @var array<string,class-string>
+     */
     private array $aliases = [];
 
     /**
@@ -117,7 +121,7 @@ abstract class BaseContainer implements ContainerInspectionInterface
     }
 
     /**
-     * @deprecated: Передача вызываемых объектов (с помощью __invoke) будет рассматриваться как синглтоны в версии 2.0.
+     * @deprecated Передача вызываемых объектов (с помощью __invoke) будет рассматриваться как синглтоны в версии 2.0.
      *  Используйте \Closure для фабрик.
      */
     public function register(string $name, callable|object|string $service): void
@@ -166,6 +170,15 @@ abstract class BaseContainer implements ContainerInspectionInterface
         }
 
         return $result;
+    }
+
+    public function getByAlias(string $alias): ?object
+    {
+        if (!array_key_exists($alias, $this->aliases)) {
+            throw new ContainerException('Alias "' . $alias . '" not exists');
+        }
+
+        return $this->get($this->aliases[$alias]);
     }
 
     /**
@@ -296,6 +309,9 @@ abstract class BaseContainer implements ContainerInspectionInterface
 
     public function has(string $name): bool
     {
-        return isset($this->definitions[$name]) || isset($this->singletons[$name]) || isset($this->aliases[$name]);
+        return isset($this->serviceRegistry[$name])
+            || isset($this->singletonsRegistry[$name])
+            || isset($this->singletons[$name])
+            || isset($this->aliases[$name]);
     }
 }
