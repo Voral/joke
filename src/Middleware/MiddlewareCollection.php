@@ -23,7 +23,8 @@ class MiddlewareCollection
      * Если middleware именованный производится поиск, и, если найден, производится замена middleware и групп в той же позиции где
      * и был найден.
      *
-     * @param array<string> $groups Привязка middleware к набору групп. (Имеет значение в middleware привязанных к маршруту)
+     * @param class-string|MiddlewareInterface $middleware Мидлвар
+     * @param array<string>                    $groups     Привязка middleware к набору групп. (Имеет значение в middleware привязанных к маршруту)
      *
      * @return $this
      */
@@ -78,7 +79,7 @@ class MiddlewareCollection
      *                             middleware с пустым списком групп, если не пустой, то с пересечением либо если у middleware
      *                             нет групп
      *
-     * @return array<MiddlewareInterface|string>
+     * @return array<class-string|MiddlewareInterface>
      */
     public function getArrayForRun(array $group = []): array
     {

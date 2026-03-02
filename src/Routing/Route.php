@@ -86,8 +86,8 @@ class Route implements RouteInterface
     /**
      * Добавляет middleware к маршруту.
      *
-     * @param MiddlewareInterface|string $middleware Класс middleware или его экземпляр
-     * @param string                     $name       Имя middleware (для возможности переопределения)
+     * @param class-string|MiddlewareInterface $middleware Класс middleware или его экземпляр
+     * @param string                           $name       Имя middleware (для возможности переопределения)
      */
     public function addMiddleware(MiddlewareInterface|string $middleware, string $name = ''): static
     {

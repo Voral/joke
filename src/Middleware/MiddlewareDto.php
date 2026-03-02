@@ -12,9 +12,9 @@ use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 class MiddlewareDto
 {
     /**
-     * @param MiddlewareInterface|string $middleware middleware
-     * @param string                     $name       Наименование middleware для одиночек
-     * @param array<string>              $groups     Привязка middleware к набору групп. (Имеет значение в middleware привязанных к маршруту)
+     * @param class-string|MiddlewareInterface $middleware middleware
+     * @param string                           $name       Наименование middleware для одиночек
+     * @param array<string>                    $groups     Привязка middleware к набору групп. (Имеет значение в middleware привязанных к маршруту)
      */
     public function __construct(
         public MiddlewareInterface|string $middleware,

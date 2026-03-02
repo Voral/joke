@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Config;
 
+use Vasoft\Joke\Config\Exceptions\ConfigException;
+
 /**
  * Загрузчик переменных из .env файлов.
  *
@@ -50,6 +52,8 @@ readonly class EnvironmentLoader
      *
      * @param string                                    $fileName Имя загружаемого файла
      * @param array<string, null|bool|float|int|string> $vars     Ссылка на формируемый массив переменных
+     *
+     * @throws ConfigException При ошибке открытия файла
      */
     private function parseFile(string $fileName, array &$vars): void
     {
@@ -58,6 +62,9 @@ readonly class EnvironmentLoader
             return;
         }
         $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (false === $lines) {
+            throw  new ConfigException('Unable to load file: ' . $path);
+        }
         foreach ($lines as $line) {
             $line = trim($line);
             if (str_starts_with($line, '#')) {

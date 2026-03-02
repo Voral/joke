@@ -31,7 +31,7 @@ class PropsCollection extends ReadonlyPropsCollection
      */
     public function reset(array $props): static
     {
-        $this->props = $props;
+        $this->props = $this->normalizeArrayKeys($props);
 
         return $this;
     }

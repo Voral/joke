@@ -145,6 +145,7 @@ class HttpRequest extends Request
         $this->session = new SessionCollection([]);
         if ($this->isUrlEncoded()) {
             $params = [];
+            /** @phpstan-var array<string, mixed> $params */
             parse_str($rawBody, $params);
             $this->post->reset($params);
         } elseif ($this->isJson()) {

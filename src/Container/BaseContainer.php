@@ -173,15 +173,6 @@ abstract class BaseContainer implements ContainerInspectionInterface
         return $result;
     }
 
-    public function getByAlias(string $alias): ?object
-    {
-        if (!array_key_exists($alias, $this->aliases)) {
-            throw new ContainerException('Alias "' . $alias . '" not exists');
-        }
-
-        return $this->get($this->aliases[$alias]);
-    }
-
     /**
      * Создаёт новый экземпляр прототипа.
      *
@@ -224,9 +215,11 @@ abstract class BaseContainer implements ContainerInspectionInterface
     /**
      * Получает или создаёт синглтон.
      *
-     * @param string $name Имя сервиса
+     * @param class-string<T>|string $name Имя сервиса
      *
-     * @return null|object Экземпляр сервиса или null, если не зарегистрирован
+     * @template T of object
+     *
+     * @return ($name is class-string ? null|T : null|object) Экземпляр сервиса или null, если не найден
      *
      * @throws ParameterResolveException При ошибках рефлексии
      */

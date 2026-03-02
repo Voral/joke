@@ -68,25 +68,12 @@ interface DiContainerInterface
      *
      * @template T of object
      *
-     * @param class-string<T> $name Имя сервиса
+     * @param class-string<T>|string $name Имя сервиса
      *
-     * @return null|T Экземпляр сервиса или null, если не найден
+     * @return ($name is class-string ? null|T : null|object) Экземпляр сервиса или null, если не найден
      *
      * @throws ParameterResolveException Если не удаётся разрешить зависимости
      * @throws ContainerException        В случае ошибок уровня контейнера
      */
     public function get(string $name): ?object;
-
-    /**
-     * Получает экземпляр сервиса по алиасу.
-     *
-     * Тип возвращаемого значения не гарантирован.
-     *
-     * @param string $alias Алиас сервиса
-     *
-     * @return null|object Тип не гарантирован
-     *
-     * @throws ContainerException Если алиас не зарегистрирован
-     */
-    public function getByAlias(string $alias): ?object;
 }

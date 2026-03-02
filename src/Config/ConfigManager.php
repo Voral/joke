@@ -145,7 +145,7 @@ class ConfigManager
     /**
      * Регистрирует конфигурации из ассоциативного массива.
      *
-     * @param array<string, AbstractConfig|\Closure> $configs ассоциативный массив конфигураций
+     * @param array<string, mixed> $configs ассоциативный массив конфигураций
      */
     protected function registerFromArray(array $configs): void
     {
@@ -180,6 +180,7 @@ class ConfigManager
     public function get(string $configClass): AbstractConfig
     {
         if ($this->serviceContainer->has($configClass)) {
+            /** @phpstan-ignore return.type */
             return $this->serviceContainer->get($configClass);
         }
         $entity = $this->loadLazy($configClass);
@@ -216,7 +217,7 @@ class ConfigManager
      * Ищет файл `{ShortClassName}.php` в директориях ленивых конфигураций
      * При нахождении файла загружает его содержимое и регистрирует все найденные конфигурации.
      *
-     * @param string $name полное имя класса конфигурации
+     * @param class-string $name полное имя класса конфигурации
      *
      * @return ?AbstractConfig загруженный экземпляр конфигурации
      *
@@ -233,6 +234,7 @@ class ConfigManager
             if (file_exists($fileName)) {
                 $this->loadFile($fileName);
 
+                /** @phpstan-ignore return.type */
                 return $this->serviceContainer->get($name);
             }
         }

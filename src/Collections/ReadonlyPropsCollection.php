@@ -15,16 +15,22 @@ use Vasoft\Joke\Support\Types\TypeConverter;
  */
 class ReadonlyPropsCollection
 {
+    /** @var array<string,mixed> Набор свойств */
+    protected array $props = [];
+
     /**
-     * @param array<string,mixed> $props Начальный набор свойств
+     * @param array<int|string,mixed> $props Начальный набор свойств
      */
-    public function __construct(protected array $props) {}
+    public function __construct(array $props)
+    {
+        $this->props = $this->normalizeArrayKeys($props);
+    }
 
     /**
      * Возвращает значение свойства по ключу.
      *
-     * @param string                           $key     Имя свойства
-     * @param null|array|bool|float|int|string $default Значение по умолчанию, если ключ не существует
+     * @param string                                                         $key     Имя свойства
+     * @param null|array<int|string,mixed>|bool|float|int|list<mixed>|string $default Значение по умолчанию, если ключ не существует
      *
      * @return null|array<int|string,mixed>|bool|float|int|list<mixed>|string Значение свойства или значение по умолчанию
      */
@@ -208,5 +214,20 @@ class ReadonlyPropsCollection
         }
 
         return $this->props[$key];
+    }
+
+    /**
+     * @param array<int|string,mixed> $array
+     *
+     * @return array<string,mixed>
+     */
+    protected static function normalizeArrayKeys(array $array): array
+    {
+        $result = [];
+        foreach ($array as $key => $value) {
+            $result[(string) $key] = $value;
+        }
+
+        return $result;
     }
 }

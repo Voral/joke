@@ -6,6 +6,8 @@ namespace Vasoft\Joke\Application;
 
 use Vasoft\Joke\Config\ConfigManager;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
+use Vasoft\Joke\Container\Exceptions\ContainerException;
+use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Exceptions\JokeException;
@@ -120,11 +122,43 @@ class Application
             );
             $providerManager->register();
             $providerManager->boot();
-            $this->middlewares = $this->serviceContainer->get('middleware.global');
-            $this->routeMiddlewares = $this->serviceContainer->get('middleware.route');
+            $this->middlewares = $this->getNamedMiddlewareCollection('global');
+            $this->routeMiddlewares = $this->getNamedMiddlewareCollection('route');
         } catch (\Throwable $exception) {
-            $this->serviceContainer->get('logger')->error($exception);
+            try {
+                /** @var LoggerInterface $config */
+                $config = $this->serviceContainer->get('logger');
+                $config?->error($exception);
+            } catch (\Throwable $e) {
+                error_log($exception->getMessage());
+
+                throw $exception;
+            }
         }
+    }
+
+    /**
+     * Получает коллекцию middleware по имени из контейнера.
+     *
+     * Извлекает сервис по ключу "middleware.{name}" и гарантирует,
+     * что возвращённый объект является экземпляром MiddlewareCollection.
+     *
+     * @param string $name Идентификатор коллекции (например, 'global' или 'route')
+     *
+     * @return MiddlewareCollection Экземпляр коллекции middleware
+     *
+     * @throws ParameterResolveException При ошибках резолвера
+     * @throws WrongMiddlewareException  Если сервис не найден или имеет неверный тип
+     * @throws ContainerException        При ошибках контейнера
+     */
+    private function getNamedMiddlewareCollection(string $name): MiddlewareCollection
+    {
+        $instance = $this->serviceContainer->get('middleware.' . $name);
+        if (!$instance instanceof MiddlewareCollection) {
+            throw new WrongMiddlewareException('middleware.' . $name . ' is not instance of MiddlewareCollection');
+        }
+
+        return $instance;
     }
 
     /**
@@ -150,6 +184,7 @@ class Application
         $file = $this->basePath . '/bootstrap/kernel.php';
         if (file_exists($file)) {
             try {
+                /** @phpstan-ignore closure.unusedUse */
                 $config = (static function () use ($env, $file): KernelConfig {
                     return require $file;
                 })();
@@ -170,8 +205,8 @@ class Application
      * Если middleware именованный производится поиск, и, если найден, производится замена middleware в той же позиции где
      * и был найден.
      *
-     * @param MiddlewareInterface|string $middleware Экземпляр или класс middleware
-     * @param string                     $name       Наименование middleware для тех, которые могут быть только в единственном экземпляре
+     * @param class-string|MiddlewareInterface $middleware Экземпляр или класс middleware
+     * @param string                           $name       Наименование middleware для тех, которые могут быть только в единственном экземпляре
      *
      * @return $this
      */
@@ -188,9 +223,9 @@ class Application
      * Может быть привязан к определённым группам маршрутов.
      * Именованные middleware с существующим именем будут заменены, сохраняя свою позицию в цепочке выполнения.
      *
-     * @param MiddlewareInterface|string $middleware Класс или экземпляр middleware
-     * @param string                     $name       Имя middleware (для возможности переопределения)
-     * @param array<string>              $groups     Список групп маршрутов, к которым применяется middleware
+     * @param class-string|MiddlewareInterface $middleware Класс или экземпляр middleware
+     * @param string                           $name       Имя middleware (для возможности переопределения)
+     * @param array<string>                    $groups     Список групп маршрутов, к которым применяется middleware
      */
     public function addRouteMiddleware(
         MiddlewareInterface|string $middleware,
@@ -281,9 +316,9 @@ class Application
      * Строит вложенную структуру вызовов, где каждый middleware оборачивает
      * результат следующего звена цепочки.
      *
-     * @param HttpRequest                       $request     Входящий HTTP-запрос
-     * @param array<MiddlewareInterface|string> $middlewares Список middleware для выполнения
-     * @param callable                          $next        Функция следующего звена цепочки
+     * @param HttpRequest                             $request     Входящий HTTP-запрос
+     * @param array<class-string|MiddlewareInterface> $middlewares Список middleware для выполнения
+     * @param callable                                $next        Функция следующего звена цепочки
      *
      * @return mixed Результат выполнения цепочки
      *
@@ -301,6 +336,8 @@ class Application
                     ? $middleware
                     : $this->resolveMiddleware($middleware);
                 if (null === $instance) {
+                    assert(is_string($middleware));
+
                     throw new WrongMiddlewareException($middleware);
                 }
 
@@ -317,7 +354,7 @@ class Application
     /**
      * Создаёт экземпляр middleware через DI-контейнер.
      *
-     * @param string $middleware Имя класса middleware
+     * @param class-string $middleware Имя класса middleware
      *
      * @return null|MiddlewareInterface Экземпляр middleware или null, если класс не реализует интерфейс
      *
