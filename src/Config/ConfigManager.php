@@ -78,6 +78,7 @@ class ConfigManager
         $this->basePath = $this->pathNormalizer->normalizeDir($basePath);
         $this->lazyPath = $this->pathNormalizer->normalizeDir($lazyPath);
         $this->lazyPathExists = !empty($this->lazyPath) && is_dir($this->lazyPath);
+        $this->load();
     }
 
     /**
@@ -85,7 +86,7 @@ class ConfigManager
      *
      * @throws WrongConfigFileException если файл конфигурации возвращает некорректное значение
      */
-    public function load(): void
+    private function load(): void
     {
         if (is_dir($this->basePath)) {
             $this->loadFromPath($this->basePath);

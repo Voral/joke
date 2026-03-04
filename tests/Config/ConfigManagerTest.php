@@ -131,8 +131,7 @@ final class ConfigManagerTest extends TestCase
                 ];
                 PHP,
         );
-        $loader = new ConfigManager(self::$container, 'config', '');
-        $loader->load();
+        new ConfigManager(self::$container, 'config', '');
         self::assertInstanceOf(SingleConfig::class, self::$container->get(SingleConfig::class));
         self::assertInstanceOf(SecondSingleConfig::class, self::$container->get(SecondSingleConfig::class));
         self::assertInstanceOf(Other\SecondSingleConfig::class, self::$container->get(Other\SecondSingleConfig::class));
@@ -150,8 +149,7 @@ final class ConfigManagerTest extends TestCase
             'second',
             'new Vasoft\Joke\Tests\Fixtures\Config\SecondSingleConfig();',
         );
-        $loader = new ConfigManager(self::$container, 'config', '');
-        $loader->load();
+        new ConfigManager(self::$container, 'config', '');
         self::assertInstanceOf(SingleConfig::class, self::$container->get(SingleConfig::class));
         self::assertFalse(self::$container->has(SecondSingleConfig::class));
     }
@@ -169,7 +167,6 @@ final class ConfigManagerTest extends TestCase
             '["Vasoft\Joke\Tests\Fixtures\Config\SecondSingleConfig" => new Vasoft\Joke\Tests\Fixtures\Config\SecondSingleConfig()];',
         );
         $loader = new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
-        $loader->load();
         self::assertFalse(self::$container->has(SingleConfig::class));
         self::assertFalse(self::$container->has(SecondSingleConfig::class));
 
@@ -203,8 +200,7 @@ final class ConfigManagerTest extends TestCase
             'app',
             '["Vasoft\Configs\WrongConfig" => fn() => new stdClass()];',
         );
-        $loader = new ConfigManager(self::$container, 'config', '');
-        $loader->load();
+        new ConfigManager(self::$container, 'config', '');
 
         self::expectException(WrongConfigException::class);
         self::expectExceptionMessage(
@@ -238,8 +234,7 @@ final class ConfigManagerTest extends TestCase
         $container->registerSingleton(Environment::class, $env);
         $container->registerAlias('env', Environment::class);
 
-        $loader = new ConfigManager($container, 'config', '');
-        $loader->load();
+        new ConfigManager($container, 'config', '');
         /** @var SingleConfig $config */
         $config = $container->get(SingleConfig::class);
         self::assertSame('test_user', $config->getEnvValue('DB_USERNAME', 'default_user'));
@@ -252,12 +247,12 @@ final class ConfigManagerTest extends TestCase
             'first',
             'new stdClass();',
         );
-        $loader = new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
+
         $this->expectException(WrongConfigFileException::class);
         $this->expectExceptionMessage(
             'Config file config/first.php must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
-        $loader->load();
+        new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
     }
 
     public function testWrongFileClosure(): void
@@ -267,12 +262,11 @@ final class ConfigManagerTest extends TestCase
             'first',
             'fn() => new \Vasoft\Joke\Tests\Fixtures\Config\SingleConfig();',
         );
-        $loader = new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
         $this->expectException(WrongConfigFileException::class);
         $this->expectExceptionMessage(
             'Config file config/first.php must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
-        $loader->load();
+        new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
     }
 
     public function testWrongFileLazy(): void
