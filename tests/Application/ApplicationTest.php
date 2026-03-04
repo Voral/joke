@@ -129,7 +129,7 @@ final class ApplicationTest extends TestCase
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
         $output = ob_get_clean();
-        self::assertSame('{"message":"Route not found"}', $output);
+        self::assertSame('Route not found', $output);
     }
 
     public function testWildCard(): void
@@ -259,7 +259,7 @@ final class ApplicationTest extends TestCase
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
         $output = ob_get_clean();
         self::assertSame(
-            '{"message":"Middleware Vasoft\\\Joke\\\Routing\\\Router must implements MiddlewareInterface."}',
+            'Middleware Vasoft\Joke\Routing\Router must implements MiddlewareInterface.',
             $output,
         );
     }

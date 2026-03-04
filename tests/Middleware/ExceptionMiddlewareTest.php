@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Tests\Middleware;
 
 use PHPUnit\Framework\TestCase;
+use Vasoft\Joke\Application\ApplicationConfig;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
+use Vasoft\Joke\Http\Response\HtmlResponse;
+use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Logging\NullLogger;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
 use Vasoft\Joke\Http\HttpRequest;
-use Vasoft\Joke\Http\Response\JsonResponse;
 use Vasoft\Joke\Http\Response\ResponseStatus;
 use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 
@@ -28,6 +30,7 @@ final class ExceptionMiddlewareTest extends TestCase
         self::$container = new ServiceContainer();
         self::$container->registerSingleton(LoggerInterface::class, NullLogger::class);
         self::$container->registerAlias('logger', LoggerInterface::class);
+        self::$container->registerSingleton(ResponseBuilder::class, new ResponseBuilder(new ApplicationConfig()));
     }
 
     public function testHandleSuccess(): void
@@ -45,11 +48,9 @@ final class ExceptionMiddlewareTest extends TestCase
         };
         $middleware = new ExceptionMiddleware(self::$container);
         $output = $middleware->handle(new HttpRequest(), $foo);
-        self::assertInstanceOf(JsonResponse::class, $output);
+        self::assertInstanceOf(HtmlResponse::class, $output);
         self::assertSame(ResponseStatus::NOT_FOUND, $output->status);
-        self::assertSame([
-            'message' => 'Route not found',
-        ], $output->getBody());
+        self::assertSame('Route not found', $output->getBody());
     }
 
     public function testHandlePHPException(): void
@@ -59,10 +60,8 @@ final class ExceptionMiddlewareTest extends TestCase
         };
         $middleware = new ExceptionMiddleware(self::$container);
         $output = $middleware->handle(new HttpRequest(), $foo);
-        self::assertInstanceOf(JsonResponse::class, $output);
+        self::assertInstanceOf(HtmlResponse::class, $output);
         self::assertSame(ResponseStatus::INTERNAL_SERVER_ERROR, $output->status);
-        self::assertSame([
-            'message' => 'Some exception',
-        ], $output->getBody());
+        self::assertSame('Some exception', $output->getBody());
     }
 }
