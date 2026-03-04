@@ -11,7 +11,10 @@ use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\JsonResponse;
+use Vasoft\Joke\Http\Response\Response;
+use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Http\Response\ResponseStatus;
+use Vasoft\Joke\Container\Exceptions\ContainerException;
 
 /**
  * Перехватывает необработанные исключения и преобразует их в корректные HTTP-ответы.
@@ -23,6 +26,9 @@ use Vasoft\Joke\Http\Response\ResponseStatus;
  *   с кодом статуса, заданным в самом исключении.
  * - Все остальные {@see \Exception} (и наследники) возвращают
  *   ответ 500 Internal Server Error.
+ *
+ * Мiddleware передает текст исключения непосредственно в тело ответа. Фильтрация чувствительных данных и
+ * адаптация сообщений для конечного пользователя являются ответственностью разработчика приложения.
  *
  * @see MiddlewareInterface
  */
@@ -44,6 +50,7 @@ class ExceptionMiddleware implements MiddlewareInterface
      *
      * @return mixed Ответ от следующего middleware или сгенерированный JSON-ответ при ошибке
      *
+     * @throws ContainerException
      * @throws ParameterResolveException
      */
     public function handle(HttpRequest $request, callable $next): mixed
@@ -55,19 +62,36 @@ class ExceptionMiddleware implements MiddlewareInterface
             $config = $this->container->get(LoggerInterface::class);
             $config->error($exception);
 
-            return new JsonResponse()
-                ->setBody(['message' => $exception->getMessage()])
+            return $this->buildResponse($exception->getMessage())
                 ->setStatus($exception->getResponseStatus());
         } catch (\Throwable $exception) {
             /** @var LoggerInterface $config */
             $config = $this->container->get(LoggerInterface::class);
             $config->error($exception);
 
-            return new JsonResponse()
-                ->setBody(['message' => $exception->getMessage()])
+            return $this->buildResponse($exception->getMessage())
                 ->setStatus(ResponseStatus::INTERNAL_SERVER_ERROR);
         }
 
         return $response;
+    }
+
+    /**
+     * Формирует ответ с ошибкой с установленным по умолчанию типом
+     *
+     * @param string $message Тест сообщения
+     *
+     * @throws ParameterResolveException
+     * @throws ContainerException
+     */
+    private function buildResponse(string $message): Response
+    {
+        $responseBuilder = $this->container->get(ResponseBuilder::class);
+        $response = $responseBuilder->makeDefault();
+        if ($response instanceof JsonResponse) {
+            return $response->setBody(['message' => $message]);
+        }
+
+        return $response->setBody($message);
     }
 }

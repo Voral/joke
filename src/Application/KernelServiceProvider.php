@@ -8,6 +8,7 @@ use Vasoft\Joke\Config\AbstractConfig;
 use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
+use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Middleware\CsrfMiddleware;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
@@ -29,6 +30,7 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
     {
         $this->serviceContainer->registerSingleton('middleware.global', MiddlewareCollection::class);
         $this->serviceContainer->registerSingleton('middleware.route', MiddlewareCollection::class);
+        $this->serviceContainer->registerSingleton(ResponseBuilder::class, ResponseBuilder::class);
     }
 
     public function boot(): void
@@ -48,6 +50,7 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
         return [
             'middleware.global',
             'middleware.route',
+            ResponseBuilder::class,
         ];
     }
 

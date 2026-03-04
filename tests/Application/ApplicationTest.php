@@ -163,6 +163,7 @@ final class ApplicationTest extends TestCase
 
     public function testAddMiddleware(): void
     {
+        SingleMiddleware::clean();
         $middleware = new SingleMiddleware();
         $middleware->index = 3;
         $app = new Application(
@@ -180,6 +181,7 @@ final class ApplicationTest extends TestCase
 
     public function testAddMiddlewareAndRouteMiddleware(): void
     {
+        SingleMiddleware::clean();
         $middleware = new SingleMiddleware();
         $middleware->index = 3;
         $routeMiddleware = new SingleMiddleware();
@@ -212,6 +214,7 @@ final class ApplicationTest extends TestCase
 
     public function testAddMiddlewareAndRouteMiddlewareFilter(): void
     {
+        SingleMiddleware::clean();
         $middleware = new SingleMiddleware();
         $middleware->index = 3;
         $routeMiddleware1 = new SingleMiddleware();
@@ -235,6 +238,7 @@ final class ApplicationTest extends TestCase
             'Middleware 0 begin#Middleware 3 begin#Middleware 4 begin#Hi jons#Middleware 4 end#Middleware 3 end#Middleware 0 end',
             $output,
         );
+        SingleMiddleware::clean();
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name-filtered/jons']));
         $output = ob_get_clean();

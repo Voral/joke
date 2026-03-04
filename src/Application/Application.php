@@ -11,13 +11,11 @@ use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Exceptions\JokeException;
+use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Middleware\Exceptions\MiddlewareException;
 use Vasoft\Joke\Middleware\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
 use Vasoft\Joke\Http\HttpRequest;
-use Vasoft\Joke\Http\Response\HtmlResponse;
-use Vasoft\Joke\Http\Response\JsonResponse;
-use Vasoft\Joke\Http\Response\Response;
 use Vasoft\Joke\Provider\Exceptions\MultipleProvideException;
 use Vasoft\Joke\Provider\Exceptions\ProviderException;
 use Vasoft\Joke\Provider\Exceptions\ServiceNotFoundException;
@@ -250,6 +248,7 @@ class Application
      *
      * @param HttpRequest $request Входящий HTTP-запрос
      *
+     * @throws ContainerException
      * @throws ParameterResolveException
      * @throws WrongMiddlewareException  Если middleware не реализует MiddlewareInterface
      */
@@ -257,28 +256,8 @@ class Application
     {
         $next = fn() => $this->handleRoute($request);
         $response = $this->processMiddlewares($request, $this->middlewares->getArrayForRun(), $next);
-        $this->sendResponse($response);
-    }
-
-    /**
-     * Отправляет ответ клиенту.
-     *
-     * Автоматически оборачивает простые типы в соответствующие Response-объекты:
-     * - массивы → JsonResponse
-     * - всё остальное → HtmlResponse
-     *
-     * @param mixed $response Результат обработчика маршрута
-     */
-    private function sendResponse(mixed $response): void
-    {
-        if (!$response instanceof Response) {
-            if (is_array($response)) {
-                $response = new JsonResponse()->setBody($response);
-            } else {
-                $response = new HtmlResponse()->setBody($response);
-            }
-        }
-        $response->send();
+        $responseBuilder = $this->serviceContainer->get(ResponseBuilder::class);
+        $responseBuilder->make($response)->send();
     }
 
     /**
@@ -303,7 +282,9 @@ class Application
         if (null === $route) {
             throw new NotFoundException('Route not found');
         }
-        $next = static fn() => $route->run($request);
+        $responseBuilder = $this->serviceContainer->get(ResponseBuilder::class);
+
+        $next = static fn() => $responseBuilder->make($route->run($request));
         $middlewareCollection = $this->routeMiddlewares->withMiddlewares($route->getMiddlewares());
 
         $middlewares = $middlewareCollection->getArrayForRun($route->getGroups());
