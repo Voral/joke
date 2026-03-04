@@ -11,6 +11,7 @@ use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Exceptions\JokeException;
+use Vasoft\Joke\Middleware\Exceptions\MiddlewareException;
 use Vasoft\Joke\Middleware\Exceptions\WrongMiddlewareException;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
 use Vasoft\Joke\Http\HttpRequest;
@@ -128,7 +129,7 @@ class Application
             try {
                 /** @var LoggerInterface $config */
                 $config = $this->serviceContainer->get('logger');
-                $config?->error($exception);
+                $config->error($exception);
             } catch (\Throwable $e) {
                 error_log($exception->getMessage());
 
@@ -148,14 +149,14 @@ class Application
      * @return MiddlewareCollection Экземпляр коллекции middleware
      *
      * @throws ParameterResolveException При ошибках резолвера
-     * @throws WrongMiddlewareException  Если сервис не найден или имеет неверный тип
+     * @throws MiddlewareException       Если сервис не найден или имеет неверный тип
      * @throws ContainerException        При ошибках контейнера
      */
     private function getNamedMiddlewareCollection(string $name): MiddlewareCollection
     {
         $instance = $this->serviceContainer->get('middleware.' . $name);
         if (!$instance instanceof MiddlewareCollection) {
-            throw new WrongMiddlewareException('middleware.' . $name . ' is not instance of MiddlewareCollection');
+            throw new MiddlewareException('middleware.' . $name . ' is not instance of MiddlewareCollection.');
         }
 
         return $instance;

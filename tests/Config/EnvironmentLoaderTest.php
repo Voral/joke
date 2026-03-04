@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Config\Environment;
 
+use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\EnvironmentLoader;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
 
 /**
  * @internal
@@ -14,6 +17,8 @@ use Vasoft\Joke\Config\EnvironmentLoader;
  */
 final class EnvironmentLoaderTest extends TestCase
 {
+    use PHPMock;
+
     private string $basePath = '';
     private array $createdFiles = [];
 
@@ -155,5 +160,19 @@ final class EnvironmentLoaderTest extends TestCase
         self::assertNull($vars['NULLABLE_FLAG']);
         self::assertSame('', $vars['EMPTY_STRING']);
         self::assertArrayHasKey('LOWER_CASE', $vars);
+    }
+
+    #[RunInSeparateProcess]
+    public function testUnableLoad(): void
+    {
+        $this->writeEnvFile('', 'FROM_GLOBAL=1');
+        $loader = new EnvironmentLoader($this->basePath);
+
+        $fileMock = self::getFunctionMock('Vasoft\Joke\Config', 'file');
+        $fileMock->expects(self::once())->willReturn(false);
+        self::expectException(ConfigException::class);
+        self::expectExceptionMessage('Unable to load file: ');
+
+        $loader->load('dev', 'local', 'testing');
     }
 }

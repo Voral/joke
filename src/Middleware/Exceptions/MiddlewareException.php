@@ -6,4 +6,4 @@ namespace Vasoft\Joke\Middleware\Exceptions;
 
 use Vasoft\Joke\Exceptions\JokeException;
 
-abstract class MiddlewareException extends JokeException {}
+class MiddlewareException extends JokeException {}
