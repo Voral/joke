@@ -48,6 +48,7 @@ class ServiceContainer extends BaseContainer implements ApplicationContainerInte
     public function setRouter(callable|object|string $router): static
     {
         $this->registerSingleton(RouterInterface::class, $router);
+
         return $this;
     }
 }

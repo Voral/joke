@@ -213,5 +213,4 @@ final class EnvironmentTest extends TestCase
         $env = new Environment($this->mockLoader);
         self::assertSame('/var/www/', $env->getBasePath());
     }
-
 }

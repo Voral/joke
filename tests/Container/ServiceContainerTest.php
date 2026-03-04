@@ -7,7 +7,6 @@ namespace Vasoft\Joke\Tests\Container;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Container\Exceptions\ContainerException;
 use Vasoft\Joke\Container\ServiceContainer;
-use Vasoft\Joke\Contract\Routing\RouteInterface;
 
 /**
  * @internal

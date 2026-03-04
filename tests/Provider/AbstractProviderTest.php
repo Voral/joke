@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Provider;
 
-use PHPUnit\Framework\Attributes\CoversFunction;
-use PHPUnit\Framework\Attributes\CoversNothing;
 use Vasoft\Joke\Provider\AbstractProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -16,9 +14,6 @@ use PHPUnit\Framework\TestCase;
  */
 final class AbstractProviderTest extends TestCase
 {
-    /**
-     * @return void
-     */
     public function testDefaultRequires(): void
     {
         /** @var AbstractProvider $provider */

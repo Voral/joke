@@ -180,7 +180,6 @@ class ConfigManager
     public function get(string $configClass): AbstractConfig
     {
         if ($this->serviceContainer->has($configClass)) {
-            /** @phpstan-ignore return.type */
             return $this->serviceContainer->get($configClass);
         }
         $entity = $this->loadLazy($configClass);
@@ -234,7 +233,6 @@ class ConfigManager
             if (file_exists($fileName)) {
                 $this->loadFile($fileName);
 
-                /** @phpstan-ignore return.type */
                 return $this->serviceContainer->get($name);
             }
         }

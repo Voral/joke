@@ -109,7 +109,6 @@ abstract class BaseContainer implements ContainerInspectionInterface
 
     public function getParameterResolver(): ResolverInterface
     {
-        /** @var ResolverInterface $resolver */
         return $this->getSingleton(ResolverInterface::class);
     }
 
@@ -194,8 +193,6 @@ abstract class BaseContainer implements ContainerInspectionInterface
 
     /**
      * @param callable|class-string $definition
-     *
-     * @return callable|mixed|object
      *
      * @throws ParameterResolveException
      */

@@ -36,7 +36,7 @@ interface ServiceProviderInterface
      * Возвращает список сервисов (классов или интерфейсов), которые предоставляет данный провайдер.
      * Эти имена используются контейнером для сопоставления запрошенного сервиса с конкретным провайдером.
      *
-     * @return list<class-string>
+     * @return list<class-string|string>
      */
     public function provides(): array;
 }

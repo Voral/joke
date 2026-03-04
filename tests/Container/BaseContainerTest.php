@@ -127,6 +127,7 @@ final class BaseContainerTest extends TestCase
         $container = new ServiceContainer();
         $container->registerAlias('a', 'Custom\Example');
     }
+
     public function testCircularAlias(): void
     {
         $container = new ServiceContainer();
@@ -136,8 +137,8 @@ final class BaseContainerTest extends TestCase
         self::expectException(ContainerException::class);
         self::expectExceptionMessage('Circular alias detected: a-b.');
         $container->get('a');
-
     }
+
     public function testRegisterWarning(): void
     {
         $triggerError = self::getFunctionMock('Vasoft\Joke\Container', 'trigger_error');

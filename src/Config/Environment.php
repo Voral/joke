@@ -145,10 +145,9 @@ class Environment
 
         return $this->get($name);
     }
+
     /**
      * Возвращает базовый путь к проекту.
-     *
-     * @return string
      */
     public function getBasePath(): string
     {

@@ -28,8 +28,8 @@ interface ResolverInterface
     /**
      * Связывание парамеров конструкторов.
      *
-     * @param class-string $className Имя класса
-     * @param array<string,mixed> $context Массив переменных контекста
+     * @param class-string        $className Имя класса
+     * @param array<string,mixed> $context   Массив переменных контекста
      *
      * @return list<mixed> Массив разрешенных параметров
      *

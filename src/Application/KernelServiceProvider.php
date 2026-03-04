@@ -19,7 +19,8 @@ use Vasoft\Joke\Routing\StdGroup;
 class KernelServiceProvider extends AbstractProvider implements ConfigurableServiceProviderInterface
 {
     /** @deprecated Только для обратной совместимости - будет удален в версии 2.0 */
-    public static string $legacyPathRouteFile =  'routes/web.php';
+    public static string $legacyPathRouteFile = 'routes/web.php';
+
     public function __construct(
         private readonly ServiceContainer $serviceContainer,
     ) {}
