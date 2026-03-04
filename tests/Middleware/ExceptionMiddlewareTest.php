@@ -9,6 +9,7 @@ use Vasoft\Joke\Application\ApplicationConfig;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Http\Response\HtmlResponse;
+use Vasoft\Joke\Http\Response\JsonResponse;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Logging\NullLogger;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
@@ -46,6 +47,7 @@ final class ExceptionMiddlewareTest extends TestCase
         $foo = static function (): void {
             throw new NotFoundException('Route not found');
         };
+
         $middleware = new ExceptionMiddleware(self::$container);
         $output = $middleware->handle(new HttpRequest(), $foo);
         self::assertInstanceOf(HtmlResponse::class, $output);
@@ -53,15 +55,21 @@ final class ExceptionMiddlewareTest extends TestCase
         self::assertSame('Route not found', $output->getBody());
     }
 
-    public function testHandlePHPException(): void
+    public function testHandlePHPExceptionAndJsonResponse(): void
     {
+        $appConfig = new ApplicationConfig()->setResponseClass(JsonResponse::class);
+        $container = new ServiceContainer();
+        $container->registerSingleton(LoggerInterface::class, NullLogger::class);
+        $container->registerAlias('logger', LoggerInterface::class);
+        $container->registerSingleton(ResponseBuilder::class, new ResponseBuilder($appConfig));
+
         $foo = static function (): void {
             throw new \Exception('Some exception');
         };
-        $middleware = new ExceptionMiddleware(self::$container);
+        $middleware = new ExceptionMiddleware($container);
         $output = $middleware->handle(new HttpRequest(), $foo);
-        self::assertInstanceOf(HtmlResponse::class, $output);
+        self::assertInstanceOf(JsonResponse::class, $output);
         self::assertSame(ResponseStatus::INTERNAL_SERVER_ERROR, $output->status);
-        self::assertSame('Some exception', $output->getBody());
+        self::assertSame(['message' => 'Some exception'], $output->getBody());
     }
 }
