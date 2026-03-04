@@ -35,6 +35,7 @@ final class RouterTest extends TestCase
         $routeDelete = $router->delete('/delete', static fn() => 'delete', 'route-delete');
         $routePatch = $router->patch('/patch', static fn() => 'patch', 'route-patch');
         $routeHead = $router->head('/head', static fn() => 'head', 'route-head');
+        $routeOptions = $router->options('/options', static fn() => 'options', 'route-options');
 
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/get']);
         self::assertSame(spl_object_id($routeGet), spl_object_id($router->findRoute($request)));
@@ -59,6 +60,24 @@ final class RouterTest extends TestCase
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'HEAD', 'REQUEST_URI' => '/head']);
         self::assertSame(spl_object_id($routeHead), spl_object_id($router->findRoute($request)));
         self::assertSame(HttpMethod::HEAD, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'OPTIONS', 'REQUEST_URI' => '/options']);
+        self::assertSame(spl_object_id($routeOptions), spl_object_id($router->findRoute($request)));
+        self::assertSame(HttpMethod::OPTIONS, $router->findRoute($request)->method);
+    }
+
+    public function testDefaultOptionsRoute(): void
+    {
+        $router = new Router(self::$serviceContainer);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'OPTIONS', 'REQUEST_URI' => '/options']);
+        $request = $router->findRoute($request)->run($request);
+
+
+        self::assertSame([
+            'Content-Type' => 'text/html',
+            'Allow' => 'GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS',
+        ], $request->headers->getAll());
     }
 
     public function testRouterAny(): void
@@ -90,6 +109,10 @@ final class RouterTest extends TestCase
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'HEAD', 'REQUEST_URI' => '/get']);
         self::assertNotSame($routeId, spl_object_id($router->findRoute($request)));
         self::assertSame(HttpMethod::HEAD, $router->findRoute($request)->method);
+
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'OPTIONS', 'REQUEST_URI' => '/get']);
+        self::assertNotSame($routeId, spl_object_id($router->findRoute($request)));
+        self::assertSame(HttpMethod::OPTIONS, $router->findRoute($request)->method);
     }
 
     public function testRouterNotImplementedMethod(): void

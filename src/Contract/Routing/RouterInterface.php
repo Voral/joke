@@ -94,6 +94,19 @@ interface RouterInterface
     public function head(string $path, array|object|string $handler, string $name = ''): RouteInterface;
 
     /**
+     * Регистрация маршрута отвечающего на OPTIONS запрос
+     *
+     * Идемпотентен. Не должен менять состояние
+     *
+     * @param string                                                     $path    паттерн URI (например, '/users')
+     * @param array{class-string|object, non-empty-string}|object|string $handler Метод выполняющийся для данного маршрута
+     * @param string                                                     $name    Опциональное имя маршрута
+     *
+     * @return RouteInterface Зарегистрированный объект маршрута
+     */
+    public function options(string $path, array|object|string $handler, string $name = ''): RouteInterface;
+
+    /**
      * Регистрация маршрута отвечающего на любой запрос
      *
      * @param string                                                     $path    паттерн URI (например, '/users')

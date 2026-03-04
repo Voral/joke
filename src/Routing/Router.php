@@ -7,6 +7,7 @@ namespace Vasoft\Joke\Routing;
 use Vasoft\Joke\Contract\Routing\RouterInterface;
 use Vasoft\Joke\Http\HttpMethod;
 use Vasoft\Joke\Http\HttpRequest;
+use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Container\ServiceContainer;
 
@@ -69,6 +70,11 @@ class Router implements RouterInterface
         return $this->match([HttpMethod::PATCH], $path, $handler, $name);
     }
 
+    public function options(string $path, array|object|string $handler, string $name = ''): Route
+    {
+        return $this->match([HttpMethod::OPTIONS], $path, $handler, $name);
+    }
+
     public function head(string $path, array|object|string $handler, string $name = ''): Route
     {
         return $this->match([HttpMethod::HEAD], $path, $handler, $name);
@@ -128,6 +134,10 @@ class Router implements RouterInterface
     {
         $method = $request->method;
         if (!isset($this->routes[$method->value])) {
+            if (HttpMethod::OPTIONS === $method) {
+                return $this->getDefaultOptionsRoute();
+            }
+
             return null;
         }
         foreach ($this->routes[$method->value] as $route) {
@@ -137,6 +147,26 @@ class Router implements RouterInterface
         }
 
         return null;
+    }
+
+    private function getDefaultOptionsRoute(): Route
+    {
+        return new Route(
+            $this->serviceContainer,
+            '{*}',
+            HttpMethod::OPTIONS,
+            static function () {
+                $response = new HtmlResponse();
+
+                $allowed = implode(
+                    ', ',
+                    array_map(static fn(HttpMethod $method) => $method->value, HttpMethod::cases()),
+                );
+                $response->headers->set('Allow', $allowed);
+
+                return $response;
+            },
+        );
     }
 
     public function route(string $name): ?Route
