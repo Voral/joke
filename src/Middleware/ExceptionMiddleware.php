@@ -58,7 +58,7 @@ class ExceptionMiddleware implements MiddlewareInterface
             return new JsonResponse()
                 ->setBody(['message' => $exception->getMessage()])
                 ->setStatus($exception->getResponseStatus());
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             /** @var LoggerInterface $config */
             $config = $this->container->get(LoggerInterface::class);
             $config->error($exception);
