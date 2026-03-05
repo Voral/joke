@@ -5,11 +5,10 @@
          executionOrder="random"
          cacheDirectory="./var/cache/phpunit"
          resolveDependencies="true"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd">
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd">
     <php>
         <ini name="memory_limit" value="-1"/>
         <ini name="display_errors" value="true"/>
-        <ini name="xdebug.mode" value="coverage"/>
         <env name="JK_ENV" value="testing"/>
     </php>
     <coverage includeUncoveredFiles="true">
