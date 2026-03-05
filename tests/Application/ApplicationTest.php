@@ -10,6 +10,7 @@ use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Logging\Logger;
 use Vasoft\Joke\Logging\LogLevel;
+use Vasoft\Joke\Middleware\Config\CsrfConfig;
 use Vasoft\Joke\Middleware\Exceptions\MiddlewareException;
 use Vasoft\Joke\Tests\Fixtures\Logger\FakeLogger;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -92,23 +93,23 @@ final class ApplicationTest extends TestCase
 
     public function testExecuteDefaultHtml(): void
     {
-        $di = new ServiceContainer();
-        $app = new Application(dirname(__DIR__, 2), '', $di);
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+
+        $app = new Application(dirname(__DIR__, 2), '', $container);
         ob_start();
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/']);
         $app->handle($request);
         $output = ob_get_clean();
         self::assertStringContainsString('<li><a href="/name/Alex">Hi Alex</a>', $output);
-        self::assertSame($request, $di->get(HttpRequest::class));
+        self::assertSame($request, $container->get(HttpRequest::class));
     }
 
     public function testExecuteDefaultJson(): void
     {
-        $app = new Application(
-            dirname(__DIR__, 2),
-            'routes/web.php',
-            new ServiceContainer(),
-        );
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container);
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/json/Alex']));
         $output = ob_get_clean();
@@ -130,11 +131,9 @@ final class ApplicationTest extends TestCase
 
     public function testWildCard(): void
     {
-        $app = new Application(
-            dirname(__DIR__, 2),
-            'routes/web.php',
-            new ServiceContainer(),
-        );
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container);
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
         $output = ob_get_clean();
@@ -144,10 +143,12 @@ final class ApplicationTest extends TestCase
     #[RunInSeparateProcess]
     public function testDefaultRouteMiddleware(): void
     {
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
         $app = new Application(
             dirname(__DIR__, 2),
             'routes/web.php',
-            new ServiceContainer(),
+            $container,
         );
         self::assertSame(PHP_SESSION_NONE, session_status());
         ob_start();
@@ -162,11 +163,9 @@ final class ApplicationTest extends TestCase
         SingleMiddleware::clean();
         $middleware = new SingleMiddleware();
         $middleware->index = 3;
-        $app = new Application(
-            dirname(__DIR__, 2),
-            'routes/web.php',
-            new ServiceContainer(),
-        )
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container)
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware);
         ob_start();
@@ -186,6 +185,7 @@ final class ApplicationTest extends TestCase
         $routeMiddleware2->index = 5;
 
         $diContainer = new ServiceContainer();
+        $diContainer->registerSingleton(CsrfConfig::class, CsrfConfig::class);
         $app = new Application(
             dirname(__DIR__, 2),
             'routes/web.php',
@@ -217,11 +217,9 @@ final class ApplicationTest extends TestCase
         $routeMiddleware1->index = 4;
         $routeMiddleware2 = new SingleMiddleware();
         $routeMiddleware2->index = 5;
-        $app = new Application(
-            dirname(__DIR__, 2),
-            'routes/web.php',
-            new ServiceContainer(),
-        )
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container)
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
             ->addRouteMiddleware($routeMiddleware1)
