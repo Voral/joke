@@ -46,7 +46,6 @@ final class ProviderManagerTest extends TestCase
 
         $this->container
             ->method('has')
-            ->with('SomeService')
             ->willReturn(true);
 
         $manager = ProviderManagerBuilder::build($this->container, [$dependencyClass, $simpleClass], []);
@@ -65,7 +64,6 @@ final class ProviderManagerTest extends TestCase
 
         $this->container
             ->method('has')
-            ->with('SomeService')
             ->willReturn(true);
 
         $manager = ProviderManagerBuilder::build($this->container, [$dependencyClass, $simpleClass], []);
@@ -157,7 +155,6 @@ final class ProviderManagerTest extends TestCase
 
         $this->container
             ->method('has')
-            ->with('NonExistentService')
             ->willReturnCallback(static function ($service) {
                 static $result = 0;
                 ++$result;

@@ -213,7 +213,6 @@ final class ParameterResolverTest extends TestCase
         $configManager = self::createStub(ConfigManager::class);
         $configManager
             ->method('get')
-            ->with(SingleConfig::class)
             ->willThrowException(new ConfigException('Test message'));
         $serviceContainer->registerSingleton(ConfigManager::class, $configManager);
 

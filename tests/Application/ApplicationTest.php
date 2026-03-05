@@ -93,11 +93,7 @@ final class ApplicationTest extends TestCase
     public function testExecuteDefaultHtml(): void
     {
         $di = new ServiceContainer();
-        $app = new Application(
-            dirname(__DIR__, 2),
-            'routes/web.php',
-            $di,
-        );
+        $app = new Application(dirname(__DIR__, 2), '', $di);
         ob_start();
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/']);
         $app->handle($request);
