@@ -53,13 +53,13 @@ class Route implements RouteInterface
      *
      * Лениво компилируется при первом обращении.
      */
-    public ?string $compiledPattern = null {
+    public private(set) ?string $compiledPattern = null {
         get => $this->compiledPattern ??= $this->compilePattern();
     }
     /**
      * HTTP-метод, который обрабатывает маршрут.
      */
-    public HttpMethod $method {
+    public private(set) HttpMethod $method {
         get => $this->method;
     }
 

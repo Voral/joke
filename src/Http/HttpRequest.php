@@ -21,7 +21,7 @@ class HttpRequest extends Request
     /**
      * Данные GET-параметров запроса.
      */
-    public PropsCollection $get {
+    public private(set) PropsCollection $get {
         get {
             return $this->get;
         }
@@ -29,7 +29,7 @@ class HttpRequest extends Request
     /**
      * Данные POST-параметров запроса.
      */
-    public PropsCollection $post {
+    public private(set) PropsCollection $post {
         get {
             return $this->post;
         }
@@ -37,7 +37,7 @@ class HttpRequest extends Request
     /**
      * Данные cookie запроса.
      */
-    public PropsCollection $cookies {
+    public private(set) PropsCollection $cookies {
         get {
             return $this->cookies;
         }
@@ -45,7 +45,7 @@ class HttpRequest extends Request
     /**
      * Информация о загруженных файлах.
      */
-    public PropsCollection $files {
+    public private(set) PropsCollection $files {
         get {
             return $this->files;
         }
@@ -53,7 +53,7 @@ class HttpRequest extends Request
     /**
      * Серверные переменные (аналог $_SERVER).
      */
-    public ServerCollection $server {
+    public private(set) ServerCollection $server {
         get {
             return $this->server;
         }
@@ -61,15 +61,15 @@ class HttpRequest extends Request
     /**
      * Произвольные свойства, привязанные к запросу (например, параметры маршрута).
      */
-    public PropsCollection $props {
+    public private(set) ?PropsCollection $props {
         get {
-            return $this->props;
+            return $this->props ??= new PropsCollection([]);
         }
     }
     /**
      * Хранилище данных сессии.
      */
-    public SessionCollection $session {
+    public private(set) SessionCollection $session {
         get {
             return $this->session;
         }
@@ -79,7 +79,7 @@ class HttpRequest extends Request
      *
      * Лениво инициализируется из серверных переменных при первом обращении.
      */
-    public ?PropsCollection $headers = null {
+    public private(set) ?PropsCollection $headers = null {
         get {
             if (null === $this->headers) {
                 $this->headers = new PropsCollection($this->server->getHeaders());
@@ -94,7 +94,7 @@ class HttpRequest extends Request
      * Лениво определяется из SERVER['REQUEST_METHOD'] и преобразуется в HttpMethod enum.
      * Выбрасывает исключение при неизвестном методе.
      */
-    public ?HttpMethod $method = null {
+    public private(set) ?HttpMethod $method = null {
         get => $this->method ??= $this->parseMethod();
     }
 

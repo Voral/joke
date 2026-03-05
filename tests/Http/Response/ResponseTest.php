@@ -38,7 +38,7 @@ final class ResponseTest extends TestCase
     public function testSetStatus(): void
     {
         $response = new HtmlResponse();
-        $response->status = ResponseStatus::NOT_FOUND;
+        $response->setStatus(ResponseStatus::NOT_FOUND);
         self::assertSame(ResponseStatus::NOT_FOUND, $response->status);
     }
 

@@ -49,7 +49,7 @@ class Environment
      */
     private array $vars = [];
 
-    public string $name {
+    public private(set) string $name {
         get => $this->name;
     }
 

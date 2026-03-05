@@ -20,7 +20,7 @@ abstract class Response
      *
      * По умолчанию: OK (200).
      */
-    public ResponseStatus $status {
+    public private(set) ResponseStatus $status {
         get => $this->status ??= ResponseStatus::OK;
     }
     /**
@@ -28,7 +28,7 @@ abstract class Response
      *
      * Лениво инициализируется при первом обращении.
      */
-    public ?HeadersCollection $headers = null {
+    public private(set) ?HeadersCollection $headers = null {
         get {
             return $this->headers ??= new HeadersCollection([]);
         }
