@@ -59,10 +59,10 @@ composer run dev
     - [ ] Авторизация
     - [ ] Валидация данных
     - [x] Обработка ошибок
-    - [ ] Логирование
+    - [x] Логирование
     - [ ] Создание построителя SQL запросов
     - [ ] Миграции
-    - [ ] Настраиваемое окружение через .env файл
+    - [x] Настраиваемое окружение через .env файл
 - [ ] **Создание шаблонизатора**
     - [ ] Создание базового шаблонизатора HTML
     - [ ] Рендер Markdown файлов для быстрого создания документационных сайтов из .md файлов.
@@ -122,10 +122,10 @@ Your application will be available at: http://localhost:8000
     - [ ] Authentication
     - [ ] Data validation
     - [x] Error handling
-    - [ ] Logging
+    - [x] Logging
     - [ ] SQL query builder
     - [ ] Database migrations
-    - [ ] Environment configuration via `.env` file
+    - [x] Environment configuration via `.env` file
 
 - [ ] **Template Engine**
     - [ ] Basic HTML template engine
