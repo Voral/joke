@@ -8,6 +8,3 @@ use Vasoft\Joke\Config\Environment;
 
 return new ApplicationConfig()
     ->setFileRoues('routes/web.php');
-
-
-return static fn(): ApplicationConfig => new ApplicationConfig()->setFileRoues('routes/web.php');
