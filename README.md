@@ -2,6 +2,14 @@
 
 [EN](#joke--a-micro-framework-for-php)
 
+---
+
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Voral/joke/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Voral/joke/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/Voral/joke/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Voral/joke/?branch=master) 
+![PHP Tests](https://github.com/Voral/joke/actions/workflows/php.yml/badge.svg)
+
+---
+
 Joke — это учебный микрофреймворк с ручной маршрутизацией и встроенным DI-контейнером. Он разрабатывается в рамках
 образовательного челленджа и не претендует на конкуренцию с промышленными решениями, такими как Laravel или Symfony.
 
