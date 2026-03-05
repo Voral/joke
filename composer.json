@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "dev": "php -S localhost:8000 -t public/",
-    "test": "php vendor/bin/phpunit --display-warnings",
+    "test": "php vendor/bin/phpunit --display-warnings --display-all-issues",
     "vi:major": "php ./vendor/bin/vs-version-increment major",
     "vi:minor": "php ./vendor/bin/vs-version-increment minor",
     "vi:patch": "php ./vendor/bin/vs-version-increment patch",
