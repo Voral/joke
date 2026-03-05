@@ -318,8 +318,6 @@ class Application
                     ? $middleware
                     : $this->resolveMiddleware($middleware);
                 if (null === $instance) {
-                    assert(is_string($middleware));
-
                     throw new WrongMiddlewareException($middleware);
                 }
 
