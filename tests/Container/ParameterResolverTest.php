@@ -18,7 +18,6 @@ use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Support\Normalizers\Path;
-use Vasoft\Joke\Tests\Fixtures\Config\SingleConfig;
 use Vasoft\Joke\Tests\Fixtures\FakeExample;
 use Vasoft\Joke\Tests\Fixtures\Service\SingleService;
 

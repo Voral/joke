@@ -8,6 +8,7 @@ use Vasoft\Joke\Config\AbstractConfig;
 use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
+use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Middleware\CsrfMiddleware;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
@@ -56,13 +57,16 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
 
     public static function provideConfigs(): array
     {
-        return [ApplicationConfig::class];
+        return [ApplicationConfig::class, CookieConfig::class];
     }
 
     public static function buildConfig(string $configClass, ServiceContainer $container): AbstractConfig
     {
         if (ApplicationConfig::class === $configClass) {
             return new ApplicationConfig()->setFileRoues(self::$legacyPathRouteFile);
+        }
+        if (CookieConfig::class === $configClass) {
+            return new CookieConfig();
         }
 
         throw new UnknownConfigException($configClass);

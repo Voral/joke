@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Http\Response;
 
 use Vasoft\Joke\Application\ApplicationConfig;
+use Vasoft\Joke\Container\ServiceContainer;
 
 /**
  * Фабрика-билдер для создания объектов HTTP-ответов.
@@ -36,10 +37,13 @@ class ResponseBuilder
     /**
      * Создает экземпляр билдера и инициализирует настройки из конфигурации приложения.
      *
-     * @param ApplicationConfig $appConfig конфигурация приложения для получения настроек ответа по умолчанию
+     * @param ApplicationConfig $appConfig        конфигурация приложения для получения настроек ответа по умолчанию
+     * @param ServiceContainer  $serviceContainer Di контейнер
      */
-    public function __construct(ApplicationConfig $appConfig)
-    {
+    public function __construct(
+        ApplicationConfig $appConfig,
+        private readonly ServiceContainer $serviceContainer,
+    ) {
         $this->defaultResponseClass = $appConfig->getResponseClass();
     }
 
@@ -82,12 +86,13 @@ class ResponseBuilder
         if ($raw instanceof Response) {
             return $raw;
         }
-        if ('' === $this->defaultResponseClass) {
-            return $this->makeAuto($raw);
-        }
+        $class = '' !== $this->defaultResponseClass ? $this->defaultResponseClass : $this->determineClass($raw);
+
+        $resolver = $this->serviceContainer->getParameterResolver();
+        $args = $resolver->resolveForConstructor($class);
 
         /** @var Response $response */
-        $response = new $this->defaultResponseClass();
+        $response = new $class(...$args);
         $response->setBody($raw);
 
         return $response;
@@ -108,7 +113,13 @@ class ResponseBuilder
      */
     public function makeDefault(): Response
     {
-        return '' === $this->defaultResponseClass ? new HtmlResponse() : new $this->defaultResponseClass();
+        $class = '' !== $this->defaultResponseClass ? $this->defaultResponseClass : HtmlResponse::class;
+
+        $resolver = $this->serviceContainer->getParameterResolver();
+        $args = $resolver->resolveForConstructor($class);
+
+
+        return new $class(...$args);
     }
 
     /**
@@ -122,14 +133,10 @@ class ResponseBuilder
      *
      * @param mixed $raw входные данные для анализа
      *
-     * @return Response экземпляр ответа, соответствующий типу данных
+     * @return class-string класс ответа, соответствующий типу данных
      */
-    private function makeAuto(mixed $raw): Response
+    private function determineClass(mixed $raw): string
     {
-        if (is_array($raw)) {
-            return new JsonResponse()->setBody($raw);
-        }
-
-        return new HtmlResponse()->setBody($raw);
+        return is_array($raw) ? JsonResponse::class : HtmlResponse::class;
     }
 }

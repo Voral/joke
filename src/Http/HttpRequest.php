@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Http;
 
 use Vasoft\Joke\Collections\PropsCollection;
 use Vasoft\Joke\Exceptions\JokeException;
+use Vasoft\Joke\Http\Cookies\InputCookieCollection;
 use Vasoft\Joke\Session\SessionCollection;
 use Vasoft\Joke\Http\Exceptions\WrongRequestMethodException;
 use Vasoft\Joke\Foundation\Request;
@@ -38,7 +39,7 @@ class HttpRequest extends Request
     /**
      * Данные cookie запроса.
      */
-    public private(set) PropsCollection $cookies {
+    public private(set) InputCookieCollection $cookies {
         get {
             return $this->cookies;
         }
@@ -139,7 +140,7 @@ class HttpRequest extends Request
     ) {
         $this->get = new PropsCollection($get);
         $this->post = new PropsCollection($post);
-        $this->cookies = new PropsCollection($cookies);
+        $this->cookies = new InputCookieCollection($cookies);
         $this->files = new PropsCollection($files);
         $this->server = new ServerCollection($server);
         $this->props = new PropsCollection([]);

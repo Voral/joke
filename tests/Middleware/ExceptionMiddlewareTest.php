@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Application\ApplicationConfig;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
+use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\JsonResponse;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
@@ -31,7 +32,11 @@ final class ExceptionMiddlewareTest extends TestCase
         self::$container = new ServiceContainer();
         self::$container->registerSingleton(LoggerInterface::class, NullLogger::class);
         self::$container->registerAlias('logger', LoggerInterface::class);
-        self::$container->registerSingleton(ResponseBuilder::class, new ResponseBuilder(new ApplicationConfig()));
+        self::$container->registerSingleton(CookieConfig::class, CookieConfig::class);
+        self::$container->registerSingleton(
+            ResponseBuilder::class,
+            new ResponseBuilder(new ApplicationConfig(), self::$container),
+        );
     }
 
     public function testHandleSuccess(): void
@@ -61,7 +66,7 @@ final class ExceptionMiddlewareTest extends TestCase
         $container = new ServiceContainer();
         $container->registerSingleton(LoggerInterface::class, NullLogger::class);
         $container->registerAlias('logger', LoggerInterface::class);
-        $container->registerSingleton(ResponseBuilder::class, new ResponseBuilder($appConfig));
+        $container->registerSingleton(ResponseBuilder::class, new ResponseBuilder($appConfig, $container));
 
         $foo = static function (): void {
             throw new \Exception('Some exception');
