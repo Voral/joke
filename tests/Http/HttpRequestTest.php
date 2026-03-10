@@ -116,7 +116,6 @@ final class HttpRequestTest extends TestCase
     {
         $request = new HttpRequest(
             server: ['REQUEST_URI' => 'some/uri', 'CONTENT_TYPE' => 'application/x-www-form-urlencoded'],
-            rawBody: 'name=Alex&age=30',
         );
         self::assertFalse($request->isSecure());
     }

@@ -135,7 +135,7 @@ class HttpRequest extends Request
         array $cookies = [],
         array $files = [],
         array $server = [],
-        protected ?string $rawBody = null,
+        protected string $rawBody = '',
     ) {
         $this->get = new PropsCollection($get);
         $this->post = new PropsCollection($post);
@@ -227,7 +227,7 @@ class HttpRequest extends Request
      */
     public static function fromGlobals(): self
     {
-        return new self($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input') ?: null);
+        return new self($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input') ?: '');
     }
 
     /**
