@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Http;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\Exceptions\WrongRequestMethodException;
 use Vasoft\Joke\Http\HttpMethod;
@@ -109,5 +110,40 @@ final class HttpRequestTest extends TestCase
             rawBody: 'name=Alex&age=30',
         );
         self::assertSame(['name' => 'Alex', 'age' => '30'], $request->post->getAll());
+    }
+
+    public function testNotHttps(): void
+    {
+        $request = new HttpRequest(
+            server: ['REQUEST_URI' => 'some/uri', 'CONTENT_TYPE' => 'application/x-www-form-urlencoded'],
+            rawBody: 'name=Alex&age=30',
+        );
+        self::assertFalse($request->isSecure());
+    }
+
+    #[DataProvider('provideIsHttpsCases')]
+    public function testIsHttps(string $value, bool $expect): void
+    {
+        $request = new HttpRequest(
+            server: ['REQUEST_URI' => 'some/uri', 'HTTPS' => $value],
+        );
+        self::assertSame($expect, $request->isSecure());
+    }
+
+    public static function provideIsHttpsCases(): iterable
+    {
+        yield ['', false];
+        yield ['test', false];
+        yield ['on', true];
+        yield ['1', true];
+        yield ['10', false];
+    }
+
+    public function testIsHttpsByPort(): void
+    {
+        $request = new HttpRequest(
+            server: ['REQUEST_URI' => 'some/uri', 'SERVER_PORT' => 443],
+        );
+        self::assertTrue($request->isSecure());
     }
 }

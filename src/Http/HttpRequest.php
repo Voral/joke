@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Http;
 
 use Vasoft\Joke\Collections\PropsCollection;
+use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Session\SessionCollection;
 use Vasoft\Joke\Http\Exceptions\WrongRequestMethodException;
 use Vasoft\Joke\Foundation\Request;
@@ -227,5 +228,35 @@ class HttpRequest extends Request
     public static function fromGlobals(): self
     {
         return new self($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER, file_get_contents('php://input') ?: null);
+    }
+
+    /**
+     * Определяет, было ли соединение установлено через HTTPS.
+     *
+     * Проверяет серверную переменную {@see $_SERVER['HTTPS']} (значения '1' или 'on')
+     * и номер порта {@see $_SERVER['SERVER_PORT']} (значение 443).
+     *
+     * Заголовки прокси (например, X-Forwarded-Proto) намеренно игнорируются,
+     * пока не будет реализован механизм доверенных прокси (Trusted Proxies).
+     *
+     * @return bool true, если соединение защищено TLS/SSL, иначе False
+     *
+     * @throws JokeException Если невалидные значения переменных в $_SERVER
+     *
+     * @todo Реализовать поддержку доверенных прокси для корректной работы за балансировщиками.
+     */
+    public function isSecure(): bool
+    {
+        $https = $this->server->getString('HTTPS', '');
+        if (in_array(strtolower($https), ['on', '1'], true)) {
+            return true;
+        }
+
+        $port = $this->server->getInt('SERVER_PORT', 0);
+        if (443 === $port) {
+            return true;
+        }
+
+        return false;
     }
 }
