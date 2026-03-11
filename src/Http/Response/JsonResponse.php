@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Http\Response;
 
+use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\Response\Response as NewResponse;
 
 /**
@@ -27,9 +28,9 @@ class JsonResponse extends NewResponse
      *
      * Устанавливает Content-Type в 'application/json'.
      */
-    public function __construct()
+    public function __construct(CookieConfig $cookieConfig = new CookieConfig())
     {
-        parent::__construct();
+        parent::__construct($cookieConfig);
         $this->headers->setContentType('application/json');
     }
 

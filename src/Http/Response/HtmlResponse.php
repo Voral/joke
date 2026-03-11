@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Http\Response;
 
-use Vasoft\Joke\Http\Cookies\CookieCollection;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\Response\Response as NewResponse;
 
@@ -16,7 +15,6 @@ use Vasoft\Joke\Http\Response\Response as NewResponse;
  */
 class HtmlResponse extends NewResponse
 {
-    public private(set) CookieCollection $cookies;
     /**
      * Тело HTML-ответа.
      */
@@ -30,9 +28,7 @@ class HtmlResponse extends NewResponse
     public function __construct(
         CookieConfig $cookieConfig = new CookieConfig(),
     ) {
-        parent::__construct();
-        $cookieConfig->freeze();
-        $this->cookies = new CookieCollection($cookieConfig);
+        parent::__construct($cookieConfig);
         $this->headers->setContentType('text/html');
     }
 
@@ -68,16 +64,5 @@ class HtmlResponse extends NewResponse
     public function getBodyAsString(): string
     {
         return $this->body;
-    }
-
-    /**
-     * Добавляет куки к ответу.
-     */
-    protected function sendHeaders(): void
-    {
-        parent::sendHeaders();
-        foreach ($this->cookies as $cookie) {
-            header('Set-Cookie: ' . $cookie->headerValue());
-        }
     }
 }

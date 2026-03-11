@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Http\Response;
 
 use Vasoft\Joke\Collections\HeadersCollection;
+use Vasoft\Joke\Http\Cookies\CookieCollection;
+use Vasoft\Joke\Http\Cookies\CookieConfig;
 
 /**
  * Абстрактный базовый класс HTTP-ответа.
@@ -15,6 +17,8 @@ use Vasoft\Joke\Collections\HeadersCollection;
  */
 abstract class Response
 {
+    /** Коллекция кук ответа */
+    public private(set) CookieCollection $cookies;
     /**
      * HTTP-статус ответа.
      *
@@ -34,7 +38,11 @@ abstract class Response
         }
     }
 
-    public function __construct() {}
+    public function __construct(CookieConfig $cookieConfig = new CookieConfig())
+    {
+        $cookieConfig->freeze();
+        $this->cookies = new CookieCollection($cookieConfig);
+    }
 
     /**
      * Устанавливает тело ответа.
@@ -87,6 +95,9 @@ abstract class Response
         $headers = $this->headers->getAll();
         foreach ($headers as $name => $value) {
             header(sprintf('%s: %s', $name, $value));
+        }
+        foreach ($this->cookies as $cookie) {
+            header('Set-Cookie: ' . $cookie->headerValue());
         }
         header('HTTP/1.1 ' . $this->status->value . ' ' . $this->status->http());
     }
