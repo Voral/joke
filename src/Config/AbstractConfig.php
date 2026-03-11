@@ -23,9 +23,11 @@ abstract class AbstractConfig
     /**
      * Замораживает конфигурацию, запрещая дальнейшие изменения.
      */
-    final public function freeze(): void
+    public function freeze(): static
     {
         $this->frozen = true;
+
+        return $this;
     }
 
     /**
