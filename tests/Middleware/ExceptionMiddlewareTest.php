@@ -66,6 +66,7 @@ final class ExceptionMiddlewareTest extends TestCase
         $container = new ServiceContainer();
         $container->registerSingleton(LoggerInterface::class, NullLogger::class);
         $container->registerAlias('logger', LoggerInterface::class);
+        $container->registerSingleton(CookieConfig::class, CookieConfig::class);
         $container->registerSingleton(ResponseBuilder::class, new ResponseBuilder($appConfig, $container));
 
         $foo = static function (): void {
