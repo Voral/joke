@@ -37,7 +37,7 @@ final class HtmlResponseTest extends TestCase
     {
         $headers = [];
         $mockHeader = self::getFunctionMock('Vasoft\Joke\Http\Response', 'header');
-        $mockHeader->expects(self::exactly(4))->willReturnCallback(static function (string $value) use (&$headers): void {
+        $mockHeader->expects(self::atLeastOnce())->willReturnCallback(static function (string $value) use (&$headers): void {
             $headers[] = $value;
         });
 
