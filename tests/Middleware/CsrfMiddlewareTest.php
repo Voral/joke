@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Tests\Middleware;
 
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Vasoft\Joke\Application\ApplicationConfig;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\Cookies\SameSiteOption;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
-use Vasoft\Joke\Middleware\Config\CsrfConfig;
-use Vasoft\Joke\Middleware\Config\Enums\CsrfTransportMode;
+use Vasoft\Joke\Http\Csrf\CsrfConfig;
+use Vasoft\Joke\Http\Csrf\CsrfTransportMode;
 use Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException;
-use Vasoft\Joke\Http\Middleware\CsrfMiddleware;
+use Vasoft\Joke\Http\Csrf\CsrfMiddleware;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\ResponseStatus;
@@ -21,7 +22,7 @@ use Vasoft\Joke\Http\Response\ResponseStatus;
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Http\Middleware\CsrfMiddleware
+ * @coversDefaultClass \Vasoft\Joke\Http\Csrf\CsrfMiddleware
  */
 final class CsrfMiddlewareTest extends TestCase
 {
@@ -86,6 +87,7 @@ final class CsrfMiddlewareTest extends TestCase
         self::assertSame($token, $response->headers->get('X-Csrf-Token', ''));
     }
 
+    #[RunInSeparateProcess]
     public function testInjectTokenCookieDefault(): void
     {
         $lifetime = 31536000;
@@ -103,7 +105,8 @@ final class CsrfMiddlewareTest extends TestCase
             },
         );
 
-        $config = new CsrfConfig()->setTransportMode(CsrfTransportMode::COOKIE);
+        $config = new CsrfConfig()
+            ->setTransportMode(CsrfTransportMode::COOKIE);
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/csrf']);
         $middleware = new CsrfMiddleware(new ResponseBuilder(new ApplicationConfig(), self::$container), $config);
         $response = $middleware->handle($request, static fn() => null);
@@ -114,6 +117,7 @@ final class CsrfMiddlewareTest extends TestCase
         self::assertTrue(in_array($expected, $headers, true), 'The Set-Cookie header for token cookie is missing');
     }
 
+    #[RunInSeparateProcess]
     public function testInjectTokenCookieCustom(): void
     {
         $lifetime = 100;

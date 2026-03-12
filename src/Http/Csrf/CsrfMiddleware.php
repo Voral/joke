@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vasoft\Joke\Http\Middleware;
+namespace Vasoft\Joke\Http\Csrf;
 
 use Random\RandomException;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
@@ -10,8 +10,8 @@ use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Http\Cookies\Exceptions\CookieException;
 use Vasoft\Joke\Http\Response\Response;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
-use Vasoft\Joke\Middleware\Config\CsrfConfig;
-use Vasoft\Joke\Middleware\Config\Enums\CsrfTransportMode;
+use Vasoft\Joke\Http\Csrf\CsrfConfig;
+use Vasoft\Joke\Http\Csrf\CsrfTransportMode;
 use Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException;
 use Vasoft\Joke\Http\HttpMethod;
 use Vasoft\Joke\Http\HttpRequest;

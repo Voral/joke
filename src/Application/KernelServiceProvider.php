@@ -10,7 +10,7 @@ use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
-use Vasoft\Joke\Http\Middleware\CsrfMiddleware;
+use Vasoft\Joke\Http\Csrf\CsrfMiddleware;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
 use Vasoft\Joke\Middleware\MiddlewareCollection;
 use Vasoft\Joke\Http\Middleware\SessionMiddleware;

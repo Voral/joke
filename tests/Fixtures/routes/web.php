@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Vasoft\Joke\Http\Middleware\CsrfMiddleware;
+use Vasoft\Joke\Http\Csrf\CsrfMiddleware;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\ResponseStatus;
 use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;

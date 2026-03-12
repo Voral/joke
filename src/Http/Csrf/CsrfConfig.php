@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vasoft\Joke\Middleware\Config;
+namespace Vasoft\Joke\Http\Csrf;
 
 use Vasoft\Joke\Config\AbstractConfig;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
-use Vasoft\Joke\Middleware\Config\Enums\CsrfTransportMode;
+use Vasoft\Joke\Http\Csrf\CsrfTransportMode;
 
 /**
  * Конфигурация механизма CSRF токена.

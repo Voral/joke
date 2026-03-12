@@ -10,7 +10,7 @@ use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Logging\Logger;
 use Vasoft\Joke\Logging\LogLevel;
-use Vasoft\Joke\Middleware\Config\CsrfConfig;
+use Vasoft\Joke\Http\Csrf\CsrfConfig;
 use Vasoft\Joke\Middleware\Exceptions\MiddlewareException;
 use Vasoft\Joke\Tests\Fixtures\Logger\FakeLogger;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;

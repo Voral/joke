@@ -7,14 +7,14 @@ namespace Vasoft\Joke\Tests\Middleware\Config;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
-use Vasoft\Joke\Middleware\Config\CsrfConfig;
+use Vasoft\Joke\Http\Csrf\CsrfConfig;
 use PHPUnit\Framework\TestCase;
-use Vasoft\Joke\Middleware\Config\Enums\CsrfTransportMode;
+use Vasoft\Joke\Http\Csrf\CsrfTransportMode;
 
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Middleware\Config\CsrfConfig
+ * @coversDefaultClass \Vasoft\Joke\Http\Csrf\CsrfConfig
  */
 final class CsrfConfigTest extends TestCase
 {

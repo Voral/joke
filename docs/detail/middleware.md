@@ -61,7 +61,7 @@ $router->get('/informer', Informer::class)
 
 ## CsrfMiddleware
 
-- Класс: `Vasoft\Joke\Http\Middleware\CsrfMiddleware`
+- Класс: `Vasoft\Joke\Http\Csrf\CsrfMiddleware`
 - Уровень: маршрутизатора
 - Имя: StdMiddleware::CSRF->value
 - Применяется к: группе StdGroup::WEB->value (т.е. всем маршрутам из web.php)

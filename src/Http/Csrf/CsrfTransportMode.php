@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vasoft\Joke\Middleware\Config\Enums;
+namespace Vasoft\Joke\Http\Csrf;
 
 /**
  * Способ доставки CSRF токена.
