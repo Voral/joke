@@ -16,7 +16,7 @@ Joke поставляется с набором встроенных middleware,
 
 ## SessionMiddleware
 
-- Класс: Vasoft\Joke\Middleware\SessionMiddleware
+- Класс: `Vasoft\Joke\Http\Middleware\SessionMiddleware`
 - Уровень: маршрутизатора
 - Имя: StdMiddleware::SESSION->value
 - Режим: блокирующий (сессия остаётся открытой на всё время обработки запроса)
@@ -28,7 +28,7 @@ Joke поставляется с набором встроенных middleware,
 
 ## ReadonlySessionMiddleware
 
-- Класс: Vasoft\Joke\Middleware\ReadonlySessionMiddleware
+- Класс: `Vasoft\Joke\Http\Middleware\ReadonlySessionMiddleware`
 - Режим: неблокирующий (данные считываются, сессия немедленно закрывается)
 
 Предназначен для сценариев, где:
@@ -42,7 +42,7 @@ Joke поставляется с набором встроенных middleware,
 
 ```php
 use Vasoft\Joke\Middleware\StdMiddleware;
-use Vasoft\Joke\Middleware\ReadonlySessionMiddleware;
+use Vasoft\Joke\Http\Middleware\ReadonlySessionMiddleware;
 
 // В bootstrap/app.php 
 $app->addRouteMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSION->value);
@@ -52,7 +52,7 @@ $app->addRouteMiddleware(ReadonlySessionMiddleware::class, StdMiddleware::SESSIO
 
 ```php
 use Vasoft\Joke\Middleware\StdMiddleware;
-use Vasoft\Joke\Middleware\ReadonlySessionMiddleware;
+use Vasoft\Joke\Http\Middleware\ReadonlySessionMiddleware;
 
 // В routes/web.php 
 $router->get('/informer', Informer::class)
@@ -61,7 +61,7 @@ $router->get('/informer', Informer::class)
 
 ## CsrfMiddleware
 
-- Класс: Vasoft\Joke\Middleware\CsrfMiddleware
+- Класс: `Vasoft\Joke\Http\Middleware\CsrfMiddleware`
 - Уровень: маршрутизатора
 - Имя: StdMiddleware::CSRF->value
 - Применяется к: группе StdGroup::WEB->value (т.е. всем маршрутам из web.php)

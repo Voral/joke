@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Tests\Middleware;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
-use Vasoft\Joke\Middleware\SessionMiddleware;
+use Vasoft\Joke\Http\Middleware\SessionMiddleware;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\HttpRequest;
 
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Middleware\SessionMiddleware
+ * @coversDefaultClass \Vasoft\Joke\Http\Middleware\SessionMiddleware
  */
 final class SessionMiddlewareTest extends TestCase
 {

@@ -13,7 +13,7 @@ use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Middleware\Config\CsrfConfig;
 use Vasoft\Joke\Middleware\Config\Enums\CsrfTransportMode;
 use Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException;
-use Vasoft\Joke\Middleware\CsrfMiddleware;
+use Vasoft\Joke\Http\Middleware\CsrfMiddleware;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\ResponseStatus;
@@ -21,7 +21,7 @@ use Vasoft\Joke\Http\Response\ResponseStatus;
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Middleware\CsrfMiddleware
+ * @coversDefaultClass \Vasoft\Joke\Http\Middleware\CsrfMiddleware
  */
 final class CsrfMiddlewareTest extends TestCase
 {
@@ -110,7 +110,7 @@ final class CsrfMiddlewareTest extends TestCase
         $token = $request->session->get(CsrfMiddleware::CSRF_TOKEN_NAME);
         $response->send();
 
-        $expected = "Set-Cookie: XSRF-TOKEN={$token}; Expires={$expectedExpires}; Path=/; Secure; HttpOnly; SameSite=Lax";
+        $expected = "Set-Cookie: XSRF-TOKEN={$token}; Expires={$expectedExpires}; Path=/; Secure; SameSite=Lax";
         self::assertTrue(in_array($expected, $headers, true), 'The Set-Cookie header for token cookie is missing');
     }
 

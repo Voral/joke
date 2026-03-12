@@ -6,13 +6,13 @@ namespace Vasoft\Joke\Tests\Middleware;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
-use Vasoft\Joke\Middleware\ReadonlySessionMiddleware;
+use Vasoft\Joke\Http\Middleware\ReadonlySessionMiddleware;
 use Vasoft\Joke\Http\HttpRequest;
 
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Middleware\ReadonlySessionMiddleware
+ * @coversDefaultClass \Vasoft\Joke\Http\Middleware\ReadonlySessionMiddleware
  */
 final class ReadonlySessionMiddlewareTest extends TestCase
 {
