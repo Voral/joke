@@ -29,6 +29,9 @@
         </include>
         <exclude>
             <file>src/DeprecatedClass.php</file>
+            <file>src/Middleware/CsrfMiddleware.php</file>
+            <file>src/Middleware/SessionMiddleware.php</file>
+            <file>src/Middleware/ReadonlySessionMiddleware.php</file>
             <directory>src/Core</directory>
             <directory>src/Contract/Core</directory>
             <directory>src/Types</directory>

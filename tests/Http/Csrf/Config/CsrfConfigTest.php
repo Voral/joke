@@ -1,8 +1,7 @@
 <?php
 
 declare(strict_types=1);
-
-namespace Vasoft\Joke\Tests\Middleware\Config;
+namespace Vasoft\Joke\Tests\Http\Csrf\Config;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Vasoft\Joke\Config\Exceptions\ConfigException;

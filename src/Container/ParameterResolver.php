@@ -117,7 +117,7 @@ class ParameterResolver implements ResolverInterface
 
                 continue;
             }
-            if ($type && class_exists($type)) {
+            if ($type && (class_exists($type) || interface_exists($type))) {
                 $service = $this->serviceContainer->get($type);
                 if (null === $service) {
                     if (is_subclass_of($type, AbstractConfig::class)) {
@@ -127,7 +127,6 @@ class ParameterResolver implements ResolverInterface
                         try {
                             $service = $configManager->get($type);
                         } catch (ConfigException $e) {
-
                             throw new AutowiredException($name, $type, previous: $e);
                         }
                     } else {

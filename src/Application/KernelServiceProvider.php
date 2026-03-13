@@ -9,6 +9,8 @@ use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
+use Vasoft\Joke\Http\Csrf\CsrfConfig;
+use Vasoft\Joke\Http\Csrf\CsrfTokenManager;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Http\Csrf\CsrfMiddleware;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
@@ -32,6 +34,7 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
         $this->serviceContainer->registerSingleton('middleware.global', MiddlewareCollection::class);
         $this->serviceContainer->registerSingleton('middleware.route', MiddlewareCollection::class);
         $this->serviceContainer->registerSingleton(ResponseBuilder::class, ResponseBuilder::class);
+        $this->serviceContainer->registerSingleton(CsrfTokenManager::class, CsrfTokenManager::class);
     }
 
     public function boot(): void
@@ -57,18 +60,16 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
 
     public static function provideConfigs(): array
     {
-        return [ApplicationConfig::class, CookieConfig::class];
+        return [ApplicationConfig::class, CookieConfig::class, CsrfConfig::class];
     }
 
     public static function buildConfig(string $configClass, ServiceContainer $container): AbstractConfig
     {
-        if (ApplicationConfig::class === $configClass) {
-            return new ApplicationConfig()->setFileRoues(self::$legacyPathRouteFile);
-        }
-        if (CookieConfig::class === $configClass) {
-            return new CookieConfig();
-        }
-
-        throw new UnknownConfigException($configClass);
+        return match ($configClass) {
+            ApplicationConfig::class => new ApplicationConfig()->setFileRoues(self::$legacyPathRouteFile),
+            CookieConfig::class => new CookieConfig(),
+            CsrfConfig::class => new CsrfConfig(),
+            default => throw new UnknownConfigException($configClass),
+        };
     }
 }

@@ -10,94 +10,70 @@ use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Http\Cookies\Exceptions\CookieException;
 use Vasoft\Joke\Http\Response\Response;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
-use Vasoft\Joke\Http\Csrf\CsrfConfig;
-use Vasoft\Joke\Http\Csrf\CsrfTransportMode;
 use Vasoft\Joke\Middleware\Exceptions\CsrfMismatchException;
-use Vasoft\Joke\Http\HttpMethod;
 use Vasoft\Joke\Http\HttpRequest;
+use Vasoft\Joke\Middleware\Exceptions\MiddlewareException;
 
 /**
- * Обеспечивает защиту от межсайтовой подделки запроса (CSRF):
+ * Обеспечивает защиту от межсайтовой подделки запроса (CSRF).
  *
- * Генерирует токен, если его нет в сессии (csrf_token).
- * Для небезопасных методов (POST, PUT, DELETE и др.) проверяет наличие токена:
- * - в параметрах запроса: ?csrf_token=... или csrf_token=... (POST),
- * - в заголовке: X-Csrf-Token: ....
- * - в cookie: XSRF-TOKEN
- * При несоответствии выбрасывает CsrfMismatchException (HTTP 403).
+ * Делегирует всю логику работы с токенами классу {@see CsrfTokenManager}:
+ * - Валидация токена из запроса (метод validate())
+ * - Внедрение токена в ответ (метод attach())
  *
- * Токен генерируется автоматически. Вам нужно только передать его в форму или заголовок.
+ * Для небезопасных HTTP-методов (POST, PUT, DELETE и др.) проверяет совпадение
+ * клиентского токена с серверным. При несоответствии выбрасывает CsrfMismatchException.
+ *
+ * @see CsrfTokenManager Основная логика работы с CSRF-токенами
  */
 class CsrfMiddleware implements MiddlewareInterface
 {
+    /**
+     * @deprecated
+     * @see CsrfTokenManager::CSRF_TOKEN_NAME
+     */
     public const string CSRF_TOKEN_NAME = 'csrf_token';
+    /**
+     * @deprecated
+     * @see CsrfTokenManager::CSRF_TOKEN_HEADER
+     */
     public const string CSRF_TOKEN_HEADER = 'X-Csrf-Token';
+    /**
+     * @deprecated
+     * @see CsrfTokenManager::CSRF_TOKEN_COOKIE
+     */
     public const string CSRF_TOKEN_COOKIE = 'XSRF-TOKEN';
-    private const array SAFE_METHODS = [HttpMethod::GET, HttpMethod::HEAD];
 
+    /**
+     * @param ResponseBuilder   $responseBuilder Билдер ответа
+     * @param CsrfConfig        $config          Конфигурация CSRF. Не используется. В версии 2.* будет удален
+     * @param ?CsrfTokenManager $manager         Менеджер токенов CSRF. null - только для совместимости.
+     *                                           Параметр является обязательным. В версии 2.* Сигнатура изменится.
+     *
+     * @throws MiddlewareException
+     */
     public function __construct(
         private readonly ResponseBuilder $responseBuilder,
         private readonly CsrfConfig $config = new CsrfConfig(),
+        private readonly ?CsrfTokenManager $manager = null,
     ) {
-        $config->freeze();
+        if (null === $this->manager) {
+            throw new MiddlewareException('CsrfMiddleware requires a valid csrf token manager.');
+        }
     }
 
     /**
-     * @throws CsrfMismatchException
-     * @throws RandomException
-     * @throws JokeException
+     * @throws CsrfMismatchException Если токен клиента не совпадает с серверным
+     * @throws RandomException       Если не удается найти подходящий источник случайности
+     * @throws CookieException       При ошибках добавления CSRF-куки в ответ
+     * @throws JokeException         Если значение не может быть преобразовано в строку - фактически это не возможно
+     *                               при стандартном создании объекта запроса
      */
     public function handle(HttpRequest $request, callable $next): Response
     {
-        $token = $request->session->getString(self::CSRF_TOKEN_NAME, '');
-        if ('' === $token) {
-            $token = bin2hex(random_bytes(32));
-            $request->session->set(self::CSRF_TOKEN_NAME, $token);
-        }
-        if (!in_array($request->method, self::SAFE_METHODS, true)) {
-            $tokenFromRequest = trim(
-                $request->get->getString(self::CSRF_TOKEN_NAME, '')
-                    ?: $request->post->getString(self::CSRF_TOKEN_NAME, '')
-                    ?: $request->headers->getString(self::CSRF_TOKEN_HEADER, '')
-                        ?: $request->cookies->getString(self::CSRF_TOKEN_COOKIE, ''),
-            );
-
-            if ('' === $tokenFromRequest || !hash_equals($token, $tokenFromRequest)) {
-                throw new CsrfMismatchException();
-            }
-        }
-
-        return $this->injectToken($next(), $token);
-    }
-
-    /**
-     * Гарантирует, что ответ является объектом Response, и добавляет заголовок с токеном.
-     *
-     * @param mixed  $response Ответ от предыдущего обработчика (строка, массив, объект Response и т.д.)
-     * @param string $token    Актуальный CSRF-токен для внедрения
-     *
-     * @return Response Модифицированный объект ответа с заголовком X-Csrf-Token
-     *
-     * @throws CookieException
-     */
-    private function injectToken(mixed $response, string $token): Response
-    {
-        $preparedResponse = $this->responseBuilder->make($response);
-        if (CsrfTransportMode::HEADER === $this->config->transportMode) {
-            $preparedResponse->headers->set(self::CSRF_TOKEN_HEADER, $token);
-        } else {
-            $cookieConfig = $this->config->cookieConfig;
-            $preparedResponse->cookies->add(
-                self::CSRF_TOKEN_COOKIE,
-                $token,
-                $cookieConfig->lifetime,
-                $cookieConfig->path,
-                $cookieConfig->domain,
-                $cookieConfig->secure,
-                httpOnly: false,
-                sameSite: $cookieConfig->sameSite,
-            );
-        }
+        $this->manager->validate($request);
+        $preparedResponse = $this->responseBuilder->make($next());
+        $this->manager->attach($request, $preparedResponse);
 
         return $preparedResponse;
     }

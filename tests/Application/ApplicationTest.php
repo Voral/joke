@@ -8,6 +8,7 @@ use phpmock\phpunit\PHPMock;
 use Vasoft\Joke\Application\ApplicationConfig;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ParameterResolver;
+use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Logging\Logger;
 use Vasoft\Joke\Logging\LogLevel;
 use Vasoft\Joke\Http\Csrf\CsrfConfig;
@@ -109,6 +110,7 @@ final class ApplicationTest extends TestCase
     {
         $container = new ServiceContainer();
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $container->registerSingleton(LoggerInterface::class, Logger::class);
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container);
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/json/Alex']));
@@ -133,6 +135,7 @@ final class ApplicationTest extends TestCase
     {
         $container = new ServiceContainer();
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $container->registerSingleton(LoggerInterface::class, new FakeLogger());
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container);
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
@@ -165,6 +168,7 @@ final class ApplicationTest extends TestCase
         $middleware->index = 3;
         $container = new ServiceContainer();
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $container->registerSingleton(LoggerInterface::class, new FakeLogger());
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container)
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware);
@@ -219,6 +223,7 @@ final class ApplicationTest extends TestCase
         $routeMiddleware2->index = 5;
         $container = new ServiceContainer();
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+        $container->registerSingleton(LoggerInterface::class, new FakeLogger());
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container)
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
@@ -379,5 +384,30 @@ final class ApplicationTest extends TestCase
         self::expectException(MiddlewareException::class);
         self::expectExceptionMessage($expectMessage);
         new Application(self::$basePath, '', $container);
+    }
+
+    #[RunInSeparateProcess]
+    public function testInvalidCsrfException(): void
+    {
+        $header = self::getFunctionMock('Vasoft\Joke\Http\Response', 'header');
+
+        $statusHeaderExists = false;
+        $header->expects(self::atLeastOnce())->willReturnCallback(
+            static function ($header) use (&$statusHeaderExists): void {
+                if ('HTTP/1.1 403 Forbidden' === $header) {
+                    $statusHeaderExists = true;
+                }
+            },
+        );
+
+        $container = new ServiceContainer();
+        $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
+
+        $app = new Application(dirname(__DIR__, 2), '', $container);
+        ob_start();
+        $request = new HttpRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/queries']);
+        $app->handle($request);
+        ob_get_clean();
+        self::assertTrue($statusHeaderExists);
     }
 }
