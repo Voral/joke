@@ -273,7 +273,7 @@ class HttpRequest extends Request
         }
         $raw = $this->headers->getString('Origin', '');
         $this->cachedOrigin = '' !== $raw && filter_var($raw, FILTER_VALIDATE_URL) ? $raw : '';
-        $this->isOriginResolved = false;
+        $this->isOriginResolved = true;
 
         return $this->cachedOrigin;
     }

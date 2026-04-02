@@ -50,7 +50,9 @@
         "check": "Run all checks, including coding standards and static analysis."
     },
     "require": {
-        "php": "^8.4"
+        "php": "^8.4",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "require-dev": {
         "voral/version-increment": "^3.2",

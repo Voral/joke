@@ -65,6 +65,25 @@ final class ServerCollectionTest extends TestCase
         yield 'Ipv6 with port' => [['SERVER_NAME' => '[::1]:80'], '[::1]'];
     }
 
+    public function testGetPortServerPortInvalid(): void
+    {
+        $serverCollection = new ServerCollection([
+            'SERVER_PORT' => 'InvalidValue',
+            'HTTPS' => '1',
+        ]);
+        self::assertSame(443, $serverCollection->getPort());
+    }
+
+    public function testGetPortForwardedInvalid(): void
+    {
+        $serverCollection = new ServerCollection([
+            'HTTP_X_FORWARDED_PORT' => 'InvalidValue',
+            'HTTP_HOST' => 'te.com:4001',
+            'SERVER_PORT' => '4002',
+        ]);
+        self::assertSame(4001, $serverCollection->getPort());
+    }
+
     #[DataProvider('provideGetPortCases')]
     public function testGetPort(array $serverArray, int $host): void
     {

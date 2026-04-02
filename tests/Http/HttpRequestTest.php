@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Http;
 
+use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\Exceptions\WrongRequestMethodException;
 use Vasoft\Joke\Http\HttpMethod;
@@ -18,6 +20,8 @@ use Vasoft\Joke\Http\Response\ResponseStatus;
  */
 final class HttpRequestTest extends TestCase
 {
+    use PHPMock;
+
     public function testFromGlobals(): void
     {
         $_GET = ['getVariable' => 'getValue'];
@@ -158,5 +162,15 @@ final class HttpRequestTest extends TestCase
         yield 'success' => [['HTTP_ORIGIN' => 'https://example.com:8001/'], 'https://example.com:8001/'];
         yield 'wrong url' => [['HTTP_ORIGIN' => 'example.com'], ''];
         yield 'not CORS request' => [[], ''];
+    }
+
+    #[RunInSeparateProcess]
+    public function testGetOriginCached(): void
+    {
+        $filterVar = self::getFunctionMock('Vasoft\Joke\Http', 'filter_var');
+        $filterVar->expects(self::once())->willReturn(true);
+        $request = new HttpRequest(server: ['HTTP_ORIGIN' => 'https://example.com:8001/']);
+        $request->getOrigin();
+        self::assertSame('https://example.com:8001/', $request->getOrigin());
     }
 }

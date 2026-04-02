@@ -11,7 +11,9 @@ use Vasoft\Joke\Application\KernelServiceProvider;
 use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
+use Vasoft\Joke\Http\Cors\CorsConfig;
 use Vasoft\Joke\Http\Csrf\CsrfConfig;
+use Vasoft\Joke\Http\Response\Html\PageBuilderConfig;
 
 /**
  * @internal
@@ -39,5 +41,7 @@ final class KernelServiceProviderTest extends TestCase
         yield [ApplicationConfig::class];
         yield [CookieConfig::class];
         yield [CsrfConfig::class];
+        yield [PageBuilderConfig::class];
+        yield [CorsConfig::class];
     }
 }

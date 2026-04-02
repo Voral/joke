@@ -13,6 +13,7 @@ use Vasoft\Joke\Http\Cors\CorsConfig;
 use Vasoft\Joke\Http\Cors\CorsMiddleware;
 use Vasoft\Joke\Http\Csrf\CsrfConfig;
 use Vasoft\Joke\Http\Csrf\CsrfTokenManager;
+use Vasoft\Joke\Http\Response\Html\PageBuilderConfig;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Http\Csrf\CsrfMiddleware;
 use Vasoft\Joke\Middleware\ExceptionMiddleware;
@@ -64,7 +65,13 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
 
     public static function provideConfigs(): array
     {
-        return [ApplicationConfig::class, CookieConfig::class, CsrfConfig::class, CorsConfig::class];
+        return [
+            ApplicationConfig::class,
+            CookieConfig::class,
+            CsrfConfig::class,
+            CorsConfig::class,
+            PageBuilderConfig::class,
+        ];
     }
 
     public static function buildConfig(string $configClass, ServiceContainer $container): AbstractConfig
@@ -74,6 +81,7 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
             CookieConfig::class => new CookieConfig(),
             CsrfConfig::class => new CsrfConfig(),
             CorsConfig::class => new CorsConfig(),
+            PageBuilderConfig::class => new PageBuilderConfig(),
             default => throw new UnknownConfigException($configClass),
         };
     }
