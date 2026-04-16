@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Http;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Vasoft\Joke\Http\ServerCollection;
 use PHPUnit\Framework\TestCase;
 
@@ -45,5 +46,142 @@ final class ServerCollectionTest extends TestCase
         self::assertSame('', $headers['Content-Encoding'] ?? null);
         self::assertSame('', $headers['Content-Language'] ?? null);
         self::assertSame('', $headers['Content-MD5'] ?? null);
+    }
+
+    #[DataProvider('provideGetHostCases')]
+    public function testGetHost(array $serverArray, string $host): void
+    {
+        $serverCollection = new ServerCollection($serverArray);
+        self::assertSame($host, $serverCollection->getHost());
+    }
+
+    public static function provideGetHostCases(): iterable
+    {
+        yield 'empty data' => [[], ''];
+        yield 'HTTP HOST priority' => [['HTTP_HOST' => 'example.com', 'SERVER_NAME' => 'example2.com'], 'example.com'];
+        yield 'From Server Name' => [['SERVER_NAME' => 'example3.com'], 'example3.com'];
+        yield 'Remove port' => [['SERVER_NAME' => 'example3.com:80'], 'example3.com'];
+        yield 'Ipv6' => [['SERVER_NAME' => '[::1]'], '[::1]'];
+        yield 'Ipv6 with port' => [['SERVER_NAME' => '[::1]:80'], '[::1]'];
+    }
+
+    #[DataProvider('provideGetPortCases')]
+    public function testGetPort(array $serverArray, int $host): void
+    {
+        $serverCollection = new ServerCollection($serverArray);
+        self::assertSame($host, $serverCollection->getPort());
+    }
+
+    public static function provideGetPortCases(): iterable
+    {
+        yield 'empty data' => [[], 80];
+        yield 'Priority forward' => [
+            [
+                'HTTP_X_FORWARDED_PORT' => '4000',
+                'HTTP_HOST' => 'te.com:4001',
+                'SERVER_PORT' => '4002',
+                'HTTPS' => '1',
+            ],
+            4000,
+        ];
+        yield 'Priority forward less' => [
+            [
+                'HTTP_X_FORWARDED_PORT' => '-1',
+                'HTTP_HOST' => 'te.com:4001',
+                'SERVER_PORT' => '4002',
+                'HTTPS' => '1',
+            ],
+            4001,
+        ];
+        yield 'Priority forward more' => [
+            [
+                'HTTP_X_FORWARDED_PORT' => '4444444444444',
+                'HTTP_HOST' => 'te.com:4001',
+                'SERVER_PORT' => '4002',
+                'HTTPS' => '1',
+            ],
+            4001,
+        ];
+        yield 'Priority host' => [
+            [
+                'HTTP_HOST' => 'te.com:4001',
+                'SERVER_PORT' => '4002',
+                'HTTPS' => '1',
+            ],
+            4001,
+        ];
+        yield 'Priority host less' => [
+            [
+                'HTTP_HOST' => 'te.com:-1',
+                'SERVER_PORT' => '4002',
+                'HTTPS' => '1',
+            ],
+            4002,
+        ];
+        yield 'Priority host more' => [
+            [
+                'HTTP_HOST' => 'te.com:444444444',
+                'SERVER_PORT' => '4002',
+                'HTTPS' => '1',
+            ],
+            4002,
+        ];
+        yield 'Priority Server Port' => [['SERVER_PORT' => '4002', 'HTTPS' => '1'], 4002];
+        yield 'Priority Server Port less' => [['SERVER_PORT' => '-1', 'HTTPS' => '1'], 443];
+        yield 'Priority Server Port more' => [['SERVER_PORT' => '99999999', 'HTTPS' => '1'], 443];
+        yield 'By Security 1' => [['HTTPS' => '1'], 443];
+        yield 'By Security On' => [['HTTPS' => 'On'], 443];
+        yield 'By Security Yes' => [['HTTPS' => 'Yes'], 443];
+        yield 'By Security Off' => [['HTTPS' => 'Off'], 80];
+        yield 'By Security NotStandardString' => [['HTTPS' => 'NotStandardStringInHeader'], 80];
+    }
+
+    #[DataProvider('provideGetSchemeCases')]
+    public function testGetScheme(array $serverArray, string $host): void
+    {
+        $serverCollection = new ServerCollection($serverArray);
+        self::assertSame($host, $serverCollection->getScheme());
+    }
+
+    public static function provideGetSchemeCases(): iterable
+    {
+        yield 'empty data' => [[], 'http'];
+        yield 'Priority Forwarded https' => [
+            [
+                'HTTP_X_FORWARDED_PROTO' => 'https',
+                'HTTPS' => 'Off',
+                'HTTP_X_FORWARDED_PORT' => 80,
+            ],
+            'https',
+        ];
+        yield 'Priority Forwarded http' => [
+            [
+                'HTTP_X_FORWARDED_PROTO' => 'http',
+                'HTTPS' => '1',
+                'HTTP_X_FORWARDED_PORT' => 443,
+            ],
+            'https',
+        ];
+        yield 'Secured by header' => [['HTTPS' => '1', 'HTTP_X_FORWARDED_PORT' => 80], 'https'];
+        yield 'Secured by port' => [['HTTPS' => 'Off', 'HTTP_X_FORWARDED_PORT' => 443], 'https'];
+        yield 'Not Secured by port' => [['HTTP_X_FORWARDED_PORT' => 441], 'http'];
+    }
+
+    #[DataProvider('provideGetBaseUrlCases')]
+    public function testGetBaseUrl(array $serverArray, string $host): void
+    {
+        $serverCollection = new ServerCollection($serverArray);
+        self::assertSame($host, $serverCollection->getBaseUrl());
+    }
+
+    /** @noinspection HttpUrlsUsage */
+    public static function provideGetBaseUrlCases(): iterable
+    {
+        yield 'empty data' => [[], ''];
+        yield 'Https not std port' => [['HTTPS' => 'On', 'HTTP_HOST' => 'te.com:4001'], 'https://te.com:4001'];
+        yield 'Http not std port' => [['HTTPS' => 'Off', 'HTTP_HOST' => 'te.com:4001'], 'http://te.com:4001'];
+        yield 'Http std port' => [['HTTPS' => 'Off', 'HTTP_HOST' => 'te.com:80'], 'http://te.com'];
+        yield 'Https std port' => [['HTTPS' => 'Yes', 'HTTP_HOST' => 'te.com:443'], 'https://te.com'];
+        yield 'Https port and not secure port' => [['HTTPS' => 'On', 'HTTP_HOST' => 'te.com:80'], 'https://te.com:80'];
     }
 }
