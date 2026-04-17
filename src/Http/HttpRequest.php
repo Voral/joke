@@ -23,7 +23,7 @@ class HttpRequest extends Request
     /** Кешированное значение Origin */
     private ?string $cachedOrigin = null;
     /** Флаг показывает, что Origin запроса кеширован */
-    private bool $isOriginNotResolved = true;
+    private bool $isOriginResolved = false;
     /**
      * Данные GET-параметров запроса.
      */
@@ -259,5 +259,22 @@ class HttpRequest extends Request
         }
 
         return 443 === $this->server->getPort();
+    }
+
+    /**
+     * Возвращает Origin запроса если таковой существует
+     *
+     * @throws JokeException
+     */
+    public function getOrigin(): string
+    {
+        if ($this->isOriginResolved) {
+            return $this->cachedOrigin;
+        }
+        $raw = $this->headers->getString('Origin', '');
+        $this->cachedOrigin = '' !== $raw && filter_var($raw, FILTER_VALIDATE_URL) ? $raw : '';
+        $this->isOriginResolved = false;
+
+        return $this->cachedOrigin;
     }
 }

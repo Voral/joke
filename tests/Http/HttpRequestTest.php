@@ -145,4 +145,18 @@ final class HttpRequestTest extends TestCase
         );
         self::assertTrue($request->isSecure());
     }
+
+    #[DataProvider('provideGetOriginCases')]
+    public function testGetOrigin(array $header, string $expected): void
+    {
+        $request = new HttpRequest(server: $header);
+        self::assertSame($expected, $request->getOrigin());
+    }
+
+    public static function provideGetOriginCases(): iterable
+    {
+        yield 'success' => [['HTTP_ORIGIN' => 'https://example.com:8001/'], 'https://example.com:8001/'];
+        yield 'wrong url' => [['HTTP_ORIGIN' => 'example.com'], ''];
+        yield 'not CORS request' => [[], ''];
+    }
 }
