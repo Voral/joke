@@ -20,6 +20,10 @@ use Vasoft\Joke\Foundation\Request;
  */
 class HttpRequest extends Request
 {
+    /** Кешированное значение Origin */
+    private ?string $cachedOrigin = null;
+    /** Флаг показывает, что Origin запроса кеширован */
+    private bool $isOriginNotResolved = true;
     /**
      * Данные GET-параметров запроса.
      */
@@ -242,22 +246,18 @@ class HttpRequest extends Request
      *
      * @return bool true, если соединение защищено TLS/SSL, иначе False
      *
-     * @throws JokeException Если невалидные значения переменных в $_SERVER
-     *
      * @todo Реализовать поддержку доверенных прокси для корректной работы за балансировщиками.
+     * @todo После реализации определять на основе $this->server->getSchema
      */
     public function isSecure(): bool
     {
-        $https = $this->server->getString('HTTPS', '');
-        if (in_array(strtolower($https), ['on', '1'], true)) {
+        $https = $this->server->getStringOrDefault('HTTPS', '');
+        $value = strtolower($https);
+
+        if ('on' === $value || '1' === $value || 'yes' === $value) {
             return true;
         }
 
-        $port = $this->server->getInt('SERVER_PORT', 0);
-        if (443 === $port) {
-            return true;
-        }
-
-        return false;
+        return 443 === $this->server->getPort();
     }
 }
