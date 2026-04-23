@@ -9,6 +9,8 @@ use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
+use Vasoft\Joke\Http\Cors\CorsConfig;
+use Vasoft\Joke\Http\Cors\CorsMiddleware;
 use Vasoft\Joke\Http\Csrf\CsrfConfig;
 use Vasoft\Joke\Http\Csrf\CsrfTokenManager;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
@@ -41,7 +43,9 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
     {
         /** @var MiddlewareCollection $middlewares */
         $middlewares = $this->serviceContainer->get('middleware.global');
-        $middlewares->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value);
+        $middlewares
+            ->addMiddleware(ExceptionMiddleware::class, StdMiddleware::EXCEPTION->value)
+            ->addMiddleware(CorsMiddleware::class, StdMiddleware::CORS->value);
         /** @var MiddlewareCollection $middlewares */
         $routeMiddlewares = $this->serviceContainer->get('middleware.route');
         $routeMiddlewares
@@ -60,7 +64,7 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
 
     public static function provideConfigs(): array
     {
-        return [ApplicationConfig::class, CookieConfig::class, CsrfConfig::class];
+        return [ApplicationConfig::class, CookieConfig::class, CsrfConfig::class, CorsConfig::class];
     }
 
     public static function buildConfig(string $configClass, ServiceContainer $container): AbstractConfig
@@ -69,6 +73,7 @@ class KernelServiceProvider extends AbstractProvider implements ConfigurableServ
             ApplicationConfig::class => new ApplicationConfig()->setFileRoues(self::$legacyPathRouteFile),
             CookieConfig::class => new CookieConfig(),
             CsrfConfig::class => new CsrfConfig(),
+            CorsConfig::class => new CorsConfig(),
             default => throw new UnknownConfigException($configClass),
         };
     }

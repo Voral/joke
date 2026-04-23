@@ -54,6 +54,7 @@ class CsrfMiddleware implements MiddlewareInterface
      */
     public function __construct(
         private readonly ResponseBuilder $responseBuilder,
+        // @phpstan-ignore-next-line
         private readonly CsrfConfig $config = new CsrfConfig(),
         private readonly ?CsrfTokenManager $manager = null,
     ) {

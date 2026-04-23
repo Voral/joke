@@ -132,7 +132,7 @@ class HttpRequest extends Request
      * @param array<string, mixed>  $cookies Cookie
      * @param array<string, mixed>  $files   Информация о загруженных файлах
      * @param array<string, string> $server  Серверные переменные
-     * @param null|string           $rawBody Сырое тело запроса (например, из php://input)
+     * @param string                $rawBody Сырое тело запроса (например, из php://input)
      */
     public function __construct(
         array $get = [],

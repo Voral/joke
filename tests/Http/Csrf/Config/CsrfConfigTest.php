@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Vasoft\Joke\Tests\Http\Csrf\Config;
 
 use PHPUnit\Framework\Attributes\DataProvider;

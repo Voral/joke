@@ -1,7 +1,7 @@
 # Реализованные middleware
 
 Joke поставляется с набором встроенных middleware, обеспечивающих базовую функциональность веб-приложения: обработку
-ошибок, управление сессией и защиту от CSRF-атак.
+ошибок, управление сессией, защиту от CSRF-атак и настройку кросс-доменных запросов (CORS).
 
 ## ExceptionMiddleware
 
@@ -179,3 +179,86 @@ $csrfConfig = (new CsrfConfig())
 | `CookieException`       | Ошибка добавления CSRF-куки в ответ                     | 500         |
 | `RandomException`       | Не удалось сгенерировать криптографически стойкий токен | 500         |
 
+---
+
+## CorsMiddleware
+
+- **Класс:** `Vasoft\Joke\Http\Cors\CorsMiddleware`
+- **Уровень:** глобальный
+- **Имя:** `StdMiddleware::CORS->value`
+
+Реализует механизм Cross-Origin Resource Sharing (CORS), позволяющий браузерам выполнять кросс-доменные запросы к вашему
+API.
+Middleware автоматически обрабатывает как простые запросы, так и предварительные (preflight) запросы методом `OPTIONS`.
+
+Регистрируется автоматически в глобальной цепочке. Для активации необходимо изменить конфигурацию `CorsConfig`.
+
+### Как работает мидлвар
+
+1. **Проверка Origin:** Если запрос содержит заголовок `Origin`, middleware проверяет его наличие в списке разрешенных
+   источников.
+2. **Preflight (OPTIONS):** Если метод запроса `OPTIONS`, middleware валидирует запрашиваемые методы и заголовки (
+   `Access-Control-Request-Method`, `Access-Control-Request-Headers`) и возвращает пустой успешный ответ с
+   CORS-заголовками.
+3. **Обычный запрос:** Если метод не `OPTIONS`, middleware пропускает запрос дальше по цепочке, а затем добавляет
+   необходимые CORS-заголовки в ответ.
+4. **Блокировка:** Если источник не разрешен или метод/заголовки не соответствуют конфигурации, возвращается статус
+   `403 Forbidden`.
+
+### CorsConfig
+
+Конфигурация правил CORS. По умолчанию CORS отключен (`allowedCors = false`).
+
+#### Настройки
+
+| Параметр           | Тип                | По умолчанию                                            | Описание                                                                       |
+|:-------------------|:-------------------|:--------------------------------------------------------|:-------------------------------------------------------------------------------|
+| `allowedCors`      | `bool`             | `false`                                                 | Главный переключатель функциональности CORS.                                   |
+| `origins`          | `list<string>`     | `['*']`                                                 | Список разрешенных доменов. `'*'` означает все домены.                         |
+| `methods`          | `list<HttpMethod>` | `GET, POST, PUT, PATCH, DELETE, OPTIONS`                | Разрешенные HTTP-методы.                                                       |
+| `headers`          | `list<string>`     | `['Content-Type', 'Authorization', 'X-Requested-With']` | Разрешенные заголовки в запросе (`Access-Control-Allow-Headers`).              |
+| `exposeHeaders`    | `list<string>`     | `[]`                                                    | Заголовки ответа, доступные для чтения в JS (`Access-Control-Expose-Headers`). |
+| `maxAge`           | `int`              | `3600`                                                  | Время кэширования preflight-запроса в секундах.                                |
+| `allowCredentials` | `bool`             | `false`                                                 | Разрешает отправку куки и заголовков авторизации.                              |
+
+> **Важно:** Использование `allowCredentials = true` совместно с `origins = ['*']` запрещено спецификацией CORS и
+> вызовет исключение `ConfigException` при попытке заморозить конфиг. Указывайте конкретные домены.
+
+#### Пример настройки
+
+Разрешить запросы с конкретного фронтенда с передачей куки:
+
+```php
+use Vasoft\Joke\Http\Cors\CorsConfig;
+use Vasoft\Joke\Http\HttpMethod;
+
+$corsConfig = (new CorsConfig())
+    ->setAllowedCors(true)
+    ->setOrigins(['https://my-frontend.com'])
+    ->setAllowCredentials(true)
+    ->setMethods([HttpMethod::GET, HttpMethod::POST])
+    ->setExposeHeaders(['X-Csrf-Token']); // Чтобы JS мог прочитать этот заголовок
+```
+
+Разрешить все домены (без куки):
+
+```php
+$corsConfig = (new CorsConfig())
+    ->setAllowedCors(true)
+    ->setOrigins(['*'])
+    ->setAllowCredentials(false);
+```
+
+### Работа с заголовками
+
+Middleware автоматически добавляет заголовок `Vary: Origin` к ответам, если используется не wildcard-источник, чтобы
+корректно работать с кэшированием.
+
+Для того чтобы JavaScript мог читать кастомные заголовки ответа (например, CSRF-токен), их необходимо явно указать в
+`exposeHeaders`:
+
+```php
+$corsConfig->setExposeHeaders(['X-Csrf-Token', 'X-Custom-Header']);
+```
+
+Без этого браузер скроет эти заголовки от скрипта, даже если сервер их отправил.
