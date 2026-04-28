@@ -91,24 +91,6 @@ final class CsrfTokenManagerTest extends TestCase
         self::assertSame($expectToken, $token);
     }
 
-    public function testTokenInGet(): void
-    {
-        $expectToken = $this->tokenManager->validate($this->getRequest);
-        $request = new HttpRequest(
-            get: [CsrfMiddleware::CSRF_TOKEN_NAME => $expectToken],
-            post: [CsrfMiddleware::CSRF_TOKEN_NAME => 'wrongGet'],
-            cookies: [CsrfTokenManager::CSRF_TOKEN_COOKIE => 'wrongCookie'],
-            server: [
-                'REQUEST_METHOD' => 'POST',
-                'REQUEST_URI' => '/csrf',
-                'HTTP_' . str_replace('-', '_', strtoupper(CsrfTokenManager::CSRF_TOKEN_HEADER)) => 'wrongHeader',
-            ],
-        );
-        $request->session->set(CsrfTokenManager::CSRF_TOKEN_NAME, $expectToken);
-        $token = $this->tokenManager->validate($request);
-        self::assertSame($expectToken, $token);
-    }
-
     public function testEmptyClientToken(): void
     {
         $expectToken = $this->tokenManager->validate($this->getRequest);

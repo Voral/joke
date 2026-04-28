@@ -176,10 +176,9 @@ class CsrfTokenManager
     private function getClientToken(HttpRequest $request): string
     {
         return trim(
-            $request->get->getString(self::CSRF_TOKEN_NAME, '')
-                ?: $request->post->getString(self::CSRF_TOKEN_NAME, '')
+            $request->post->getString(self::CSRF_TOKEN_NAME, '')
                 ?: $request->headers->getString(self::CSRF_TOKEN_HEADER, '')
-                    ?: $request->cookies->getString(self::CSRF_TOKEN_COOKIE, ''),
+                ?: $request->cookies->getString(self::CSRF_TOKEN_COOKIE, ''),
         );
     }
 
