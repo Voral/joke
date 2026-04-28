@@ -58,16 +58,16 @@ class ExceptionMiddleware implements MiddlewareInterface
         try {
             $response = $next();
         } catch (JokeException $exception) {
-            /** @var LoggerInterface $config */
-            $config = $this->container->get(LoggerInterface::class);
-            $config->error($exception);
+            /** @var LoggerInterface $logger */
+            $logger = $this->container->get(LoggerInterface::class);
+            $logger->error($exception);
 
             return $this->buildResponse($exception->getMessage())
                 ->setStatus($exception->getResponseStatus());
         } catch (\Throwable $exception) {
-            /** @var LoggerInterface $config */
-            $config = $this->container->get(LoggerInterface::class);
-            $config->error($exception);
+            /** @var LoggerInterface $logger */
+            $logger = $this->container->get(LoggerInterface::class);
+            $logger->error($exception);
 
             return $this->buildResponse($exception->getMessage())
                 ->setStatus(ResponseStatus::INTERNAL_SERVER_ERROR);
