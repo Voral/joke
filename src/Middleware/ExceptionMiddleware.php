@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Middleware;
 
+use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
@@ -58,22 +59,32 @@ class ExceptionMiddleware implements MiddlewareInterface
         try {
             $response = $next();
         } catch (JokeException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->container->get(LoggerInterface::class);
-            $logger->error($exception);
-
-            return $this->buildResponse($exception->getMessage())
-                ->setStatus($exception->getResponseStatus());
+            return $this->getErrorResponse($exception, $exception->getResponseStatus());
         } catch (\Throwable $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->container->get(LoggerInterface::class);
-            $logger->error($exception);
-
-            return $this->buildResponse($exception->getMessage())
-                ->setStatus(ResponseStatus::INTERNAL_SERVER_ERROR);
+            return $this->getErrorResponse($exception, ResponseStatus::INTERNAL_SERVER_ERROR);
         }
 
         return $response;
+    }
+
+    /**
+     * Формирует ответ в случае ошибки.
+     *
+     * Запись в лог. Если это продуктовое окружение - возвращает нейтральный текст
+     *
+     * @throws ContainerException
+     * @throws ParameterResolveException
+     */
+    private function getErrorResponse(\Throwable $exception, ResponseStatus $status): Response
+    {
+        /** @var LoggerInterface $logger */
+        $logger = $this->container->get(LoggerInterface::class);
+        $logger->error($exception);
+        /** @var Environment $env */
+        $env = $this->container->get(Environment::class);
+        $message = $env->isProduction() ? 'Internal Error' : $exception->getMessage();
+
+        return $this->buildResponse($message)->setStatus($status);
     }
 
     /**
