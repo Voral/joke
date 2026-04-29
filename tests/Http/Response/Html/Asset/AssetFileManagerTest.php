@@ -76,7 +76,7 @@ final class AssetFileManagerTest extends TestCase
     protected function setUp(): void
     {
         self::getFunctionMock('Vasoft\Joke\Http\Response\Html\Asset', 'md5')
-            ->expects(self::any())
+            ->expects(new \PHPUnit\Framework\MockObject\Rule\AnyInvokedCount)
             ->willReturn('hash');
     }
 
