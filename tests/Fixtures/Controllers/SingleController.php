@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Fixtures\Controllers;
 
-use Vasoft\Joke\Container\Exceptions\AutowiredException;
 use Vasoft\Joke\Container\ServiceContainer;
 
 class SingleController
@@ -25,8 +24,6 @@ class SingleController
 
     public static function info(): array
     {
-        throw new AutowiredException('test', 'todo');
-
         return ['shopVersion' => '1.0.0'];
     }
 

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Vasoft\Joke\Http\Csrf\CsrfMiddleware;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\ResponseStatus;
 use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;
@@ -36,22 +35,6 @@ $router->get('/shop/info', SingleController::info(...));
 $router->get('/shop/infoNew', SingleController::class . '::info');
 $router->get('/shop/{filter}', [SingleController::class, 'find']);
 
-$router->get(
-    '/csrf',
-    static fn(HttpRequest $request) => [
-        'csrf' => $request->session->get(
-            CsrfMiddleware::CSRF_TOKEN_NAME,
-        ),
-    ],
-);
-$router->delete(
-    '/csrf',
-    static fn(HttpRequest $request) => [
-        'csrf' => $request->session->unset(
-            CsrfMiddleware::CSRF_TOKEN_NAME,
-        ),
-    ],
-);
 $routeHandler = static fn(HttpRequest $request) => [
     'id' => spl_object_id($request),
     'get' => $request->get->getAll(),
