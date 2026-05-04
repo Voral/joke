@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Http\Response\Html\Asset\AssetFileManager;
+use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount;
 
 /**
  * @internal
@@ -76,7 +77,7 @@ final class AssetFileManagerTest extends TestCase
     protected function setUp(): void
     {
         self::getFunctionMock('Vasoft\Joke\Http\Response\Html\Asset', 'md5')
-            ->expects(new \PHPUnit\Framework\MockObject\Rule\AnyInvokedCount)
+            ->expects(new AnyInvokedCount())
             ->willReturn('hash');
     }
 
