@@ -6,6 +6,9 @@ namespace Vasoft\Joke\Container;
 
 use Vasoft\Joke\Collections\HeadersCollection;
 use Vasoft\Joke\Collections\PropsCollection;
+use Vasoft\Joke\Config\AbstractConfig;
+use Vasoft\Joke\Config\ConfigManager;
+use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Contract\Container\ApplicationContainerInterface;
 use Vasoft\Joke\Contract\Container\ContainerInspectionInterface;
@@ -162,14 +165,23 @@ abstract class BaseContainer implements ContainerInspectionInterface
             return $result;
         }
         $result = $this->getService($name);
-        if (null === $result) {
-            @trigger_error(
-                "Service '{$name}' not found. In v2.0 this will throw an exception.",
-                E_USER_DEPRECATED,
-            );
+        if (null !== $result) {
+            return $result;
         }
+        if (is_subclass_of($name, AbstractConfig::class) && $this->has(ConfigManager::class)) {
+            $configManager = $this->get(ConfigManager::class);
 
-        return $result;
+            try {
+                return $configManager->get($name);
+            } catch (ConfigException $e) {
+            }
+        }
+        @trigger_error(
+            "Service '{$name}' not found. In v2.0 this will throw an exception.",
+            E_USER_DEPRECATED,
+        );
+
+        return null;
     }
 
     /**

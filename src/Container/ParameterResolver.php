@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Container;
 
-use Vasoft\Joke\Config\AbstractConfig;
-use Vasoft\Joke\Config\ConfigManager;
-use Vasoft\Joke\Config\Exceptions\ConfigException;
+use Vasoft\Joke\Container\Exceptions\ContainerException;
 use Vasoft\Joke\Contract\Container\DiContainerInterface;
 use Vasoft\Joke\Contract\Container\ResolverInterface;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
@@ -89,6 +87,8 @@ class ParameterResolver implements ResolverInterface
      *
      * @return list<mixed> Массив разрешённых аргументов
      *
+     * @throws AutowiredException
+     * @throws ContainerException
      * @throws ParameterResolveException Если параметр не может быть разрешён
      *
      * @todo Декомпозировать метод
@@ -120,18 +120,7 @@ class ParameterResolver implements ResolverInterface
             if ($type && (class_exists($type) || interface_exists($type))) {
                 $service = $this->serviceContainer->get($type);
                 if (null === $service) {
-                    if (is_subclass_of($type, AbstractConfig::class)) {
-                        /** @var ConfigManager $configManager */
-                        $configManager = $this->serviceContainer->get(ConfigManager::class);
-
-                        try {
-                            $service = $configManager->get($type);
-                        } catch (ConfigException $e) {
-                            throw new AutowiredException($name, $type, previous: $e);
-                        }
-                    } else {
-                        throw new AutowiredException($name, $type);
-                    }
+                    throw new AutowiredException($name, $type);
                 }
                 $args[] = $service;
             } else {

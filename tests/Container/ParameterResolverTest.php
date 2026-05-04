@@ -222,9 +222,6 @@ final class ParameterResolverTest extends TestCase
             $resolver->resolveForCallable([$fake, 'setConfig']);
             self::fail('Expected AutowiredException to be thrown');
         } catch (AutowiredException $e) {
-            self::assertNotNull($e->getPrevious(), 'Previous exception should not be null');
-            self::assertInstanceOf(ConfigException::class, $e->getPrevious());
-            self::assertSame('Test message', $e->getPrevious()->getMessage());
             self::assertSame(
                 'Failed to autowire parameter "$config": expected type "Vasoft\Joke\Tests\Fixtures\Config\SingleConfig" cannot be resolved or is incompatible with the provided value.',
                 $e->getMessage(),
