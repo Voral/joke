@@ -63,6 +63,6 @@ class HtmlResponse extends NewResponse
      */
     public function getBodyAsString(): string
     {
-        return $this->body;
+        return $this->getBody();
     }
 }

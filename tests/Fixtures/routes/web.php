@@ -8,23 +8,29 @@ use Vasoft\Joke\Tests\Fixtures\Controllers\InvokeController;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Tests\Fixtures\Controllers\SingleController;
 use Vasoft\Joke\Http\HttpRequest;
+use Vasoft\Joke\Container\ServiceContainer;
+use Vasoft\Joke\Http\Response\HtmlPageResponse;
 
 /**
  * @var Router $router
  */
 $router->get(
     '/',
-    static fn() => <<<'HTML'
-        <ul>
-            <li><a href="/name/Alex">Hi Alex</a> Текстовый ответ. Имя можно менять</li>
-            <li><a href="/json/Alex">Hi Alex</a> Json ответ. Имя можно менять</li>
-            <li><a href="/invoke/property">__Invoke</a></li>
-            <li><a href="/shop">Список товаров</a></li>
-            <li><a href="/shop/an">Товары имеющие "an" в названии</a></li>
-            <li><a href="/shop/info">Вызов статического метода как замыкания</a></li>
-            <li><a href="/shop/infoNew">Вызов статического метода переданного строкой</a></li>
-        </ul>
-        HTML,
+    static fn(ServiceContainer $container) => new HtmlPageResponse(
+        $container,
+    )->setBody(
+        <<<'HTML'
+            <ul>
+                <li><a href="/name/Alex">Hi Alex</a> Текстовый ответ. Имя можно менять</li>
+                <li><a href="/json/Alex">Hi Alex</a> Json ответ. Имя можно менять</li>
+                <li><a href="/invoke/property">__Invoke</a></li>
+                <li><a href="/shop">Список товаров</a></li>
+                <li><a href="/shop/an">Товары имеющие "an" в названии</a></li>
+                <li><a href="/shop/info">Вызов статического метода как замыкания</a></li>
+                <li><a href="/shop/infoNew">Вызов статического метода переданного строкой</a></li>
+            </ul>
+            HTML,
+    ),
 );
 $router->get('/name/{name:slug}', static fn(string $name) => 'Hi ' . $name, 'hiName');
 $router->get('/json/{name:slug}', static fn(string $name) => ['fio' => $name]);

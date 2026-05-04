@@ -59,7 +59,7 @@ final class HtmlPageResponseTest extends TestCase
         );
         self::assertSame(
             '<html lang="en"><head><title>Title</title><meta charset="windows-1251"></head><body><h1>Hello World</h1></body></html>',
-            $response->getBody(),
+            $response->getBodyAsString(),
         );
     }
 }
