@@ -27,6 +27,11 @@ final class FileSystem
     public readonly string $basePath;
 
     /**
+     * Права доступа по умолчанию для создаваемых директорий.
+     */
+    private const int DEFAULT_DIR_PERMISSIONS = 0o775;
+
+    /**
      * Путь к директории временных и служебных данных (var).
      *
      * Используется для хранения кэша, логов и других генерируемых файлов.
@@ -92,14 +97,11 @@ final class FileSystem
     {
         $realBase = realpath($basePath);
         if (false === $realBase || !is_dir($realBase)) {
-            throw new ConfigException("Path must be an existing directory: {$basePath}");
+            throw new ConfigException("Path must be an existing directory: '{$basePath}'.");
         }
         $this->isWindows = 'WIN' === strtoupper(substr(PHP_OS, 0, 3));
-        if (!self::isAbsolute($realBase)) {
-            throw new ConfigException("Path must be absolute: {$basePath}");
-        }
         if (!is_dir($realBase)) {
-            throw new ConfigException("Path must be a directory: {$basePath}");
+            throw new ConfigException("Path must be a directory: '{$basePath}'.");
         }
         $this->basePath = rtrim($realBase, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
     }
@@ -117,7 +119,7 @@ final class FileSystem
     public function normalizeDir(string $path): string
     {
         if (!self::isAbsolute($path)) {
-            $path = $this->basePath . ltrim($path, \DIRECTORY_SEPARATOR);
+            $path = $this->basePath . $path;
         }
 
         return rtrim($path, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
@@ -146,17 +148,17 @@ final class FileSystem
      * Проверяет, является ли путь абсолютным.
      *
      * Учитывает особенности операционной системы:
-     * - Для Windows: проверяет наличие буквы диска (например, "C:").
+     * - Для Windows: проверяет наличие буквы диска с разделителем (например, "C:\" или "C:/").
      * - Для Unix-систем: проверяет наличие начального слэша ("/").
      *
      * @param string $path путь для проверки
      *
-     * @return bool true, если путь абсолютный, иначе False
+     * @return bool true, если путь абсолютный, иначе false
      */
     public function isAbsolute(string $path): bool
     {
         if ($this->isWindows) {
-            return (bool) preg_match('~^[A-Z]:~i', $path);
+            return (bool) preg_match('~^[A-Z]:(\\\|/)~i', $path);
         }
 
         return str_starts_with($path, \DIRECTORY_SEPARATOR);
@@ -192,23 +194,25 @@ final class FileSystem
         return $this->normalizeDir($directory) . ltrim($path, \DIRECTORY_SEPARATOR);
     }
 
-    public function ensureDirectory(string $directory): void
+    public function ensureDirectory(string $directory, int $permissions = self::DEFAULT_DIR_PERMISSIONS): void
     {
         $this->validatePath($directory);
-        if (!is_dir($directory) && !mkdir($directory, 0o775, true)) {
-            throw new FileSystemException("Unable to create directory '{$directory}'.");
+        if (!is_dir($directory) && !mkdir($directory, $permissions, true) && !is_dir($directory)) {
+            throw new FileSystemException("Unable to create directory: '{$directory}'.");
         }
     }
 
     public function validatePath(string $path): void
     {
         $normalized = $this->cleanPath($path);
-
-        if (!str_starts_with($normalized, $this->basePath)) {
+        $base = rtrim($this->basePath, \DIRECTORY_SEPARATOR);
+        if (!str_starts_with($normalized, $base)) {
             throw new FileSystemException("Path must be in base path: '{$path}'.");
         }
+
+        // Если файл существует — проверяем через realpath для защиты от symlink-атак
         $realPath = realpath($path);
-        if (false !== $realPath && !str_starts_with($realPath, $this->basePath)) {
+        if (false !== $realPath && !str_starts_with($realPath, $base)) {
             throw new FileSystemException("Resolved '{$path}' is outside of the base directory.");
         }
     }
@@ -233,18 +237,41 @@ final class FileSystem
         throw new FileSystemException($errorMessage ?? "Unable to include file: '{$file}'.");
     }
 
-    public function writeFile(string $fileName, mixed $data, int $flags = 0, $context = null): false|int
+    public function writeFile(string $fileName, mixed $data, int $flags = 0, $context = null): int
     {
         $this->validatePath($fileName);
+        $result = file_put_contents($fileName, $data, $flags, $context);
+        if (false === $result) {
+            throw new FileSystemException("Failed to write file: '{$fileName}'.");
+        }
 
-        return file_put_contents($fileName, $data, $flags, $context);
+        return $result;
     }
 
-    public function readFile(string $fileName, $context = null, int $offset = 0, ?int $length = null): false|string
+    public function writeFileSafe(string $fileName, mixed $data, int $flags = 0, $context = null): int
     {
         $this->validatePath($fileName);
+        $path = dirname($fileName);
+        $tmp = tempnam($path, '.tmp.');
+        $result = file_put_contents($tmp, $data, $flags, $context);
+        if (false === $result || false === rename($tmp, $fileName)) {
+            @unlink($tmp);
 
-        return file_get_contents($fileName, false, $context, $offset, $length);
+            throw new FileSystemException("Failed to write file: '{$fileName}'.");
+        }
+
+        return $result;
+    }
+
+    public function readFile(string $fileName, $context = null, int $offset = 0, ?int $length = null): string
+    {
+        $this->validatePath($fileName);
+        $result = file_get_contents($fileName, false, $context, $offset, $length);
+        if (false === $result) {
+            throw new FileSystemException("Failed to read file: '{$fileName}'.");
+        }
+
+        return $result;
     }
 
     private function cleanPath(string $path): string
@@ -253,11 +280,13 @@ final class FileSystem
 
         $parts = explode('/', $path);
         $absolutes = [];
+        $isAbsolute = str_starts_with($path, '/') || ($this->isWindows && preg_match('~^[A-Z]:(\\\|/)~i', $path));
 
         foreach ($parts as $part) {
-            if ('.' === $part) {
+            if ('' === $part || '.' === $part) {
                 continue;
             }
+
             if ('..' === $part) {
                 if (!empty($absolutes)) {
                     array_pop($absolutes);
@@ -266,8 +295,9 @@ final class FileSystem
                 $absolutes[] = $part;
             }
         }
+
         $result = implode(\DIRECTORY_SEPARATOR, $absolutes);
-        if (str_starts_with($path, '/') || ($this->isWindows && preg_match('~^[A-Z]:~i', $path))) {
+        if ($isAbsolute) {
             $result = \DIRECTORY_SEPARATOR . $result;
         }
 
