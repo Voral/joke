@@ -18,7 +18,7 @@ use Vasoft\Joke\Exceptions\FileSystemException;
  * - Кроссплатформенная поддержка (Windows/Linux/macOS) через определение стиля путей.
  * - Нормализация завершающих разделителей для директорий и файлов.
  */
-final class FileSystem
+class FileSystem
 {
     /**
      * Абсолютный базовый путь к корневой директории.

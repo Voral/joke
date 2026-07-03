@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Tests\Application;
 
 use phpmock\phpunit\PHPMock;
 use Vasoft\Joke\Application\ApplicationConfig;
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
@@ -24,7 +25,6 @@ use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Config\Environment;
-use Vasoft\Joke\Support\Normalizers\Path;
 use Vasoft\Joke\Tests\Fixtures\Middlewares\SingleMiddleware;
 
 /**
@@ -282,7 +282,7 @@ final class ApplicationTest extends TestCase
     #[RunInSeparateProcess]
     public function testExceptionOnBootstrap(): void
     {
-        $pathNormalizer = new Path(__DIR__);
+        $pathNormalizer = new FileSystem(__DIR__);
         $logger = new FakeLogger();
         $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
 
@@ -292,7 +292,7 @@ final class ApplicationTest extends TestCase
             ->willReturnCallback(static function ($name) use ($environment, $pathNormalizer, $logger): mixed {
                 return match ($name) {
                     Environment::class, 'env' => $environment,
-                    Path::class, 'normalizer.path' => $pathNormalizer,
+                    FileSystem::class, 'normalizer.path' => $pathNormalizer,
                     Logger::class, 'logger' => $logger,
                 };
             });
@@ -320,7 +320,7 @@ final class ApplicationTest extends TestCase
     public function testNamedMiddleware(): void
     {
         self::writeKernelBootstrap('new \Vasoft\Joke\Application\KernelConfig()->setProviders([]);');
-        $pathNormalizer = new Path(self::$basePath);
+        $pathNormalizer = new FileSystem(self::$basePath);
         $logger = new FakeLogger();
         $environment = new Environment(new EnvironmentLoader(self::$basePath));
 
@@ -337,7 +337,7 @@ final class ApplicationTest extends TestCase
                         ApplicationConfig::class => new ApplicationConfig(),
                         'middleware.global' => new ApplicationConfig(),
                         Environment::class, 'env' => $environment,
-                        Path::class, 'normalizer.path' => $pathNormalizer,
+                        FileSystem::class, 'normalizer.path' => $pathNormalizer,
                         Logger::class, 'logger' => $logger,
                     };
                 },
@@ -359,7 +359,7 @@ final class ApplicationTest extends TestCase
         $errorLog->expects(self::once())->with($expectMessage);
 
         self::writeKernelBootstrap('new \Vasoft\Joke\Application\KernelConfig()->setProviders([]);');
-        $pathNormalizer = new Path(self::$basePath);
+        $pathNormalizer = new FileSystem(self::$basePath);
         $environment = new Environment(new EnvironmentLoader(self::$basePath));
 
         $container = self::createStub(ServiceContainer::class);
@@ -375,7 +375,7 @@ final class ApplicationTest extends TestCase
                         ApplicationConfig::class => new ApplicationConfig(),
                         'middleware.global' => new ApplicationConfig(),
                         Environment::class, 'env' => $environment,
-                        Path::class, 'normalizer.path' => $pathNormalizer,
+                        FileSystem::class, 'normalizer.path' => $pathNormalizer,
                         Logger::class, 'logger' => null,
                     };
                 },

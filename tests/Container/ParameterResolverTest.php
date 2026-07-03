@@ -8,6 +8,7 @@ use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Application\KernelServiceProvider;
 use Vasoft\Joke\Config\ConfigManager;
 use Vasoft\Joke\Config\Environment;
@@ -17,7 +18,6 @@ use Vasoft\Joke\Container\Exceptions\AutowiredException;
 use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Container\ServiceContainer;
-use Vasoft\Joke\Support\Normalizers\Path;
 use Vasoft\Joke\Tests\Fixtures\FakeExample;
 use Vasoft\Joke\Tests\Fixtures\Service\SingleService;
 
@@ -201,9 +201,9 @@ final class ParameterResolverTest extends TestCase
     {
         $serviceContainer = new ServiceContainer();
 
-        $pathNormalizer = new Path(__DIR__);
-        $serviceContainer->registerSingleton(Path::class, $pathNormalizer);
-        $serviceContainer->registerAlias('normalizer.path', Path::class);
+        $pathNormalizer = new FileSystem(__DIR__);
+        $serviceContainer->registerSingleton(FileSystem::class, $pathNormalizer);
+        $serviceContainer->registerAlias('normalizer.path', FileSystem::class);
 
         $environment = new Environment(new EnvironmentLoader(''));
         $serviceContainer->registerSingleton(Environment::class, $environment);

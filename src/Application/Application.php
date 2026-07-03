@@ -24,7 +24,6 @@ use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Основной класс приложения Joke.
@@ -59,7 +58,7 @@ class Application
     protected MiddlewareCollection $routeMiddlewares {
         get => $this->routeMiddlewares;
     }
-    private readonly Path $paths;
+    private readonly FileSystem $paths;
 
     /**
      * Конструктор приложения.
@@ -97,11 +96,11 @@ class Application
                 E_USER_DEPRECATED,
             );
         }
-        $this->paths = new Path($basePath);
+        $this->paths = new FileSystem($basePath);
         $this->basePath = $this->paths->basePath;
-        $serviceContainer->registerSingleton(Path::class, $this->paths);
-        $serviceContainer->registerAlias('normalizer.path', Path::class);
-        $serviceContainer->registerAlias('paths', Path::class);
+        $serviceContainer->registerSingleton(FileSystem::class, $this->paths);
+        $serviceContainer->registerAlias('normalizer.path', FileSystem::class);
+        $serviceContainer->registerAlias('paths', FileSystem::class);
 
         $environment = new Environment(new EnvironmentLoader($this->paths->basePath));
         $serviceContainer->registerSingleton(Environment::class, $environment);
@@ -179,13 +178,14 @@ class Application
      * После загрузки конфигурация "замораживается" (становится неизменяемой)
      * и регистрируется в DI-контейнере как синглтон.
      *
-     * @param Environment $env Окружение приложения, передаётся в `kernel.php` через замыкание
+     * @param Environment $env   Окружение приложения, передаётся в `kernel.php` через замыкание
+     * @param FileSystem  $paths Сервис файловой системы, передаётся в `kernel.php` через замыкание
      *
      * @return KernelConfig Инициализированная и замороженная конфигурация ядра
      *
      * @throws ConfigException Если файл `kernel.php` существует, но не возвращает корректный объект
      */
-    private function initKernelConfig(Environment $env, Path $paths): KernelConfig
+    private function initKernelConfig(Environment $env, FileSystem $paths): KernelConfig
     {
         $file = $this->paths->bootstrapPath . 'kernel.php';
         if (file_exists($file)) {

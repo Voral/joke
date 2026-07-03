@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Http\Response;
 
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
@@ -11,7 +12,6 @@ use Vasoft\Joke\Http\Response\Html\Asset\AssetFileManager;
 use Vasoft\Joke\Http\Response\Html\HtmlImporter;
 use Vasoft\Joke\Http\Response\Html\PageBuilder;
 use Vasoft\Joke\Http\Response\Html\PageBuilderConfig;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Расширенный HTML-ответ с поддержкой программной сборки страницы.
@@ -47,8 +47,8 @@ class HtmlPageResponse extends HtmlResponse
         $pageBuilderConfig = $container->get(PageBuilderConfig::class);
         /** @var CookieConfig $cookieConfig */
         $cookieConfig = $container->get(CookieConfig::class);
-        /** @var Path $paths */
-        $paths = $container->get(Path::class);
+        /** @var FileSystem $paths */
+        $paths = $container->get(FileSystem::class);
         $manager = new AssetFileManager($paths->basePath, $paths->publicPath, 'v');
         $this->builder = new PageBuilder($pageBuilderConfig, $manager);
         parent::__construct($cookieConfig);

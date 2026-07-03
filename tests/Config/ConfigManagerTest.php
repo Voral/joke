@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Config;
 
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Tests\Fixtures\Config\ConfigProvider;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\ConfigManager;
@@ -13,7 +14,6 @@ use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigFileException;
 use Vasoft\Joke\Container\ServiceContainer;
-use Vasoft\Joke\Support\Normalizers\Path;
 use Vasoft\Joke\Tests\Fixtures\Config\SecondSingleConfig;
 use Vasoft\Joke\Tests\Fixtures\Config\Other;
 use Vasoft\Joke\Tests\Fixtures\Config\SingleConfig;
@@ -46,11 +46,11 @@ final class ConfigManagerTest extends TestCase
     {
         self::$env = new Environment(new EnvironmentLoader(self::$base));
 
-        $pathNormalizer = new Path(self::$basePath);
+        $pathNormalizer = new FileSystem(self::$basePath);
 
         self::$container = new ServiceContainer();
-        self::$container->registerSingleton(Path::class, $pathNormalizer);
-        self::$container->registerAlias('normalizer.path', Path::class);
+        self::$container->registerSingleton(FileSystem::class, $pathNormalizer);
+        self::$container->registerAlias('normalizer.path', FileSystem::class);
 
         $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
         self::$container->registerSingleton(Environment::class, $environment);
@@ -225,11 +225,11 @@ final class ConfigManagerTest extends TestCase
             'database',
             'new \Vasoft\Joke\Tests\Fixtures\Config\SingleConfig($env);',
         );
-        $pathNormalizer = new Path(self::$basePath);
+        $pathNormalizer = new FileSystem(self::$basePath);
 
         $container = new ServiceContainer();
-        $container->registerSingleton(Path::class, $pathNormalizer);
-        $container->registerAlias('normalizer.path', Path::class);
+        $container->registerSingleton(FileSystem::class, $pathNormalizer);
+        $container->registerAlias('normalizer.path', FileSystem::class);
 
         $container->registerSingleton(Environment::class, $env);
         $container->registerAlias('env', Environment::class);

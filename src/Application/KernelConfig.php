@@ -14,7 +14,6 @@ use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Logging\Handlers\StreamHandler;
 use Vasoft\Joke\Logging\Logger;
 use Vasoft\Joke\Routing\RouterServiceProvider;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Конфигурация ядра приложения.
@@ -67,8 +66,8 @@ class KernelConfig extends AbstractConfig
     public function registerLogger(BaseContainer $container): void
     {
         if (null === $this->logger) {
-            /** @var Path $path */
-            $path = $container->get(Path::class);
+            /** @var FileSystem $path */
+            $path = $container->get(FileSystem::class);
             $this->logger = static fn(): Logger => new Logger([
                 new StreamHandler($path->logPath . 'error.log'),
             ]);

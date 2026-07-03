@@ -84,7 +84,7 @@ interface MessageFormatterInterface
 ```php
 <?php
 /** @var \Vasoft\Joke\Config\Environment $env */
-/** @var \Vasoft\Joke\Support\Normalizers\Path $paths */
+/** @var \Vasoft\Joke\Application\FileSystem $paths */
 
 use Vasoft\Joke\Application\KernelConfig;
 use Vasoft\Joke\Logging\Handlers\StreamHandler;
