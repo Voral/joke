@@ -19,6 +19,7 @@ enum ResponseStatus: int
     case FORBIDDEN = 403;
     case NOT_FOUND = 404;
     case METHOD_NOT_ALLOWED = 405;
+    case TOO_MANY_REQUESTS = 429;
     case INTERNAL_SERVER_ERROR = 500;
 
     /**
@@ -37,6 +38,7 @@ enum ResponseStatus: int
             self::FORBIDDEN => 'Forbidden',
             self::NOT_FOUND => 'Not Found',
             self::METHOD_NOT_ALLOWED => 'Method Not Allowed',
+            self::TOO_MANY_REQUESTS => 'Too Many Requests',
             self::INTERNAL_SERVER_ERROR => 'Internal Server Error',
         };
     }

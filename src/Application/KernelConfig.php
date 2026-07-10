@@ -13,6 +13,7 @@ use Vasoft\Joke\Contract\Provider\ServiceProviderInterface;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Logging\Handlers\StreamHandler;
 use Vasoft\Joke\Logging\Logger;
+use Vasoft\Joke\RateLimiter\Provider\RateLimiterServiceProvider;
 use Vasoft\Joke\Routing\RouterServiceProvider;
 
 /**
@@ -39,6 +40,7 @@ class KernelConfig extends AbstractConfig
     private array $providers = [
         KernelServiceProvider::class => true,
         RouterServiceProvider::class => true,
+        RateLimiterServiceProvider::class => true,
     ];
 
     public function setLogger(\Closure|LoggerInterface $logger): static
