@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Container;
 
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Collections\HeadersCollection;
 use Vasoft\Joke\Collections\PropsCollection;
 use Vasoft\Joke\Config\AbstractConfig;
@@ -30,6 +31,7 @@ use Vasoft\Joke\Http\ServerCollection;
 use Vasoft\Joke\Routing\Route;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Session\SessionCollection;
+use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Базовый контейнер внедрения зависимостей (DI Container).
@@ -108,6 +110,7 @@ abstract class BaseContainer implements ContainerInspectionInterface
         $this->registerAlias(LegacyContract\Routing\ResolverInterface::class, ResolverInterface::class);
         $this->registerAlias(LegacyContract\Routing\RouteInterface::class, RouteInterface::class);
         $this->registerAlias(LegacyContract\Routing\RouterInterface::class, RouterInterface::class);
+        $this->registerAlias(Path::class, FileSystem::class);
     }
 
     public function getParameterResolver(): ResolverInterface

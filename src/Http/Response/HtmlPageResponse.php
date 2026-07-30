@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Http\Response;
 
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Http\Cookies\CookieConfig;
@@ -42,17 +43,13 @@ class HtmlPageResponse extends HtmlResponse
     public function __construct(
         ServiceContainer $container,
     ) {
-        /** @var Environment $env */
-        $env = $container->get('env');
         /** @var PageBuilderConfig $pageBuilderConfig */
         $pageBuilderConfig = $container->get(PageBuilderConfig::class);
         /** @var CookieConfig $cookieConfig */
         $cookieConfig = $container->get(CookieConfig::class);
-        $manager = new AssetFileManager(
-            $env->getBasePath(),
-            $env->getBasePath() . '/public',
-            'v',
-        );
+        /** @var FileSystem $paths */
+        $paths = $container->get(FileSystem::class);
+        $manager = new AssetFileManager($paths->basePath, $paths->publicPath, 'v');
         $this->builder = new PageBuilder($pageBuilderConfig, $manager);
         parent::__construct($cookieConfig);
     }

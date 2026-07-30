@@ -24,7 +24,6 @@ use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Основной класс приложения Joke.
@@ -37,6 +36,8 @@ class Application
 {
     /**
      * Базовый путь приложения.
+     *
+     * @deprected Будет удалено в версии 2.0
      */
     public readonly string $basePath;
     /**
@@ -57,6 +58,7 @@ class Application
     protected MiddlewareCollection $routeMiddlewares {
         get => $this->routeMiddlewares;
     }
+    private readonly FileSystem $paths;
 
     /**
      * Конструктор приложения.
@@ -69,11 +71,14 @@ class Application
      * @param string           $routeConfigWeb   Параметр будет удален в версии 2.0
      * @param ServiceContainer $serviceContainer DI-контейнер
      *
-     * @throws ParameterResolveException
      * @throws ConfigException
+     * @throws ContainerException
+     * @throws MiddlewareException
      * @throws MultipleProvideException
+     * @throws ParameterResolveException
      * @throws ProviderException
      * @throws ServiceNotFoundException
+     * @throws \Throwable
      *
      * @todo Нормализовать пути
      */
@@ -91,16 +96,17 @@ class Application
                 E_USER_DEPRECATED,
             );
         }
-        $pathNormalizer = new Path($basePath);
-        $this->basePath = $pathNormalizer->basePath;
-        $serviceContainer->registerSingleton(Path::class, $pathNormalizer);
-        $serviceContainer->registerAlias('normalizer.path', Path::class);
+        $this->paths = new FileSystem($basePath);
+        $this->basePath = $this->paths->basePath;
+        $serviceContainer->registerSingleton(FileSystem::class, $this->paths);
+        $serviceContainer->registerAlias('normalizer.path', FileSystem::class);
+        $serviceContainer->registerAlias('paths', FileSystem::class);
 
-        $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
+        $environment = new Environment(new EnvironmentLoader($this->paths->basePath));
         $serviceContainer->registerSingleton(Environment::class, $environment);
         $serviceContainer->registerAlias('env', Environment::class);
 
-        $kernelConfig = $this->initKernelConfig($environment);
+        $kernelConfig = $this->initKernelConfig($environment, $this->paths);
         $kernelConfig->registerLogger($this->serviceContainer);
 
         try {
@@ -172,19 +178,20 @@ class Application
      * После загрузки конфигурация "замораживается" (становится неизменяемой)
      * и регистрируется в DI-контейнере как синглтон.
      *
-     * @param Environment $env Окружение приложения, передаётся в `kernel.php` через замыкание
+     * @param Environment $env   Окружение приложения, передаётся в `kernel.php` через замыкание
+     * @param FileSystem  $paths Сервис файловой системы, передаётся в `kernel.php` через замыкание
      *
      * @return KernelConfig Инициализированная и замороженная конфигурация ядра
      *
      * @throws ConfigException Если файл `kernel.php` существует, но не возвращает корректный объект
      */
-    private function initKernelConfig(Environment $env): KernelConfig
+    private function initKernelConfig(Environment $env, FileSystem $paths): KernelConfig
     {
-        $file = $this->basePath . '/bootstrap/kernel.php';
+        $file = $this->paths->bootstrapPath . 'kernel.php';
         if (file_exists($file)) {
             try {
-                /** @phpstan-ignore closure.unusedUse */
-                $config = (static function () use ($env, $file): KernelConfig {
+                /** @phpstan-ignore-next-line closure.unusedUse */
+                $config = (static function () use ($env, $file, $paths): KernelConfig {
                     return require $file;
                 })();
             } catch (\Throwable $exception) {

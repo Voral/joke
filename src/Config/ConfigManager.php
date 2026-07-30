@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Config;
 
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigFileException;
@@ -11,7 +12,6 @@ use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
 use Vasoft\Joke\Contract\Provider\ServiceProviderInterface;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * Менеджер конфигураций приложения.
@@ -48,7 +48,7 @@ class ConfigManager
     /**
      * Сервис для нормализации путей к файлам.
      */
-    private readonly Path $pathNormalizer;
+    private readonly FileSystem $pathNormalizer;
 
     /**
      * Список конфигураций и предоставляющих их предостайдеров
@@ -74,7 +74,7 @@ class ConfigManager
         string $lazyPath,
     ) {
         $this->env = $this->serviceContainer->get(Environment::class);
-        $this->pathNormalizer = $this->serviceContainer->get(Path::class);
+        $this->pathNormalizer = $this->serviceContainer->get(FileSystem::class);
         $this->basePath = $this->pathNormalizer->normalizeDir($basePath);
         $this->lazyPath = $this->pathNormalizer->normalizeDir($lazyPath);
         $this->lazyPathExists = !empty($this->lazyPath) && is_dir($this->lazyPath);
