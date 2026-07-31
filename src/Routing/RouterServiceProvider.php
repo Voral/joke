@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Routing;
 
 use Vasoft\Joke\Application\ApplicationConfig;
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Provider\AbstractProvider;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 class RouterServiceProvider extends AbstractProvider
 {
@@ -23,8 +23,8 @@ class RouterServiceProvider extends AbstractProvider
 
     public function boot(): void
     {
-        /** @var Path $pathNormalize */
-        $pathNormalize = $this->serviceContainer->get(Path::class);
+        /** @var FileSystem $pathNormalize */
+        $pathNormalize = $this->serviceContainer->get(FileSystem::class);
         $router = $this->serviceContainer->getRouter();
         $router->addAutoGroups([StdGroup::WEB->value]);
         $file = $pathNormalize->normalizeFile($this->applicationConfig->getFileRoues());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Config;
 
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Tests\Fixtures\Config\ConfigProvider;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\ConfigManager;
@@ -13,7 +14,6 @@ use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigFileException;
 use Vasoft\Joke\Container\ServiceContainer;
-use Vasoft\Joke\Support\Normalizers\Path;
 use Vasoft\Joke\Tests\Fixtures\Config\SecondSingleConfig;
 use Vasoft\Joke\Tests\Fixtures\Config\Other;
 use Vasoft\Joke\Tests\Fixtures\Config\SingleConfig;
@@ -46,11 +46,11 @@ final class ConfigManagerTest extends TestCase
     {
         self::$env = new Environment(new EnvironmentLoader(self::$base));
 
-        $pathNormalizer = new Path(self::$basePath);
+        $pathNormalizer = new FileSystem(self::$basePath);
 
         self::$container = new ServiceContainer();
-        self::$container->registerSingleton(Path::class, $pathNormalizer);
-        self::$container->registerAlias('normalizer.path', Path::class);
+        self::$container->registerSingleton(FileSystem::class, $pathNormalizer);
+        self::$container->registerAlias('normalizer.path', FileSystem::class);
 
         $environment = new Environment(new EnvironmentLoader($pathNormalizer->basePath));
         self::$container->registerSingleton(Environment::class, $environment);
@@ -187,7 +187,7 @@ final class ConfigManagerTest extends TestCase
         $loader = new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
 
         self::expectException(WrongConfigException::class);
-        self::expectExceptionMessage(
+        self::expectExceptionMessageIs(
             'Wrong config for Vasoft\Configs\WrongConfig must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
         $loader->get('Vasoft\Configs\WrongConfig');
@@ -203,7 +203,7 @@ final class ConfigManagerTest extends TestCase
         new ConfigManager(self::$container, 'config', '');
 
         self::expectException(WrongConfigException::class);
-        self::expectExceptionMessage(
+        self::expectExceptionMessageIs(
             'Wrong config for Vasoft\Configs\WrongConfig must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
         self::$container->get('Vasoft\Configs\WrongConfig');
@@ -225,11 +225,11 @@ final class ConfigManagerTest extends TestCase
             'database',
             'new \Vasoft\Joke\Tests\Fixtures\Config\SingleConfig($env);',
         );
-        $pathNormalizer = new Path(self::$basePath);
+        $pathNormalizer = new FileSystem(self::$basePath);
 
         $container = new ServiceContainer();
-        $container->registerSingleton(Path::class, $pathNormalizer);
-        $container->registerAlias('normalizer.path', Path::class);
+        $container->registerSingleton(FileSystem::class, $pathNormalizer);
+        $container->registerAlias('normalizer.path', FileSystem::class);
 
         $container->registerSingleton(Environment::class, $env);
         $container->registerAlias('env', Environment::class);
@@ -249,7 +249,7 @@ final class ConfigManagerTest extends TestCase
         );
 
         $this->expectException(WrongConfigFileException::class);
-        $this->expectExceptionMessage(
+        $this->expectExceptionMessageIs(
             'Config file config/first.php must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
         new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
@@ -263,7 +263,7 @@ final class ConfigManagerTest extends TestCase
             'fn() => new \Vasoft\Joke\Tests\Fixtures\Config\SingleConfig();',
         );
         $this->expectException(WrongConfigFileException::class);
-        $this->expectExceptionMessage(
+        $this->expectExceptionMessageIs(
             'Config file config/first.php must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
         new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
@@ -278,7 +278,7 @@ final class ConfigManagerTest extends TestCase
         );
         $loader = new ConfigManager(self::$container, 'config', self::$basePath . 'config/lazy');
         $this->expectException(ConfigException::class);
-        $this->expectExceptionMessage(
+        $this->expectExceptionMessageIs(
             'Config file config/lazy/UnknownConfig.php must return a instance of Vasoft\Joke\Config\AbstractConfig',
         );
         $loader->get('\Fixtures\Example\UnknownConfig');
@@ -309,7 +309,7 @@ final class ConfigManagerTest extends TestCase
         $loader = new ConfigManager(self::$container, 'config', '');
         $loader->registerProviders([ConfigProvider::class]);
         self::expectException(WrongConfigException::class);
-        self::expectExceptionMessage(
+        self::expectExceptionMessageIsOrContains(
             'Provider Vasoft\Joke\Tests\Fixtures\Config\ConfigProvider returned invalid type for wrong',
         );
 
@@ -321,7 +321,7 @@ final class ConfigManagerTest extends TestCase
     {
         $loader = new ConfigManager(self::$container, 'config', '');
         self::expectException(ConfigException::class);
-        self::expectExceptionMessage(
+        self::expectExceptionMessageIs(
             'Unknown config class: Vasoft\Joke\Tests\Fixtures\Config\SecondSingleConfig',
         );
 

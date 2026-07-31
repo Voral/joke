@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Application;
 
 use Vasoft\Joke\Config\AbstractConfig;
-use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Container\BaseContainer;
+use Vasoft\Joke\Container\Exceptions\ContainerException;
+use Vasoft\Joke\Container\Exceptions\ParameterResolveException;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
 use Vasoft\Joke\Contract\Provider\ServiceProviderInterface;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
@@ -58,14 +59,17 @@ class KernelConfig extends AbstractConfig
      * для удобства получения из контейнера.
      *
      * @param BaseContainer $container DI-контейнер приложения
+     *
+     * @throws ContainerException        В случае ошибок DI контейнера
+     * @throws ParameterResolveException В случае ошибок определения параметров
      */
     public function registerLogger(BaseContainer $container): void
     {
         if (null === $this->logger) {
-            /** @var Environment $env */
-            $env = $container->get(Environment::class);
+            /** @var FileSystem $path */
+            $path = $container->get(FileSystem::class);
             $this->logger = static fn(): Logger => new Logger([
-                new StreamHandler($env->getBasePath() . 'var/log/error.log'),
+                new StreamHandler($path->logPath . 'error.log'),
             ]);
         }
         $container->registerSingleton(LoggerInterface::class, $this->logger);

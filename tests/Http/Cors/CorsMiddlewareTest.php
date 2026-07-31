@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Tests\Http\Cors;
 
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Application\ApplicationConfig;
+use Vasoft\Joke\Application\FileSystem;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
@@ -17,7 +18,6 @@ use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\HtmlResponse;
 use Vasoft\Joke\Http\Response\ResponseBuilder;
 use Vasoft\Joke\Http\Response\ResponseStatus;
-use Vasoft\Joke\Support\Normalizers\Path;
 
 /**
  * @internal
@@ -32,9 +32,9 @@ final class CorsMiddlewareTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         $container = new ServiceContainer();
-        $pathNormalizer = new Path(__DIR__);
-        $container->registerSingleton(Path::class, $pathNormalizer);
-        $container->registerAlias('normalizer.path', Path::class);
+        $pathNormalizer = new FileSystem(__DIR__);
+        $container->registerSingleton(FileSystem::class, $pathNormalizer);
+        $container->registerAlias('normalizer.path', FileSystem::class);
 
         $environment = new Environment(new EnvironmentLoader(''));
         $container->registerSingleton(Environment::class, $environment);
