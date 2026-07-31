@@ -28,7 +28,7 @@ use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
 class RateLimiterServiceProvider extends AbstractProvider implements ConfigurableServiceProviderInterface
 {
     /**
-     * @var string|null Путь к хранилищу
+     * @var null|string Путь к хранилищу
      */
     private ?string $storagePath = null;
 
@@ -42,17 +42,17 @@ class RateLimiterServiceProvider extends AbstractProvider implements Configurabl
      */
     private string $driver = 'file';
 
+    public function __construct(
+        private readonly ServiceContainer $serviceContainer,
+    ) {}
+
     /**
      * Устанавливает путь к хранилищу.
-     *
-     * @param string $storagePath
-     *
-     * @return self
      */
     public function setStoragePath(string $storagePath): self
     {
         $this->storagePath = $storagePath;
-        
+
         return $this;
     }
 
@@ -60,13 +60,11 @@ class RateLimiterServiceProvider extends AbstractProvider implements Configurabl
      * Устанавливает класс идентификатора клиентов.
      *
      * @param class-string<ClientIdentifierInterface> $clientIdentifierClass
-     *
-     * @return self
      */
     public function setClientIdentifierClass(string $clientIdentifierClass): self
     {
         $this->clientIdentifierClass = $clientIdentifierClass;
-        
+
         return $this;
     }
 
@@ -74,47 +72,33 @@ class RateLimiterServiceProvider extends AbstractProvider implements Configurabl
      * Устанавливает драйвер хранилища.
      *
      * @param string $driver (file|array|redis)
-     *
-     * @return self
      */
     public function setDriver(string $driver): self
     {
         $this->driver = $driver;
-        
+
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function register(ServiceContainer $container): void
+    public function register(): void
     {
-        $container->singleton(StorageInterface::class, function (ServiceContainer $container) {
-            return $this->createStorage();
-        });
+        $container = $this->serviceContainer;
+        $container->registerSingleton(StorageInterface::class, fn(ServiceContainer $container) => $this->createStorage());
 
-        $container->singleton(RateLimiterInterface::class, function (ServiceContainer $container) {
-            $storage = $container->make(StorageInterface::class);
-            
+        $container->registerSingleton(RateLimiterInterface::class, static function (ServiceContainer $container) {
+            $storage = $container->get(StorageInterface::class);
+
             return new SlidingWindowRateLimiter($storage);
         });
 
-        $container->singleton(ClientIdentifierInterface::class, function (ServiceContainer $container) {
-            return new $this->clientIdentifierClass();
-        });
+        $container->registerSingleton(ClientIdentifierInterface::class, fn(ServiceContainer $container) => new $this->clientIdentifierClass());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function boot(): void
     {
         // Провайдер не требует дополнительной инициализации
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function provides(): array
     {
         return [
@@ -124,21 +108,15 @@ class RateLimiterServiceProvider extends AbstractProvider implements Configurabl
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function provideConfigs(): array
     {
         return [RateLimitConfig::class];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function buildConfig(string $configClass, ServiceContainer $container): AbstractConfig
     {
-        if ($configClass !== RateLimitConfig::class) {
-            throw new UnknownConfigException($configClass, self::class);
+        if (RateLimitConfig::class !== $configClass) {
+            throw new UnknownConfigException($configClass);
         }
 
         return new RateLimitConfig();
@@ -152,6 +130,7 @@ class RateLimiterServiceProvider extends AbstractProvider implements Configurabl
         switch ($this->driver) {
             case 'file':
                 $storagePath = $this->storagePath ?: storage_path('ratelimit');
+
                 return new FileBasedStorage($storagePath);
 
             case 'array':

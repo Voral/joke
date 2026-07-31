@@ -31,7 +31,7 @@ $router->get(
             </ul>
             HTML,
     ),
-);
+)->addMiddleware(\Vasoft\Joke\RateLimiter\RateLimitMiddleware::class);
 $router->get('/name/{name:slug}', static fn(string $name) => 'Hi ' . $name, 'hiName');
 $router->get('/json/{name:slug}', static fn(string $name) => ['fio' => $name]);
 $route = $router->get('/name-filtered/{name:slug}', static fn(string $name) => 'Hi ' . $name)->addGroup('filtered');
