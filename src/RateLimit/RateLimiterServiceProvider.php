@@ -4,28 +4,32 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\RateLimit;
 
+use Vasoft\Joke\Config\AbstractConfig;
+use Vasoft\Joke\Config\Exceptions\UnknownConfigException;
+use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Contract\Provider\ConfigurableServiceProviderInterface;
 use Vasoft\Joke\Contract\RateLimit\ClientIdentifierInterface;
 use Vasoft\Joke\Contract\RateLimit\StorageInterface;
 use Vasoft\Joke\Provider\AbstractProvider;
-use Vasoft\Joke\RateLimit\IpClientIdentifier;
-use Vasoft\Joke\RateLimit\RateLimitConfig;
 use Vasoft\Joke\Storage\FileBasedStorage;
 
 final class RateLimiterServiceProvider extends AbstractProvider implements ConfigurableServiceProviderInterface
 {
+    public function __construct(
+        private readonly ServiceContainer $serviceContainer,
+    ) {}
     public function register(): void
     {
-        $config = $this->container->get(RateLimitConfig::class);
+        $config = $this->serviceContainer->get(RateLimitConfig::class);
 
-        $this->container->bind(
+        $this->serviceContainer->registerSingleton(
             StorageInterface::class,
-            fn () => new FileBasedStorage($config->storagePath)
+            static fn() => new FileBasedStorage($config->storagePath),
         );
 
-        $this->container->bind(
+        $this->serviceContainer->registerSingleton(
             ClientIdentifierInterface::class,
-            fn () => new IpClientIdentifier()
+            static fn() => new IpClientIdentifier(),
         );
     }
 
@@ -52,6 +56,14 @@ final class RateLimiterServiceProvider extends AbstractProvider implements Confi
         return match ($configClass) {
             RateLimitConfig::class => new RateLimitConfig(),
             default => null,
+        };
+    }
+
+    public static function buildConfig(string $configClass, ServiceContainer $container): AbstractConfig
+    {
+        return match ($configClass) {
+            RateLimitConfig::class => new RateLimitConfig(),
+            default => throw new UnknownConfigException($configClass),
         };
     }
 }

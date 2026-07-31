@@ -46,9 +46,7 @@ final class RateLimitConfig extends AbstractConfig
      *
      * @var array<string, array{limit: int, window: int}>
      */
-    public array $profiles {
-        get => $this->profiles;
-    }
+    private array $profiles;
 
     public function __construct()
     {

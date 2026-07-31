@@ -10,7 +10,14 @@ use Vasoft\Joke\Tests\Fixtures\Controllers\SingleController;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Http\Response\HtmlPageResponse;
+use Vasoft\Joke\RateLimit\IpClientIdentifier;
+use Vasoft\Joke\RateLimit\RateLimitConfig;
+use Vasoft\Joke\RateLimit\RateLimitMiddleware;
+use Vasoft\Joke\Storage\FileBasedStorage;
 
+// Временный костыль для теста
+$rateConfig = (new RateLimitConfig())->setEnabled(true);
+$testPath = dirname(__FILE__,4).'/var/ratelimit/';
 /**
  * @var Router $router
  */
@@ -30,6 +37,14 @@ $router->get(
                 <li><a href="/shop/infoNew">Вызов статического метода переданного строкой</a></li>
             </ul>
             HTML,
+    ),
+)->addMiddleware(
+    new RateLimitMiddleware(
+        new FileBasedStorage($testPath),
+        new IpClientIdentifier(),
+        $rateConfig,
+        3,
+        60,
     ),
 );
 $router->get('/name/{name:slug}', static fn(string $name) => 'Hi ' . $name, 'hiName');

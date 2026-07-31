@@ -7,8 +7,10 @@ namespace Vasoft\Joke\RateLimit;
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
 use Vasoft\Joke\Contract\RateLimit\ClientIdentifierInterface;
 use Vasoft\Joke\Contract\RateLimit\StorageInterface;
+use Vasoft\Joke\Http\Cookies\CookieConfig;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\JsonResponse;
+use Vasoft\Joke\Http\Response\ResponseStatus;
 use Vasoft\Joke\Storage\Exceptions\StorageException;
 
 /**
@@ -52,29 +54,31 @@ final class RateLimitMiddleware implements MiddlewareInterface
             }
 
             if ($isBlocked) {
-                return new JsonResponse([
+                $response = new JsonResponse(new CookieConfig());
+                $response->setBody([
                     'error' => 'Too Many Requests',
                     'message' => "Rate limit exceeded: {$this->limit} requests per {$this->window} seconds",
                     'retry_after' => $this->window,
-                ], 429, [
-                    'X-RateLimit-Limit' => (string)$this->limit,
-                    'X-RateLimit-Remaining' => (string)$remaining,
-                    'X-RateLimit-Reset' => (string)$resetTime,
-                    'Retry-After' => (string)$this->window,
                 ]);
+                $response->setStatus(ResponseStatus::METHOD_NOT_ALLOWED);
+                $response->headers
+                    ->set('X-RateLimit-Limit', (string) $this->limit)
+                    ->set('X-RateLimit-Remaining', (string) $remaining)
+                    ->set('X-RateLimit-Reset', (string) $resetTime)
+                    ->set('Retry-After', (string) $this->window);
+
+                return $response;
             }
 
-            $response = $next($request);
+            return $next($request);
 
-            if ($this->config->withHeaders && isset($request->props)) {
-                foreach ($request->props->all() as $key => $value) {
-                    if (str_starts_with($key, 'X-RateLimit-') || $key === 'Retry-After') {
-                        // Добавить заголовок если возможно
-                    }
-                }
-            }
-
-            return $response;
+            //            if ($this->config->withHeaders && isset($request->props)) {
+            //                foreach ($request->props->all() as $key => $value) {
+            //                    if (str_starts_with($key, 'X-RateLimit-') || $key === 'Retry-After') {
+            //                        // Добавить заголовок если возможно
+            //                    }
+            //                }
+            //            }
         } catch (StorageException) {
             return $next($request);
         }
