@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Http\Response;
 
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Http\Cookies\CookieConfig;

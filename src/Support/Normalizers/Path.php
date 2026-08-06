@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Support\Normalizers;
 
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 
 use function Vasoft\Joke\triggerDeprecation;
 
 require_once __DIR__ . '/../../DeprecatedClass.php';
 triggerDeprecation(
     'Vasoft\Joke\Support\Normalizers\Path',
-    'Vasoft\Joke\Application\FileSystem',
+    'Vasoft\Joke\Support\FileSystem',
 );
 
 /** @phpstan-ignore  if.alwaysFalse */

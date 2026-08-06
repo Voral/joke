@@ -14,6 +14,7 @@ use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Logging\Handlers\StreamHandler;
 use Vasoft\Joke\Logging\Logger;
 use Vasoft\Joke\Routing\RouterServiceProvider;
+use Vasoft\Joke\Support\FileSystem;
 
 /**
  * Конфигурация ядра приложения.

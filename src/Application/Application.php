@@ -24,6 +24,7 @@ use Vasoft\Joke\Routing\Exceptions\NotFoundException;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;
+use Vasoft\Joke\Support\FileSystem;
 
 /**
  * Основной класс приложения Joke.
@@ -189,13 +190,12 @@ class Application
     {
         $file = $this->paths->bootstrapPath . 'kernel.php';
         if (file_exists($file)) {
-            try {
-                /** @phpstan-ignore-next-line closure.unusedUse */
-                $config = (static function () use ($env, $file, $paths): KernelConfig {
-                    return require $file;
-                })();
-            } catch (\Throwable $exception) {
-                throw new ConfigException('kernel.php must return a KernelConfig instance.', previous: $exception);
+            $config = $paths->includeFile($file, [
+                'env' => $env,
+                'paths' => $paths,
+            ]);
+            if (!$config instanceof KernelConfig) {
+                throw new ConfigException('kernel.php must return a KernelConfig instance.');
             }
         } else {
             $config = new KernelConfig();

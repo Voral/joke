@@ -8,7 +8,7 @@ use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\TestDox;
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Exceptions\FileSystemException;
@@ -16,7 +16,7 @@ use Vasoft\Joke\Exceptions\FileSystemException;
 /**
  * @internal
  *
- * @coversDefaultClass \Vasoft\Joke\Application\FileSystem
+ * @coversDefaultClass \Vasoft\Joke\Support\FileSystem
  */
 #[CoversClass(FileSystem::class)]
 #[TestDox('FileSystem — единый сервис знаний о путях проекта')]
@@ -268,9 +268,9 @@ final class FileSystemTest extends TestCase
     public function testEnsureDirectoryMakeDirException(): void
     {
         $dir = $this->fileSystem->basePath . 'new_needle_dir';
-        $isDir = self::getFunctionMock('Vasoft\Joke\Application', 'is_dir');
+        $isDir = self::getFunctionMock('Vasoft\Joke\Support', 'is_dir');
         $isDir->expects(self::exactly(2))->willReturn(false);
-        $mkDir = self::getFunctionMock('Vasoft\Joke\Application', 'mkdir');
+        $mkDir = self::getFunctionMock('Vasoft\Joke\Support', 'mkdir');
         $mkDir->expects(self::exactly(1))->willReturn(false);
         $this->expectException(FileSystemException::class);
         $this->expectExceptionMessageIs("Unable to create directory: '{$dir}'.");
@@ -352,7 +352,7 @@ final class FileSystemTest extends TestCase
     #[RunInSeparateProcess]
     public function testReadFileNonExistent(): void
     {
-        $fileGetContents = self::getFunctionMock('Vasoft\Joke\Application', 'file_get_contents');
+        $fileGetContents = self::getFunctionMock('Vasoft\Joke\Support', 'file_get_contents');
         $fileGetContents->expects(self::exactly(1))->willReturn(false);
         $this->expectException(FileSystemException::class);
         $path = $this->fileSystem->basePath . 'nonexistent.txt';
@@ -387,35 +387,93 @@ final class FileSystemTest extends TestCase
         self::assertTrue(true); // no exception
     }
 
-    #[TestDox('includeFileOrDie подключает существующий файл и не выбрасывает исключение')]
-    public function testIncludeFileOrDieExisting(): void
+    #[TestDox('requireFile подключает существующий файл и не выбрасывает исключение')]
+    public function testRequireFileExisting(): void
     {
         $file = $this->fileSystem->basePath . 'config2.php';
         file_put_contents($file, '<?php echo "hi2";');
         ob_start();
-        $this->fileSystem->includeFileOrDie($file);
+        $this->fileSystem->requireFile($file);
         $content = ob_get_clean();
         self::assertSame('hi2', $content);
     }
 
-    #[TestDox('includeFileOrDie выбрасывает исключение для несуществующего файла')]
-    public function testIncludeFileOrDieNonExistent(): void
+    #[TestDox('requireFile выбрасывает исключение для несуществующего файла')]
+    public function testRequireFileNonExistent(): void
     {
         $this->expectException(FileSystemException::class);
         $filename = $this->fileSystem->basePath . 'nonexistent.php';
         $this->expectExceptionMessageIs("Unable to include file: '{$filename}'.");
-        $this->fileSystem->includeFileOrDie($filename);
+        $this->fileSystem->requireFile($filename);
     }
 
-    #[TestDox('includeFileOrDie использует переданное сообщение об ошибке')]
-    public function testIncludeFileOrDieCustomMessage(): void
+    #[TestDox('requireFile использует переданное сообщение об ошибке')]
+    public function testRequireFileCustomMessage(): void
     {
         $this->expectException(FileSystemException::class);
         $this->expectExceptionMessageIs('Custom error message');
-        $this->fileSystem->includeFileOrDie(
+        $this->fileSystem->requireFile(
             $this->fileSystem->basePath . 'nonexistent.php',
-            'Custom error message',
+            errorMessage: 'Custom error message',
         );
+    }
+
+    #[TestDox('requireFileOnce подключает один раз и передает переменные')]
+    public function testRequireFileOnce(): void
+    {
+        $vars = ['a' => date('His')];
+        $file = $this->fileSystem->basePath . 'require-once-' . uniqid() . '.php';
+        file_put_contents($file, '<?php echo $a;');
+        ob_start();
+        $this->fileSystem->requireFileOnce($file, $vars);
+        $content = ob_get_clean();
+        self::assertSame($vars['a'], $content);
+
+        ob_start();
+        $this->fileSystem->requireFileOnce($file, ['a' => 'changed']);
+        $content = ob_get_clean();
+        self::assertSame('', $content);
+    }
+
+    #[TestDox('includeFileOnce подключает один раз и передает переменные')]
+    public function testIncludeFileOnce(): void
+    {
+        $vars = ['a' => date('His')];
+        $file = $this->fileSystem->basePath . 'include-once-' . uniqid() . '.php';
+        file_put_contents($file, '<?php echo $a;');
+        ob_start();
+        $this->fileSystem->includeFileOnce($file, $vars);
+        $content = ob_get_clean();
+        self::assertSame($vars['a'], $content);
+
+        ob_start();
+        $this->fileSystem->includeFileOnce($file, ['a' => 'changed']);
+        $content = ob_get_clean();
+        self::assertSame('', $content);
+    }
+
+    #[TestDox('requireFile передает переменные')]
+    public function testRequireFileVars(): void
+    {
+        $vars = ['a' => date('His')];
+        $file = $this->fileSystem->basePath . 'require-once-' . uniqid() . '.php';
+        file_put_contents($file, '<?php echo $a;');
+        ob_start();
+        $this->fileSystem->requireFile($file, $vars);
+        $content = ob_get_clean();
+        self::assertSame($vars['a'], $content);
+    }
+
+    #[TestDox('includeFile передает переменные')]
+    public function testIncludeFileVars(): void
+    {
+        $vars = ['a' => date('His')];
+        $file = $this->fileSystem->basePath . 'include-once-' . uniqid() . '.php';
+        file_put_contents($file, '<?php echo $a;');
+        ob_start();
+        $this->fileSystem->includeFile($file, $vars);
+        $content = ob_get_clean();
+        self::assertSame($vars['a'], $content);
     }
 
     #[TestDox('validatePath корректно обрабатывает path traversal с множественными ..')]
@@ -491,7 +549,7 @@ final class FileSystemTest extends TestCase
     #[RunInSeparateProcess]
     public function testWriteFileDoesNotCorruptOnFailure(): void
     {
-        $filePutContents = self::getFunctionMock('Vasoft\Joke\Application', 'file_put_contents');
+        $filePutContents = self::getFunctionMock('Vasoft\Joke\Support', 'file_put_contents');
         $filePutContents->expects(self::exactly(1))->willReturn(false);
         $file = $this->fileSystem->basePath . 'some-file.txt';
         file_put_contents($file, 'original');
@@ -505,7 +563,7 @@ final class FileSystemTest extends TestCase
     #[RunInSeparateProcess]
     public function testWriteFileSafeDoesNotCorruptOnFailure(): void
     {
-        $filePutContents = self::getFunctionMock('Vasoft\Joke\Application', 'file_put_contents');
+        $filePutContents = self::getFunctionMock('Vasoft\Joke\Support', 'file_put_contents');
         $filePutContents->expects(self::exactly(1))->willReturn(false);
 
         $file = $this->fileSystem->basePath . 'needle_wrong_safe.txt';

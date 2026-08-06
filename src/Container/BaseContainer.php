@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Container;
 
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Collections\HeadersCollection;
 use Vasoft\Joke\Collections\PropsCollection;
 use Vasoft\Joke\Config\AbstractConfig;

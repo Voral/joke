@@ -90,7 +90,7 @@
 ```php
 <?php
 /** @var \Vasoft\Joke\Config\Environment $env */
-/** @var \Vasoft\Joke\Application\FileSystem $paths */
+/** @var \Vasoft\Joke\Support\FileSystem $paths */
 
 use Vasoft\Joke\Application\KernelConfig;
 use Vasoft\Joke\Logging\Handlers\StreamHandler;

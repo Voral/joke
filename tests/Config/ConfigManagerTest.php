@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Config;
 
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Tests\Fixtures\Config\ConfigProvider;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Config\ConfigManager;

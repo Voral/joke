@@ -6,7 +6,8 @@ namespace Vasoft\Joke\Tests\Application;
 
 use phpmock\phpunit\PHPMock;
 use Vasoft\Joke\Application\ApplicationConfig;
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Middleware\StdMiddleware;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Contract\Logging\LoggerInterface;
@@ -25,6 +26,7 @@ use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Routing\Router;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Config\Environment;
+use Vasoft\Joke\Tests\Fixtures\Middlewares\NopMiddleware;
 use Vasoft\Joke\Tests\Fixtures\Middlewares\SingleMiddleware;
 
 /**
@@ -98,6 +100,10 @@ final class ApplicationTest extends TestCase
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
 
         $app = new Application(dirname(__DIR__, 2), '', $container);
+        $routeMiddlewares = $container->get('middleware.route');
+        $routeMiddlewares
+            ->addMiddleware(new NopMiddleware(), StdMiddleware::SESSION->value);
+
         ob_start();
         $request = new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/']);
         $app->handle($request);
@@ -112,6 +118,10 @@ final class ApplicationTest extends TestCase
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
         $container->registerSingleton(LoggerInterface::class, Logger::class);
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container);
+        $routeMiddlewares = $container->get('middleware.route');
+        $routeMiddlewares
+            ->addMiddleware(new NopMiddleware(), StdMiddleware::SESSION->value);
+
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/json/Alex']));
         $output = ob_get_clean();
@@ -122,7 +132,7 @@ final class ApplicationTest extends TestCase
     {
         $app = new Application(
             dirname(__DIR__) . \DIRECTORY_SEPARATOR . '/Fixtures/no-wildcard',
-            '/tests/Fixtures/no-wildcard/routes/web.php',
+            'tests/Fixtures/no-wildcard/routes/web.php',
             new ServiceContainer(),
         );
         ob_start();
@@ -137,6 +147,10 @@ final class ApplicationTest extends TestCase
         $container->registerSingleton(CsrfConfig::class, CsrfConfig::class);
         $container->registerSingleton(LoggerInterface::class, new FakeLogger());
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container);
+        $routeMiddlewares = $container->get('middleware.route');
+        $routeMiddlewares
+            ->addMiddleware(new NopMiddleware(), StdMiddleware::SESSION->value);
+
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/not-found-url']));
         $output = ob_get_clean();
@@ -172,6 +186,10 @@ final class ApplicationTest extends TestCase
         $app = new Application(dirname(__DIR__, 2), 'routes/web.php', $container)
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware);
+        $routeMiddlewares = $container->get('middleware.route');
+        $routeMiddlewares
+            ->addMiddleware(new NopMiddleware(), StdMiddleware::SESSION->value);
+
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
         $output = ob_get_clean();
@@ -187,8 +205,9 @@ final class ApplicationTest extends TestCase
         $routeMiddleware->index = 4;
         $routeMiddleware2 = new SingleMiddleware();
         $routeMiddleware2->index = 5;
-
         $diContainer = new ServiceContainer();
+
+
         $diContainer->registerSingleton(CsrfConfig::class, CsrfConfig::class);
         $app = new Application(
             dirname(__DIR__, 2),
@@ -198,11 +217,15 @@ final class ApplicationTest extends TestCase
             ->addMiddleware(SingleMiddleware::class)
             ->addMiddleware($middleware)
             ->addRouteMiddleware($routeMiddleware);
+
+        $routeMiddlewares = $diContainer->get('middleware.route');
+        $routeMiddlewares
+            ->addMiddleware(new NopMiddleware(), StdMiddleware::SESSION->value);
+
         /** @var Router $router */
         $router = $diContainer->get(RouterInterface::class);
         $route = $router->route('hiName');
         $route->addMiddleware($routeMiddleware2);
-
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));
         $output = ob_get_clean();
@@ -229,6 +252,9 @@ final class ApplicationTest extends TestCase
             ->addMiddleware($middleware)
             ->addRouteMiddleware($routeMiddleware1)
             ->addRouteMiddleware($routeMiddleware2, groups: ['filtered']);
+        $routeMiddlewares = $container->get('middleware.route');
+        $routeMiddlewares
+            ->addMiddleware(new NopMiddleware(), StdMiddleware::SESSION->value);
 
         ob_start();
         $app->handle(new HttpRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/name/jons']));

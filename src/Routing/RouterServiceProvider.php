@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Routing;
 
 use Vasoft\Joke\Application\ApplicationConfig;
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Container\ServiceContainer;
 use Vasoft\Joke\Provider\AbstractProvider;
 
@@ -28,9 +28,7 @@ class RouterServiceProvider extends AbstractProvider
         $router = $this->serviceContainer->getRouter();
         $router->addAutoGroups([StdGroup::WEB->value]);
         $file = $pathNormalize->normalizeFile($this->applicationConfig->getFileRoues());
-        if (file_exists($file)) {
-            require $file;
-        }
+        $pathNormalize->includeFile($file, ['router' => $router]);
         $router->cleanAutoGroups();
     }
 

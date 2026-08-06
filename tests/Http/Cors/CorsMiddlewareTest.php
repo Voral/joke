@@ -6,7 +6,7 @@ namespace Vasoft\Joke\Tests\Http\Cors;
 
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Application\ApplicationConfig;
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Config\Environment;
 use Vasoft\Joke\Config\EnvironmentLoader;
 use Vasoft\Joke\Container\ServiceContainer;

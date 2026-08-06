@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Config;
 
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Exceptions\FileSystemException;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Config\Exceptions\ConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigException;
 use Vasoft\Joke\Config\Exceptions\WrongConfigFileException;
@@ -119,23 +120,19 @@ class ConfigManager
      * @param string $path абсолютный путь к PHP-файлу конфигурации
      *
      * @throws WrongConfigFileException если файл возвращает значение недопустимого типа
+     * @throws FileSystemException      При ошибках файлового сервиса
      */
     protected function loadFile(string $path): void
     {
-        $env = $this->env;
-        /** @phpstan-ignore-next-line */
-        $config = static function () use ($env, $path) {
-            return require $path;
-        };
-        $result = $config();
-        if ($result instanceof AbstractConfig) {
-            $result->freeze();
-            $this->serviceContainer->registerSingleton($result::class, $result);
+        $config = $this->pathNormalizer->requireFile($path, ['env' => $this->env]);
+        if ($config instanceof AbstractConfig) {
+            $config->freeze();
+            $this->serviceContainer->registerSingleton($config::class, $config);
 
             return;
         }
-        if (is_array($result)) {
-            $this->registerFromArray($result);
+        if (is_array($config)) {
+            $this->registerFromArray($config);
 
             return;
         }

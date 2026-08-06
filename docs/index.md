@@ -98,6 +98,7 @@ Joke следует принципу минимализма и модульно�
     - [Сервис-провайдеры](./detail/providers.md)
     - [Работа с HTTP Cookie](./detail/cookie.md)
     - [HtmlPageResponse: HTML-ответы в Joke](./detail/html-response.md)
+    - [Файловая система](./detail/filesystem.md)
 - Скелетоны
     - [Минимальный скелетон](./skeleton/minimal.md)
 - Обновление версий

@@ -91,10 +91,11 @@ public function __construct(
 
 ### 4. Единая точка информации о путях проекта
 
-Пути проекта необходимо получать через объект Vasoft\Joke\Support\Normalizers\Path (алиас 'normalizer.path'). Будут удалены свойства и методы:
+Пути проекта необходимо получать через объект Vasoft\Joke\Support\FileSystem (алиас 'normalizer.path'). Будут удалены свойства и методы:
 - Vasoft\Joke\Application::$basePath
 - Vasoft\Joke\Config\Environment::getBasePath()
 - Vasoft\Joke\Config\EnvironmentLoader::getBasePath()
+- FileRelatedCache в параметры конструктора будут добавлены сервис FileSystem 
 
 ## Стратегия перехода
 

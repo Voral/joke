@@ -8,7 +8,7 @@ use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
-use Vasoft\Joke\Application\FileSystem;
+use Vasoft\Joke\Support\FileSystem;
 use Vasoft\Joke\Application\KernelServiceProvider;
 use Vasoft\Joke\Config\ConfigManager;
 use Vasoft\Joke\Config\Environment;
