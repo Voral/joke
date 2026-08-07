@@ -6,6 +6,7 @@ namespace Vasoft\Joke\Http\Response\Html;
 
 use Vasoft\Joke\Http\Response\Html\Asset\AssetCollection;
 use Vasoft\Joke\Http\Response\Html\Asset\AssetFileManager;
+use Vasoft\Joke\Http\Response\Html\Asset\CssCollection;
 
 /**
  * Конструктор HTML-страницы, управляющий структурой документа.
@@ -24,7 +25,7 @@ class PageBuilder
     /**
      * Коллекция CSS-стилей для подключения в <head> или <body>.
      */
-    public private(set) AssetCollection $css;
+    public private(set) CssCollection $css;
     /**
      * Коллекция JavaScript-скриптов для подключения в <head> или <body>.
      */
@@ -85,9 +86,7 @@ class PageBuilder
         AssetFileManager $fileManager,
     ) {
         $this->tagSeparator = $config->tagSeparator;
-        $this->css = new AssetCollection(
-            'link',
-            'href',
+        $this->css = new CssCollection(
             $fileManager,
             $config->assetsPathCss,
             $this->tagSeparator,

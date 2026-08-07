@@ -159,7 +159,7 @@ class AssetCollection
      *
      * @throws JokeException Если файл недоступен
      */
-    private function compileRow(Asset $asset): string
+    protected function compileRow(Asset $asset): string
     {
         $uri = $this->assetFileManager->process($asset->url, $this->directoryName);
         $asset->attributes->set($this->valueAttribute, $uri);
