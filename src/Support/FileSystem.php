@@ -116,9 +116,9 @@ class FileSystem
      * Если передан относительный путь, он преобразуется в абсолютный путем добавления basePath.
      * Гарантирует, что результирующий путь всегда заканчивается ровно одним разделителем директории.
      *
-     * @param string $path путь к директории (относительный или абсолютный)
+     * @param non-empty-string $path путь к директории (относительный или абсолютный)
      *
-     * @return string абсолютный нормализованный путь к директории с завершающим разделителем
+     * @return non-empty-string абсолютный нормализованный путь к директории с завершающим разделителем
      */
     public function normalizeDir(string $path): string
     {
@@ -135,9 +135,9 @@ class FileSystem
      * Если передан относительный путь, он преобразуется в абсолютный путем добавления basePath.
      * В отличие от директорий, путь к файлу не гарантированно должен заканчиваться разделителем.
      *
-     * @param string $path путь к файлу (относительный или абсолютный)
+     * @param non-empty-string $path путь к файлу (относительный или абсолютный)
      *
-     * @return string абсолютный нормализованный путь к файлу
+     * @return non-empty-string абсолютный нормализованный путь к файлу
      */
     public function normalizeFile(string $path): string
     {
@@ -155,7 +155,7 @@ class FileSystem
      * - Для Windows: проверяет наличие буквы диска с разделителем (например, "C:\" или "C:/").
      * - Для Unix-систем: проверяет наличие начального слэша ("/").
      *
-     * @param string $path путь для проверки
+     * @param non-empty-string $path путь для проверки
      *
      * @return bool true, если путь абсолютный, иначе false
      */
@@ -171,9 +171,9 @@ class FileSystem
     /**
      * Формирует абсолютный путь относительно базовой директории.
      *
-     * @param string $path относительный путь
+     * @param non-empty-string $path относительный путь
      *
-     * @return string абсолютный путь
+     * @return non-empty-string абсолютный путь
      */
     public function atBase(string $path): string
     {
@@ -183,9 +183,9 @@ class FileSystem
     /**
      * Формирует абсолютный путь относительно директории кэша.
      *
-     * @param string $path относительный путь внутри var/cache/
+     * @param non-empty-string $path относительный путь внутри var/cache/
      *
-     * @return string абсолютный путь
+     * @return non-empty-string абсолютный путь
      */
     public function atCache(string $path): string
     {
@@ -195,9 +195,9 @@ class FileSystem
     /**
      * Формирует абсолютный путь относительно директории bootstrap.
      *
-     * @param string $path относительный путь внутри bootstrap/
+     * @param non-empty-string $path относительный путь внутри bootstrap/
      *
-     * @return string абсолютный путь
+     * @return non-empty-string абсолютный путь
      */
     public function atBootstrap(string $path): string
     {
@@ -207,9 +207,9 @@ class FileSystem
     /**
      * Формирует абсолютный путь относительно директории логов.
      *
-     * @param string $path относительный путь внутри var/log/
+     * @param non-empty-string $path относительный путь внутри var/log/
      *
-     * @return string абсолютный путь
+     * @return non-empty-string абсолютный путь
      */
     public function atLog(string $path): string
     {
@@ -219,9 +219,9 @@ class FileSystem
     /**
      * Формирует абсолютный путь относительно директории var.
      *
-     * @param string $path относительный путь внутри var/
+     * @param non-empty-string $path относительный путь внутри var/
      *
-     * @return string абсолютный путь
+     * @return non-empty-string абсолютный путь
      */
     public function atVar(string $path): string
     {
@@ -231,10 +231,10 @@ class FileSystem
     /**
      * Формирует абсолютный путь относительно произвольной директории.
      *
-     * @param string $directory базовая директория (будет нормализована)
-     * @param string $path      относительный путь внутри указанной директории
+     * @param non-empty-string $directory базовая директория (будет нормализована)
+     * @param non-empty-string $path      относительный путь внутри указанной директории
      *
-     * @return string абсолютный путь
+     * @return non-empty-string абсолютный путь
      */
     public function at(string $directory, string $path): string
     {
@@ -246,8 +246,8 @@ class FileSystem
      *
      * Перед созданием проверяет, что путь находится внутри basePath.
      *
-     * @param string $directory   абсолютный путь к директории
-     * @param int    $permissions права доступа (по умолчанию 0775)
+     * @param non-empty-string $directory   абсолютный путь к директории
+     * @param int              $permissions права доступа (по умолчанию 0775)
      *
      * @throws FileSystemException если путь вне basePath или не удалось создать директорию
      */
@@ -267,7 +267,7 @@ class FileSystem
      * 2. Если файл существует — дополнительная проверка через realpath()
      *    для защиты от symlink-атак.
      *
-     * @param string $path путь для проверки
+     * @param non-empty-string $path путь для проверки
      *
      * @throws FileSystemException если путь выходит за пределы basePath
      */
@@ -391,10 +391,10 @@ class FileSystem
      *
      * Перед записью проверяет, что путь находится внутри basePath.
      *
-     * @param string        $fileName абсолютный путь к файлу
-     * @param mixed         $data     данные для записи
-     * @param int           $flags    флаги для file_put_contents()
-     * @param null|resource $context  контекст потока
+     * @param non-empty-string $fileName абсолютный путь к файлу
+     * @param mixed            $data     данные для записи
+     * @param int              $flags    флаги для file_put_contents()
+     * @param null|resource    $context  контекст потока
      *
      * @return int количество записанных байт
      *
@@ -417,10 +417,10 @@ class FileSystem
      * Гарантирует, что целевой файл никогда не окажется в частично записанном состоянии.
      * Подходит для записи кэша, конфигураций и других критичных файлов.
      *
-     * @param string        $fileName абсолютный путь к файлу
-     * @param mixed         $data     данные для записи
-     * @param int           $flags    флаги для file_put_contents()
-     * @param null|resource $context  контекст потока
+     * @param non-empty-string $fileName абсолютный путь к файлу
+     * @param mixed            $data     данные для записи
+     * @param int              $flags    флаги для file_put_contents()
+     * @param null|resource    $context  контекст потока
      *
      * @return int количество записанных байт
      *
@@ -446,10 +446,10 @@ class FileSystem
      *
      * Перед чтением проверяет, что путь находится внутри basePath.
      *
-     * @param string        $fileName абсолютный путь к файлу
-     * @param null|resource $context  контекст потока
-     * @param int           $offset   позиция начала чтения
-     * @param null|int      $length   максимальное количество байт для чтения
+     * @param non-empty-string $fileName абсолютный путь к файлу
+     * @param null|resource    $context  контекст потока
+     * @param int              $offset   позиция начала чтения
+     * @param null|int         $length   максимальное количество байт для чтения
      *
      * @return string содержимое файла
      *
@@ -472,9 +472,9 @@ class FileSystem
      * Разрешает конструкции "." и "..", унифицирует разделители.
      * Используется для логической валидации путей в {@see validatePath()}.
      *
-     * @param string $path путь для очистки
+     * @param non-empty-string $path путь для очистки
      *
-     * @return string нормализованный путь
+     * @return non-empty-string нормализованный путь
      */
     private function cleanPath(string $path): string
     {
