@@ -38,6 +38,8 @@ class FileRelatedCache implements FileRelatedCacheInterface
      *  и использованием path возможна гонка — другой процесс может удалить кэш-файл.
      *  Рекомендуется использовать try/catch вокруг include или проверять
      *  существование файла непосредственно перед include.
+     *
+     * @var non-empty-string
      */
     public private(set) string $path;
 
