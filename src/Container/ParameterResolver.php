@@ -171,7 +171,7 @@ class ParameterResolver implements ResolverInterface
     public function resolveForConstructor(string $className, array $context = []): array
     {
         if (!class_exists($className)) {
-            throw new AutowiredException($className, 'Class not found');
+            throw new ParameterResolveException('Class "' . $className . '" not found.');
         }
         $reflection = new \ReflectionClass($className);
         $constructor = $reflection->getConstructor();

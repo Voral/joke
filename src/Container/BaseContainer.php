@@ -203,15 +203,27 @@ abstract class BaseContainer implements ContainerInspectionInterface
             return null;
         }
 
-        return $this->buildFromDefinition($definition);
+        return $this->make($definition);
     }
 
     /**
-     * @param callable|class-string $definition
+     * Создаёт новый экземпляр класса или вызывает фабрику с автоматическим внедрением зависимостей.
      *
-     * @throws ParameterResolveException
+     * В отличие от {@see get()}, всегда возвращает новый объект (для классов) или результат
+     * выполнения callable, не используя кэш синглтонов. Используется контейнером внутри
+     * для создания прототипов и синглтонов, а также может быть вызван напрямую для
+     * получения объектов, не зарегистрированных в контейнере.
+     *
+     * @template T of object
+     *
+     * @param callable|class-string<T> $definition Имя класса для инстанцирования или фабрика (callable).
+     *                                             Зависимости конструктора/фабрики разрешаются автоматически.
+     *
+     * @return ($definition is class-string<T> ? T : object) новый экземпляр класса или результат вызова фабрики
+     *
+     * @throws ParameterResolveException если не удалось разрешить зависимости конструктора или фабрики
      */
-    private function buildFromDefinition(callable|string $definition): object
+    public function make(callable|string $definition): object
     {
         $resolver = $this->getParameterResolver();
         if (is_callable($definition)) {
@@ -252,7 +264,7 @@ abstract class BaseContainer implements ContainerInspectionInterface
         if (null === $definition) {
             return null;
         }
-        $entity = $this->buildFromDefinition($definition);
+        $entity = $this->make($definition);
         $this->singletons[$name] = $entity;
         if ($name !== $canonicalName) {
             $this->singletons[$canonicalName] = $entity;

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Tests\Container;
 
 use phpmock\phpunit\PHPMock;
+use PHPUnit\Framework\Attributes\TestDox;
 use Vasoft\Joke\Container\Exceptions\ContainerException;
 use Vasoft\Joke\Contract\Container\ResolverInterface;
 use Vasoft\Joke\Container\ParameterResolver;
 use Vasoft\Joke\Container\ServiceContainer;
 use PHPUnit\Framework\TestCase;
+use Vasoft\Joke\Tests\Fixtures\Service\Example;
 use Vasoft\Joke\Tests\Fixtures\Service\SingleService;
 use Vasoft\Joke\Tests\Fixtures\Service\TestableParameterResolver;
 
@@ -84,6 +86,39 @@ final class BaseContainerTest extends TestCase
         $service1 = $container->get(SingleService::class);
         $service2 = $container->get(SingleService::class);
         self::assertSame(2, $callbackCount);
+        self::assertNotSame($service1, $service2);
+    }
+
+    #[TestDox('::make с замыканием создает каждый вызов новый экземпляр и использует автовайринг')]
+    public function testMakeCallback(): void
+    {
+        $callbackCheck = [];
+        $container = new ServiceContainer();
+        $registeredService = new SingleService();
+        $registeredId = spl_object_id($registeredService);
+        $container->registerSingleton(SingleService::class, $registeredService);
+        $callback = static function (SingleService $registered) use (&$callbackCheck) {
+            $callbackCheck[] = spl_object_id($registered);
+
+            return new SingleService();
+        };
+
+        $service1 = $container->make($callback);
+        $service2 = $container->make($callback);
+        self::assertSame([$registeredId, $registeredId], $callbackCheck);
+        self::assertNotSame($service1, $service2);
+    }
+
+    #[TestDox('::make с именем класса создает каждый вызов новый экземпляр и использует автовайринг')]
+    public function testMakeClassName(): void
+    {
+        $container = new ServiceContainer();
+        $registeredService = new SingleService();
+        $container->registerSingleton(SingleService::class, $registeredService);
+
+        $service1 = $container->make(Example::class);
+        $service2 = $container->make(Example::class);
+        self::assertSame($registeredService, $service1->parent);
         self::assertNotSame($service1, $service2);
     }
 
