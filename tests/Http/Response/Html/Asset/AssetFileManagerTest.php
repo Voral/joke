@@ -127,23 +127,10 @@ final class AssetFileManagerTest extends TestCase
 
     public function testFileOutsideRootShouldBeCopyAbsolutePath(): void
     {
-        $expectedUri = '/' . self::$assetUri . '/modules/hash_outside.css?v=';
-        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'modules/hash_outside.css';
+        $expectedUri = '/' . self::$assetUri . '/ha/hash_outside.css?v=';
+        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'ha/hash_outside.css';
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $uri = $manager->process(self::$outsideFile, self::$assetUri);
-
-        self::assertFileExists($expectedFile);
-        self::assertStringStartsWith($expectedUri, $uri);
-    }
-
-    public function testReplacementAnsLowercase(): void
-    {
-        $expectedUri = '/' . self::$assetUri . '/assets/hash_outside.css?v=';
-        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'assets/hash_outside.css';
-
-        $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $manager->registerDirectoryReplace('/modules/', '/ASSets/');
         $uri = $manager->process(self::$outsideFile, self::$assetUri);
 
         self::assertFileExists($expectedFile);
@@ -162,8 +149,8 @@ final class AssetFileManagerTest extends TestCase
 
     public function testDoesNotCopyIfNotUpdated(): void
     {
-        $expectedUri = '/' . self::$assetUri . '/modules/hash_outside.css?v=';
-        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'modules/hash_outside.css';
+        $expectedUri = '/' . self::$assetUri . '/ha/hash_outside.css?v=';
+        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'ha/hash_outside.css';
 
         self::getFunctionMock('Vasoft\Joke\Http\Response\Html\Asset', 'file_exists')
             ->expects(self::exactly(1))
@@ -187,7 +174,7 @@ final class AssetFileManagerTest extends TestCase
 
     public function testUnableLocking(): void
     {
-        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'modules/hash_outside.css';
+        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'ha/hash_outside.css';
 
         self::getFunctionMock('Vasoft\Joke\Http\Response\Html\Asset', 'fopen')
             ->expects(self::once())
@@ -203,7 +190,7 @@ final class AssetFileManagerTest extends TestCase
 
     public function testUnableCopy(): void
     {
-        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'modules/hash_outside.css';
+        $expectedFile = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'ha/hash_outside.css';
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
         self::getFunctionMock('Vasoft\Joke\Http\Response\Html\Asset', 'copy')
@@ -216,7 +203,7 @@ final class AssetFileManagerTest extends TestCase
 
     public function testEnsureDir(): void
     {
-        $expectedDir = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'modules/';
+        $expectedDir = self::$documentRoot . self::$assetUri . \DIRECTORY_SEPARATOR . 'ha/';
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
         self::getFunctionMock('Vasoft\Joke\Http\Response\Html\Asset', 'mkdir')
             ->expects(self::atLeastOnce())

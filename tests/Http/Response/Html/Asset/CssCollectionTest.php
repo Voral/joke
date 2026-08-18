@@ -80,7 +80,7 @@ final class CssCollectionTest extends TestCase
     #[TestDox('Добавляется обязательный атрибут')]
     public function testRequiredAttribute(): void
     {
-        $expect = '<link rel="stylesheet" href="/assets/modules/path-hash_outside.css?v=100"/>';
+        $expect = '<link rel="stylesheet" href="/assets/pa/path-hash_outside.css?v=100"/>';
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
         $collection = new CssCollection($manager, '/assets/');
@@ -91,7 +91,7 @@ final class CssCollectionTest extends TestCase
     #[TestDox('Обязательный атрибут не дублируется')]
     public function testRequiredAttributeNonDouble(): void
     {
-        $expect = '<link rel="stylesheet" media="screen" href="/assets/modules/path-hash_outside.css?v=100"/>';
+        $expect = '<link rel="stylesheet" media="screen" href="/assets/pa/path-hash_outside.css?v=100"/>';
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
         $collection = new CssCollection($manager, '/assets/');

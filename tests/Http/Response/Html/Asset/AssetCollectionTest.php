@@ -83,8 +83,8 @@ final class AssetCollectionTest extends TestCase
     public function testAssetCollectionForHead(): void
     {
         $expect = <<<'HTML'
-            <script src="/assets/modules/path-hash_inside.js?v=100"></script>
-            <script src="/assets/modules/path-hash_inside.js?example=1&amp;v=100"></script>
+            <script src="/assets/pa/path-hash_inside.js?v=100"></script>
+            <script src="/assets/pa/path-hash_inside.js?example=1&amp;v=100"></script>
             <script src="https://vik.devv/public/Some/Test/Strucure/script.js"></script>
             <script src="https://vik.devv/public/Some/Test/Strucure/script.js?example=1"></script>
             HTML;
@@ -103,11 +103,11 @@ final class AssetCollectionTest extends TestCase
     public function testAssetCollection(): void
     {
         $expectHead = <<<'HTML'
-            <script src="/assets/modules/path-hash_inside.js?v=100"></script>
+            <script src="/assets/pa/path-hash_inside.js?v=100"></script>
             <script src="https://vik.devv/public/Some/Test/Strucure/script.js"></script>
             HTML;
         $expectBody = <<<'HTML'
-            <script src="/assets/modules/path-hash_inside.js?example=1&amp;v=100"></script>
+            <script src="/assets/pa/path-hash_inside.js?example=1&amp;v=100"></script>
             <script src="https://vik.devv/public/Some/Test/Strucure/script.js?example=1"></script>
             HTML;
 
@@ -125,8 +125,8 @@ final class AssetCollectionTest extends TestCase
     public function testAssetCollectionForBody(): void
     {
         $expect
-            = '<link rel="stylesheet" href="/assets/modules/path-hash_outside.css?v=100"/>'
-            . '<link rel="stylesheet" href="/assets/modules/path-hash_outside.css?example=1&amp;v=100"/>'
+            = '<link rel="stylesheet" href="/assets/pa/path-hash_outside.css?v=100"/>'
+            . '<link rel="stylesheet" href="/assets/pa/path-hash_outside.css?example=1&amp;v=100"/>'
             . '<link rel="stylesheet" href="https://vik.devv/public/Some/Test/Strucure/script.css"/>'
             . '<link rel="stylesheet" href="https://vik.devv/public/Some/Test/Strucure/script.css?example=1"/>';
 
@@ -145,7 +145,7 @@ final class AssetCollectionTest extends TestCase
     {
         $expectHead = <<<'HTML'
             <link rel="stylesheet" href="https://vik.devv/public/Some/Test/Strucure/style1.css"/>
-            <link rel="stylesheet" href="/css/modules/path-hash_outside.css?v=100"/>
+            <link rel="stylesheet" href="/css/pa/path-hash_outside.css?v=100"/>
             HTML;
         $expectBody = '';
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
@@ -162,7 +162,7 @@ final class AssetCollectionTest extends TestCase
     #[TestDox('Подключаемый файл подключается единожды')]
     public function testAssetOnce(): void
     {
-        $expectHead = '<link rel="stylesheet" href="/css/modules/path-hash_outside.css?v=100"/>';
+        $expectHead = '<link rel="stylesheet" href="/css/pa/path-hash_outside.css?v=100"/>';
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
         $collection = new CssCollection($manager, 'css', "\n");
         $collection->addToHead(self::$cssFile);
@@ -175,7 +175,7 @@ final class AssetCollectionTest extends TestCase
     {
         $expectBody = <<<'HTML'
             <script src="https://vik.devv/public/Some/Test/Strucure/test1.js"></script>
-            <script src="/assets/modules/path-hash_inside.js?v=100"></script>
+            <script src="/assets/pa/path-hash_inside.js?v=100"></script>
             <script src="https://vik.devv/public/Some/Test/Strucure/test3.js"></script>
             HTML;
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
@@ -191,7 +191,7 @@ final class AssetCollectionTest extends TestCase
     public function testAssetAttributes(): void
     {
         $expectBody = <<<'HTML'
-            <script defer data-id="1" src="/assets/modules/path-hash_inside.js?v=100"></script>
+            <script defer data-id="1" src="/assets/pa/path-hash_inside.js?v=100"></script>
             HTML;
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
         $collection = new ScriptCollection($manager, self::$assetUri, "\n");

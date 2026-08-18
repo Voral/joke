@@ -28,6 +28,10 @@ class AssetFileManager
 
     /**
      * @var array<string, string> Маппинг для замены путей в URI
+     *
+     * @deprecated Будет удалено в версии 2.0
+     *
+     * @phpstan-ignore property.onlyWritten
      */
     private array $directoryReplacements = [];
 
@@ -46,10 +50,7 @@ class AssetFileManager
     }
 
     /**
-     * Регистрирует замену пути для скрытия структуры проекта в URI.
-     *
-     * @param string $src         Исходный путь (например, `/var/www/vendor`)
-     * @param string $destination Заменяемый путь в URI (например, `/vendor`)
+     * @deprecated Будет удалено в версии 2.0
      */
     public function registerDirectoryReplace(string $src, string $destination): static
     {
@@ -86,7 +87,7 @@ class AssetFileManager
      *
      * @param string $source        Путь к исходному файлу
      * @param bool   $withCopy      Копировать файл в documentRoot (true) или использовать напрямую (false)
-     * @param string $directoryName Подкаталог внтури базовый URI для публичных статических файлов, может быть пустой строкой
+     * @param string $directoryName Подкаталог внутри базовый URI для публичных статических файлов, может быть пустой строкой
      *
      * @return string URI с параметром версии
      *
@@ -178,12 +179,10 @@ class AssetFileManager
      *
      * - Проверяет что файл внутри projectBasePath (безопасность)
      * - Генерирует хэш от realpath для консистентности
-     * - Применяет registered directory replacements
-     * - Приводит путь к нижнему регистру
      * - Создаёт целевую директорию если нужно
      *
      * @param string $src           Путь к исходному файлу
-     * @param string $directoryName Подкаталог внтури базовый URI для публичных статических файлов, может быть пустой строкой
+     * @param string $directoryName Подкаталог внутри базовый URI для публичных статических файлов, может быть пустой строкой
      *
      * @return string Относительный URI от documentRoot
      *
@@ -195,16 +194,7 @@ class AssetFileManager
         $hash = md5($src);
         $info = pathinfo($src);
         $baseUri = trim($directoryName, " \n\r\t\v\0/");
-        $replacements = array_merge(
-            [$this->projectBasePath => $baseUri],
-            $this->directoryReplacements,
-        );
-        $dir = str_replace(
-            array_keys($replacements),
-            array_values($replacements),
-            $info['dirname'] . '/',
-        );
-        $dir = strtolower($dir);
+        $dir = $baseUri . '/' . substr($hash, 0, 2) . '/';
         $this->ensureDir($this->documentRoot . '/' . ltrim($dir, '/'));
 
         return '/' . $dir . $hash . '_' . $info['basename'];
