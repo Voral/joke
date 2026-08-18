@@ -7,6 +7,7 @@ namespace Vasoft\Joke\Http\Response\Html;
 use Vasoft\Joke\Http\Response\Html\Asset\AssetCollection;
 use Vasoft\Joke\Http\Response\Html\Asset\AssetFileManager;
 use Vasoft\Joke\Http\Response\Html\Asset\CssCollection;
+use Vasoft\Joke\Http\Response\Html\Asset\ScriptCollection;
 
 /**
  * Конструктор HTML-страницы, управляющий структурой документа.
@@ -91,9 +92,7 @@ class PageBuilder
             $config->assetsPathCss,
             $this->tagSeparator,
         );
-        $this->js = new AssetCollection(
-            'script',
-            'src',
+        $this->js = new ScriptCollection(
             $fileManager,
             $config->assetsPathJs,
             $this->tagSeparator,

@@ -50,4 +50,14 @@ class CssCollection extends AssetCollection
 
         return parent::compileRow($asset);
     }
+
+    /**
+     * Выполняет окончательное форматирование строки.
+     *
+     * @param string $attributes строка атрибутов тега
+     */
+    protected function format(string $attributes): string
+    {
+        return sprintf('<%s %s/>', $this->tagName, $attributes);
+    }
 }

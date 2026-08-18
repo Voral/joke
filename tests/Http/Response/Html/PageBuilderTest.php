@@ -119,12 +119,12 @@ final class PageBuilderTest extends TestCase
                 <html lang="ru">
                 <head>
                 <meta charset="UTF-8">
-                <script src="https://site.ru/s3.js"/>
-                <script src="https://site.ru/s4.js"/>
+                <script src="https://site.ru/s3.js"></script>
+                <script src="https://site.ru/s4.js"></script>
                 </head>
                 <body>
-                <script src="https://site.ru/s2.js"/>
-                <script integrity src="https://site.ru/s1.js"/>
+                <script src="https://site.ru/s2.js"></script>
+                <script integrity src="https://site.ru/s1.js"></script>
                 </body>
                 </html>
                 HTML,

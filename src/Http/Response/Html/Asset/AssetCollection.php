@@ -15,7 +15,7 @@ use Vasoft\Joke\Http\Response\Html\AttributeCollection;
  *
  * Использует AssetFileManager для обработки путей к файлам (копирование, версионирование).
  */
-class AssetCollection
+abstract class AssetCollection
 {
     /**
      * Список зарегистрированных подключаемых файлов, индексированный по URL.
@@ -165,6 +165,14 @@ class AssetCollection
         $asset->attributes->set($this->valueAttribute, $uri);
         $attributes = $asset->attributes->getAttributes();
 
-        return sprintf('<%s %s/>', $this->tagName, $attributes);
+
+        return $this->format($attributes);
     }
+
+    /**
+     * Выполняет окончательное форматирование строки.
+     *
+     * @param string $attributes строка атрибутов тега
+     */
+    abstract protected function format(string $attributes): string;
 }

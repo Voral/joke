@@ -7,9 +7,11 @@ namespace Http\Response\Html\Asset;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\Response\Html\Asset\AssetFileManager;
-use Vasoft\Joke\Http\Response\Html\Asset\AssetCollection;
+use Vasoft\Joke\Http\Response\Html\Asset\CssCollection;
+use Vasoft\Joke\Http\Response\Html\Asset\ScriptCollection;
 use Vasoft\Joke\Http\Response\Html\AttributeCollection;
 
 /**
@@ -77,17 +79,18 @@ final class AssetCollectionTest extends TestCase
         rmdir($dir);
     }
 
+    #[TestDox('Добавление в заголовок страницы')]
     public function testAssetCollectionForHead(): void
     {
         $expect = <<<'HTML'
-            <script src="/assets/modules/path-hash_inside.js?v=100"/>
-            <script src="/assets/modules/path-hash_inside.js?example=1&amp;v=100"/>
-            <script src="https://vik.devv/public/Some/Test/Strucure/script.js"/>
-            <script src="https://vik.devv/public/Some/Test/Strucure/script.js?example=1"/>
+            <script src="/assets/modules/path-hash_inside.js?v=100"></script>
+            <script src="/assets/modules/path-hash_inside.js?example=1&amp;v=100"></script>
+            <script src="https://vik.devv/public/Some/Test/Strucure/script.js"></script>
+            <script src="https://vik.devv/public/Some/Test/Strucure/script.js?example=1"></script>
             HTML;
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $collection = new AssetCollection('script', 'src', $manager, '/assets/', "\n");
+        $collection = new ScriptCollection($manager, '/assets/', "\n");
         $collection->addToHead(self::$jsFile);
         $collection->addToHead(self::$jsFile . '?example=1');
         $collection->addToHead('https://vik.devv/public/Some/Test/Strucure/script.js');
@@ -96,19 +99,20 @@ final class AssetCollectionTest extends TestCase
         self::assertSame('', $collection->buildForBody());
     }
 
+    #[TestDox('Подключаемые файлы размещаются и в теле и в заголовке согласно заданному размещению')]
     public function testAssetCollection(): void
     {
         $expectHead = <<<'HTML'
-            <script src="/assets/modules/path-hash_inside.js?v=100"/>
-            <script src="https://vik.devv/public/Some/Test/Strucure/script.js"/>
+            <script src="/assets/modules/path-hash_inside.js?v=100"></script>
+            <script src="https://vik.devv/public/Some/Test/Strucure/script.js"></script>
             HTML;
         $expectBody = <<<'HTML'
-            <script src="/assets/modules/path-hash_inside.js?example=1&amp;v=100"/>
-            <script src="https://vik.devv/public/Some/Test/Strucure/script.js?example=1"/>
+            <script src="/assets/modules/path-hash_inside.js?example=1&amp;v=100"></script>
+            <script src="https://vik.devv/public/Some/Test/Strucure/script.js?example=1"></script>
             HTML;
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $collection = new AssetCollection('script', 'src', $manager, 'assets', "\n");
+        $collection = new ScriptCollection($manager, 'assets', "\n");
         $collection->addToHead(self::$jsFile);
         $collection->addToBody(self::$jsFile . '?example=1');
         $collection->addToHead('https://vik.devv/public/Some/Test/Strucure/script.js');
@@ -117,16 +121,17 @@ final class AssetCollectionTest extends TestCase
         self::assertSame($expectBody, $collection->buildForBody());
     }
 
+    #[TestDox('Добавление в тело страницы')]
     public function testAssetCollectionForBody(): void
     {
         $expect
-            = '<link href="/assets/modules/path-hash_outside.css?v=100"/>'
-            . '<link href="/assets/modules/path-hash_outside.css?example=1&amp;v=100"/>'
-            . '<link href="https://vik.devv/public/Some/Test/Strucure/script.css"/>'
-            . '<link href="https://vik.devv/public/Some/Test/Strucure/script.css?example=1"/>';
+            = '<link rel="stylesheet" href="/assets/modules/path-hash_outside.css?v=100"/>'
+            . '<link rel="stylesheet" href="/assets/modules/path-hash_outside.css?example=1&amp;v=100"/>'
+            . '<link rel="stylesheet" href="https://vik.devv/public/Some/Test/Strucure/script.css"/>'
+            . '<link rel="stylesheet" href="https://vik.devv/public/Some/Test/Strucure/script.css?example=1"/>';
 
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $collection = new AssetCollection('link', 'href', $manager, '/assets/');
+        $collection = new CssCollection($manager, '/assets/');
         $collection->addToBody(self::$cssFile);
         $collection->addToBody(self::$cssFile . '?example=1');
         $collection->addToBody('https://vik.devv/public/Some/Test/Strucure/script.css');
@@ -135,36 +140,46 @@ final class AssetCollectionTest extends TestCase
         self::assertSame('', $collection->buildForHead());
     }
 
+    #[TestDox('Добавление в head имеет более высокий приоритет')]
     public function testAssetPriority(): void
     {
         $expectHead = <<<'HTML'
-            <script src="/js/modules/path-hash_inside.js?v=100"/>
-            <script src="/js/modules/path-hash_inside.js?example=1&amp;v=100"/>
+            <link rel="stylesheet" href="https://vik.devv/public/Some/Test/Strucure/style1.css"/>
+            <link rel="stylesheet" href="/css/modules/path-hash_outside.css?v=100"/>
             HTML;
-        $expectBody = <<<'HTML'
-            <script src="https://vik.devv/public/Some/Test/Strucure/script.css"/>
-            HTML;
+        $expectBody = '';
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $collection = new AssetCollection('script', 'src', $manager, 'js', "\n");
-        $collection->addToHead(self::$jsFile);
-        $collection->addToBody(self::$jsFile . '?example=1');
-        $collection->addToBody('https://vik.devv/public/Some/Test/Strucure/script.css');
-        $collection->addToBody(self::$jsFile);
-        $collection->addToHead(self::$jsFile . '?example=1');
-        $collection->addToBody('https://vik.devv/public/Some/Test/Strucure/script.css');
+        $collection = new CssCollection($manager, 'css', "\n");
+        $collection->addToHead('https://vik.devv/public/Some/Test/Strucure/style1.css');
+        $collection->addToBody('https://vik.devv/public/Some/Test/Strucure/style1.css');
+
+        $collection->addToHead(self::$cssFile);
+        $collection->addToBody(self::$cssFile);
         self::assertSame($expectHead, $collection->buildForHead());
         self::assertSame($expectBody, $collection->buildForBody());
     }
 
+    #[TestDox('Подключаемый файл подключается единожды')]
+    public function testAssetOnce(): void
+    {
+        $expectHead = '<link rel="stylesheet" href="/css/modules/path-hash_outside.css?v=100"/>';
+        $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
+        $collection = new CssCollection($manager, 'css', "\n");
+        $collection->addToHead(self::$cssFile);
+        $collection->addToHead(self::$cssFile);
+        self::assertSame($expectHead, $collection->buildForHead());
+    }
+
+    #[TestDox('Строки выводятся в соответствии с сортировкой')]
     public function testAssetOrder(): void
     {
         $expectBody = <<<'HTML'
-            <script src="https://vik.devv/public/Some/Test/Strucure/test1.js"/>
-            <script src="/assets/modules/path-hash_inside.js?v=100"/>
-            <script src="https://vik.devv/public/Some/Test/Strucure/test3.js"/>
+            <script src="https://vik.devv/public/Some/Test/Strucure/test1.js"></script>
+            <script src="/assets/modules/path-hash_inside.js?v=100"></script>
+            <script src="https://vik.devv/public/Some/Test/Strucure/test3.js"></script>
             HTML;
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $collection = new AssetCollection('script', 'src', $manager, self::$assetUri, "\n");
+        $collection = new ScriptCollection($manager, self::$assetUri, "\n");
         $collection->addToBody(self::$jsFile);
         $collection->addToBody('https://vik.devv/public/Some/Test/Strucure/test3.js', order: 600);
         $collection->addToBody('https://vik.devv/public/Some/Test/Strucure/test1.js', order: 200);
@@ -172,13 +187,14 @@ final class AssetCollectionTest extends TestCase
     }
 
     #[RunInSeparateProcess]
+    #[TestDox('Добавляются аттрибуты разного типа')]
     public function testAssetAttributes(): void
     {
         $expectBody = <<<'HTML'
-            <script defer data-id="1" src="/assets/modules/path-hash_inside.js?v=100"/>
+            <script defer data-id="1" src="/assets/modules/path-hash_inside.js?v=100"></script>
             HTML;
         $manager = new AssetFileManager(self::$projectPath, self::$documentRoot);
-        $collection = new AssetCollection('script', 'src', $manager, self::$assetUri, "\n");
+        $collection = new ScriptCollection($manager, self::$assetUri, "\n");
         $collection->addToBody(self::$jsFile, attributes: new AttributeCollection(['defer' => true, 'data-id' => '1']));
         self::assertSame($expectBody, $collection->buildForBody());
     }
