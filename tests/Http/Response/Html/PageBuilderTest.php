@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vasoft\Joke\Tests\Http\Response\Html;
 
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use Vasoft\Joke\Http\Response\Html\Asset\AssetFileManager;
 use Vasoft\Joke\Http\Response\Html\AttributeCollection;
@@ -55,6 +56,17 @@ final class PageBuilderTest extends TestCase
         $builder->setTitle('test');
         self::assertSame(
             '<html lang="ru"><head><title>test</title><meta charset="UTF-8"></head><body></body></html>',
+            $builder->build(),
+        );
+    }
+    #[TestDox('Удаляет теги из заголовка')]
+    public function testTitleStripTags(): void
+    {
+        self::$config->setTagSeparator('');
+        $builder = new PageBuilder(self::$config, self::$manager);
+        $builder->setTitle('test <small>1</small>');
+        self::assertSame(
+            '<html lang="ru"><head><title>test 1</title><meta charset="UTF-8"></head><body></body></html>',
             $builder->build(),
         );
     }

@@ -117,7 +117,7 @@ class PageBuilder
     {
         $parts = [];
         if ('' !== $this->title) {
-            $parts[] = '<title>' . $this->title . '</title>';
+            $parts[] = '<title>' . strip_tags($this->title) . '</title>';
         }
         $parts[] = '<meta charset="' . $this->charset . '">';
         $meta = trim($this->buildMeta());
