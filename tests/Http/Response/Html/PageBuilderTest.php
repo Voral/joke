@@ -59,6 +59,7 @@ final class PageBuilderTest extends TestCase
             $builder->build(),
         );
     }
+
     #[TestDox('Удаляет теги из заголовка')]
     public function testTitleStripTags(): void
     {
