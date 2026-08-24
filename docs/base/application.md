@@ -79,15 +79,21 @@ $router->get('/custom', fn() => (new JsonResponse())->setBody(['force' => true])
 
 ### Режим строгого типа (Глобальная настройка)
 
-Вы можете принудительно задать тип ответа для всего приложения в файле конфигурации `bootstrap/kernel.php`. В этом
+Вы можете принудительно задать тип ответа для всего приложения в файле конфигурации `config/app.php`. В этом
 режиме **авто-определение отключается**. Если тип данных не совпадает с ожидаемым телом ответа, может возникнуть ошибка.
 
 ```php
-// bootstrap/kernel.php
-return (new KernelConfig())
-    ->setProviders([/* ... */])
-    // Все ответы будут попытаться стать JsonResponse, даже строки
-    ->setResponseClass(\Vasoft\Joke\Http\Response\JsonResponse::class); 
+<?php
+// config/app.php
+
+declare(strict_types=1);
+
+use Vasoft\Joke\Application\ApplicationConfig;
+use Vasoft\Joke\Templator\TemplatedResponse;
+use Vasoft\Joke\Http\Response\JsonResponse;
+
+return new ApplicationConfig()
+    ->setResponseClass(JsonResponse::class);
 ```
 
 > **Важно:** При явной установке класса (например, `JsonResponse::class`), попытка вернуть строку `"Hello"` приведет к
