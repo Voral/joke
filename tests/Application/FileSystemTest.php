@@ -536,6 +536,15 @@ final class FileSystemTest extends TestCase
         self::assertStringEqualsFile($file, 'hello world');
     }
 
+    #[TestDox('writeFileSafe не поддерживает FILE_APPEND')]
+    public function testWriteFileSafeNotSupportAppend(): void
+    {
+        $file = $this->fileSystem->basePath . 'safe.txt';
+        self::expectException(FileSystemException::class);
+        $this->expectExceptionMessageIs('FILE_APPEND flag is not supported by writeFileSafe().');
+        $this->fileSystem->writeFileSafe($file, 'hello world', FILE_APPEND);
+    }
+
     #[TestDox('writeFileSafe атомарно перезаписывает существующий файл')]
     public function testWriteFileSafeOverwritesExisting(): void
     {
@@ -610,6 +619,103 @@ final class FileSystemTest extends TestCase
         $file = $this->fileSystem->basePath . 'partial.txt';
         file_put_contents($file, 'hello world');
         self::assertSame('world', $this->fileSystem->readFile($file, null, 6, 5));
+    }
+
+    #[TestDox('writeFileAppend добавляет данные в новый файл')]
+    public function testWriteFileAppendCreatesFile(): void
+    {
+        $file = $this->fileSystem->basePath . 'append_new.txt';
+        $written = $this->fileSystem->writeFileAppendSafe($file, 'hello');
+        self::assertSame(5, $written);
+        self::assertFileExists($file);
+        self::assertStringEqualsFile($file, 'hello');
+    }
+
+    #[TestDox('writeFileAppend добавляет данные в существующий файл')]
+    public function testWriteFileAppendToExisting(): void
+    {
+        $file = $this->fileSystem->basePath . 'append_existing.txt';
+        file_put_contents($file, 'hello ');
+        $written = $this->fileSystem->writeFileAppendSafe($file, 'world');
+        self::assertSame(5, $written);
+        self::assertStringEqualsFile($file, 'hello world');
+    }
+
+    #[TestDox('writeFileAppend добавляет данные несколько раз подряд')]
+    public function testWriteFileAppendMultipleTimes(): void
+    {
+        $file = $this->fileSystem->basePath . 'append_multi.txt';
+        $this->fileSystem->writeFileAppendSafe($file, 'first');
+        $this->fileSystem->writeFileAppendSafe($file, ' ');
+        $this->fileSystem->writeFileAppendSafe($file, 'second');
+        $this->fileSystem->writeFileAppendSafe($file, ' ');
+        $this->fileSystem->writeFileAppendSafe($file, 'third');
+        self::assertStringEqualsFile($file, 'first second third');
+    }
+
+    #[TestDox('writeFileAppend выбрасывает исключение при добавлении вне basePath')]
+    public function testWriteFileAppendOutsideBasePath(): void
+    {
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessageIs("Path must be in base path: '/tmp/unauthorized.txt'.");
+        $this->fileSystem->writeFileAppendSafe('/tmp/unauthorized.txt', 'data');
+    }
+
+    #[TestDox('writeFileAppend выбрасывает исключение при ошибке открытия файла')]
+    #[RunInSeparateProcess]
+    public function testWriteFileAppendOpenFailed(): void
+    {
+        $fopen = self::getFunctionMock('Vasoft\Joke\Support', 'fopen');
+        $fopen->expects(self::exactly(1))->willReturn(false);
+        $file = $this->fileSystem->basePath . 'open_fail.txt';
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessageIs("Failed to open file for appending: '{$file}'.");
+        $this->fileSystem->writeFileAppendSafe($file, 'data');
+    }
+
+    #[TestDox('writeFileAppend выбрасывает исключение при ошибке блокировки файла')]
+    #[RunInSeparateProcess]
+    public function testWriteFileAppendLockFailed(): void
+    {
+        $flock = self::getFunctionMock('Vasoft\Joke\Support', 'flock');
+        $flock->expects(self::exactly(1))->willReturn(false);
+        $file = $this->fileSystem->basePath . 'lock_fail.txt';
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessageIs("Failed to acquire lock on file: '{$file}'.");
+        $this->fileSystem->writeFileAppendSafe($file, 'data');
+    }
+
+    #[TestDox('writeFileAppend выбрасывает исключение при ошибке записи')]
+    #[RunInSeparateProcess]
+    public function testWriteFileAppendWriteFailed(): void
+    {
+        $fwrite = self::getFunctionMock('Vasoft\Joke\Support', 'fwrite');
+        $fwrite->expects(self::exactly(1))->willReturn(false);
+        $file = $this->fileSystem->basePath . 'write_fail.txt';
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessageIs("Failed to write file: '{$file}'.");
+        $this->fileSystem->writeFileAppendSafe($file, 'data');
+    }
+
+    #[TestDox('writeFileAppend записывает пустую строку')]
+    public function testWriteFileAppendEmptyString(): void
+    {
+        $file = $this->fileSystem->basePath . 'append_empty.txt';
+        file_put_contents($file, 'existing');
+        $written = $this->fileSystem->writeFileAppendSafe($file, '');
+        self::assertSame(0, $written);
+        self::assertStringEqualsFile($file, 'existing');
+    }
+
+    #[TestDox('writeFileAppend записывает бинарные данные')]
+    public function testWriteFileAppendBinaryData(): void
+    {
+        $file = $this->fileSystem->basePath . 'append_binary.bin';
+        $binary1 = "\x00\x01\x02";
+        $binary2 = "\xFF\xFE";
+        $this->fileSystem->writeFileAppendSafe($file, $binary1);
+        $this->fileSystem->writeFileAppendSafe($file, $binary2);
+        self::assertStringEqualsFile($file, "\x00\x01\x02\xFF\xFE");
     }
 
     private function cleanDir(string $path): void

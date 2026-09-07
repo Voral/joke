@@ -417,9 +417,12 @@ class FileSystem
      * Гарантирует, что целевой файл никогда не окажется в частично записанном состоянии.
      * Подходит для записи кэша, конфигураций и других критичных файлов.
      *
+     * **Важно**: метод не поддерживает флаг FILE_APPEND. Для последовательного добавления
+     * данных в файл используйте {@see writeFileAppendSafe()}.
+     *
      * @param non-empty-string $fileName абсолютный путь к файлу
      * @param mixed            $data     данные для записи
-     * @param int              $flags    флаги для file_put_contents()
+     * @param int              $flags    флаги для file_put_contents() (FILE_APPEND игнорируется)
      * @param null|resource    $context  контекст потока
      *
      * @return int количество записанных байт
@@ -428,6 +431,9 @@ class FileSystem
      */
     public function writeFileSafe(string $fileName, mixed $data, int $flags = 0, $context = null): int
     {
+        if ($flags & FILE_APPEND) {
+            throw new FileSystemException('FILE_APPEND flag is not supported by writeFileSafe().');
+        }
         $this->validatePath($fileName);
         $path = dirname($fileName);
         $tmp = tempnam($path, '.tmp.');
@@ -435,6 +441,49 @@ class FileSystem
         if (false === $result || false === rename($tmp, $fileName)) {
             @unlink($tmp);
 
+            throw new FileSystemException("Failed to write file: '{$fileName}'.");
+        }
+
+        return $result;
+    }
+
+    /**
+     * Безопасно добавляет данные в конец файла с использованием блокировки.
+     *
+     * Защищает от конкурентных записей через эксклюзивную блокировку (flock).
+     * Подходит для логирования и другого последовательного добавления данных.
+     *
+     * @param non-empty-string $fileName абсолютный путь к файлу
+     * @param mixed            $data     данные для добавления
+     * @param null|resource    $context  контекст потока
+     *
+     * @return int количество записанных байт
+     *
+     * @throws FileSystemException если путь вне basePath, не удалось открыть/заблокировать/записать файл
+     */
+    public function writeFileAppendSafe(string $fileName, mixed $data, $context = null): int
+    {
+        $this->validatePath($fileName);
+
+        $data = (string) $data;
+        $mode = 'ab';
+
+        $handle = @fopen($fileName, $mode, false, $context);
+        if (false === $handle) {
+            throw new FileSystemException("Failed to open file for appending: '{$fileName}'.");
+        }
+
+        if (!flock($handle, LOCK_EX)) {
+            fclose($handle);
+
+            throw new FileSystemException("Failed to acquire lock on file: '{$fileName}'.");
+        }
+
+        $result = fwrite($handle, $data);
+        flock($handle, LOCK_UN);
+        fclose($handle);
+
+        if (false === $result) {
             throw new FileSystemException("Failed to write file: '{$fileName}'.");
         }
 
