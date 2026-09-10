@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vasoft\Joke\Http\Cors;
 
 use Vasoft\Joke\Contract\Middleware\MiddlewareInterface;
+use Vasoft\Joke\Exceptions\JokeException;
 use Vasoft\Joke\Http\HttpMethod;
 use Vasoft\Joke\Http\HttpRequest;
 use Vasoft\Joke\Http\Response\Response;
@@ -56,13 +57,22 @@ class CorsMiddleware implements MiddlewareInterface
      * @param callable    $next    следующий обработчик в цепочке middleware
      *
      * @return Response объект HTTP-ответа с установленными заголовками CORS
-     * */
+     *
+     * @throws JokeException При ошибке извлечения Origin
+     */
     public function handle(HttpRequest $request, callable $next): Response
     {
         $origin = $request->getOrigin();
-        $needCors = $this->corsConfig->allowedCors && '' !== $origin;
+
+        $host = $request->headers->get('Host', '');
+        $isSameOrigin = '' === $origin || $this->isSameOrigin($origin, $host);
+        if ($isSameOrigin) {
+            return $next($request);
+        }
+
+        $needCors = $this->corsConfig->allowedCors;
         $isPreflight = HttpMethod::OPTIONS === $request->method;
-        if ('' !== $origin && (!$this->corsConfig->allowedCors || !$this->isOriginAllowed($origin))) {
+        if (!$this->corsConfig->allowedCors || !$this->isOriginAllowed($origin)) {
             $response = $this->responseBuilder->makeDefault();
             $response->setStatus(ResponseStatus::FORBIDDEN);
 
@@ -85,6 +95,36 @@ class CorsMiddleware implements MiddlewareInterface
         }
 
         return $preparedResponse;
+    }
+
+    /**
+     * Определяет, является ли запрос same-origin (из того же источника).
+     *
+     * Сравнивает host из заголовка Origin запроса с host из заголовка Host.
+     * Same-origin запросы не требуют CORS-валидации и должны обрабатываться
+     * как обычные HTTP-запросы без дополнительных проверок и заголовков.
+     *
+     * @param string $origin значение заголовка Origin входящего HTTP-запроса
+     * @param string $host   значение заголовка Host входящего HTTP-запроса
+     *
+     * @return bool true если запрос same-origin, false если cross-origin
+     */
+    private function isSameOrigin(string $origin, string $host): bool
+    {
+        $parsedOrigin = parse_url($origin, PHP_URL_HOST);
+        $parsedPort = parse_url($origin, PHP_URL_PORT);
+        $parsedScheme = parse_url($origin, PHP_URL_SCHEME);
+
+        $defaultPorts = ['http' => 80, 'https' => 443];
+        $effectivePort = $parsedPort ?? ($defaultPorts[$parsedScheme] ?? null);
+
+        $originHost = $effectivePort ? "{$parsedOrigin}:{$effectivePort}" : $parsedOrigin;
+
+        if (!str_contains($host, ':') && $parsedScheme) {
+            $host = "{$host}:{$defaultPorts[$parsedScheme]}";
+        }
+
+        return $originHost === $host;
     }
 
     /**
